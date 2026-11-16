@@ -215,37 +215,63 @@
   }
   .submit-bar .btn { min-width: 140px; }
 
+  /* =============================================
+     结果截图区域 —— 水印走 background-image 平铺
+     （html2canvas 对背景图渲染非常可靠）
+     ============================================= */
   #resultCapture {
     position: relative;
     overflow: hidden;
-    background: #fff;
+    background-color: #ffffff;
+    background-repeat: repeat;
+    background-size: 300px 150px;
     border-radius: 20px;
-    padding: 26px;
     border: 1px solid rgba(7,131,95,.14);
   }
-  .cap-watermark {
-    position: absolute;
-    left: -35%;
-    top: -35%;
-    width: 170%;
-    height: 170%;
-    z-index: 0;
-    pointer-events: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    gap: 55px 85px;
-    padding: 30px;
-    transform: rotate(-45deg);
-    opacity: 0.055;
+
+  /* 截图页眉 */
+  .cap-header {
+    padding: 22px 26px 16px;
+    text-align: center;
+    border-bottom: 1px dashed rgba(7,131,95,.22);
+  }
+  .cap-header-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #075c45;
+    letter-spacing: 1px;
+    line-height: 1.4;
+  }
+  .cap-header-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #4f7468;
+    letter-spacing: 2px;
+  }
+
+  .capture-content {
+    padding: 20px 26px 22px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 截图页脚 */
+  .cap-footer {
+    padding: 16px 26px 20px;
+    border-top: 1px dashed rgba(7,131,95,.22);
+    text-align: center;
+    font-size: 12px;
+    color: #5c7b70;
+    line-height: 1.9;
+  }
+  .cap-footer-line { margin-bottom: 1px; }
+  .cap-footer-brand {
+    margin-top: 8px;
     color: #07835f;
     font-weight: 800;
-    font-size: 22px;
+    font-size: 12px;
     letter-spacing: 2px;
-    user-select: none;
-    white-space: nowrap;
   }
-  .capture-content { position: relative; z-index: 1; }
 
   .result-card {
     border-radius: 18px;
@@ -436,6 +462,10 @@
     .submit-bar .btn { flex: 1; min-width: 0; }
     .result-card h2 { font-size: 25px; }
     .result-card .score { font-size: 36px; }
+    .cap-header { padding: 18px 18px 14px; }
+    .cap-header-title { font-size: 17px; }
+    .capture-content { padding: 16px 18px 18px; }
+    .cap-footer { padding: 14px 18px 16px; }
   }
 </style>
 </head>
@@ -474,8 +504,16 @@
 
     <section id="resultScreen" class="hidden">
       <div id="resultCapture">
-        <div class="cap-watermark" id="capWatermark" aria-hidden="true"></div>
+        <div class="cap-header">
+          <div class="cap-header-title">新手保护协会 · 入会申请面试</div>
+          <div class="cap-header-sub">入会申请面试结果单</div>
+        </div>
         <div class="capture-content" id="captureContent"></div>
+        <div class="cap-footer">
+          <div class="cap-footer-line">答题者：<span id="capFooterNick">-</span></div>
+          <div class="cap-footer-line">生成时间：<span id="capFooterTime">-</span></div>
+          <div class="cap-footer-brand">新手保护协会 · 入会申请面试</div>
+        </div>
       </div>
       <div class="result-actions">
         <button id="captureBtn" class="btn btn-primary" onclick="captureResult()">一键截图</button>
@@ -742,9 +780,47 @@ function fillWatermark(container) {
 function isMobileDevice() {
   const ua = navigator.userAgent || "";
   if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
-  // iPadOS 13+ 的 UA 伪装成 Mac，用触摸点判断
   if (navigator.maxTouchPoints > 1 && /Mac/.test(ua)) return true;
   return false;
+}
+
+/* =========================================================
+   截图水印生成
+   - 用 canvas 画一段旋转 -45° 的文字 pattern
+   - 作为 #resultCapture 的 background-image 平铺
+   - html2canvas 对背景图渲染稳定，屏幕/截图都能显示
+   ========================================================= */
+function buildWatermarkDataUrl() {
+  const W = 300, H = 150;
+  const dpr = 2;
+  const c = document.createElement("canvas");
+  c.width = W * dpr;
+  c.height = H * dpr;
+  const ctx = c.getContext("2d");
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-Math.PI / 4);
+  ctx.fillStyle = "rgba(7, 131, 95, 0.10)";
+  ctx.font = "700 18px 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("新手保护协会 · 入会申请面试", 0, 0);
+  ctx.restore();
+
+  return c.toDataURL("image/png");
+}
+
+function applyCaptureWatermark() {
+  const el = document.getElementById("resultCapture");
+  if (!el) return;
+  const url = buildWatermarkDataUrl();
+  el.style.backgroundImage = `url("${url}")`;
+  el.style.backgroundRepeat = "repeat";
+  el.style.backgroundSize = "300px 150px";
+  el.style.backgroundColor = "#ffffff";
 }
 
 /* =========================
@@ -1025,14 +1101,25 @@ function renderResult(correctCount, scoreText, pass, results) {
       ${wrongListHtml}
     `;
   }
+
+  // 填充页脚
+  const nickEl = document.getElementById("capFooterNick");
+  const timeEl = document.getElementById("capFooterTime");
+  if (nickEl) nickEl.textContent = state.nickname || "-";
+  if (timeEl) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    timeEl.textContent =
+      `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+      `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+
+  // 确保水印已应用（部分浏览器首次可能丢失，这里再补一次）
+  applyCaptureWatermark();
 }
 
 /* =========================================================
    截图核心
-   - canvas -> Blob
-   - 移动端：优先 navigator.share(files)（iOS 可选“存储图像”进相册）
-   - 不支持 share：弹出预览模态框，让用户长按保存
-   - 桌面端：直接 a.download 下载，失败再弹出预览
    ========================================================= */
 function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
@@ -1065,6 +1152,9 @@ async function captureResult() {
     return;
   }
 
+  // 截图前再次确保水印背景已应用
+  applyCaptureWatermark();
+
   btn.disabled = true;
   const oldText = btn.textContent;
   btn.textContent = "正在生成截图...";
@@ -1075,7 +1165,9 @@ async function captureResult() {
       backgroundColor: "#ffffff",
       scale: 2,
       useCORS: true,
-      logging: false
+      logging: false,
+      // 明确告诉 html2canvas 拉取背景图资源
+      allowTaint: false
     });
   } catch (err) {
     console.error(err);
@@ -1093,10 +1185,8 @@ async function captureResult() {
   const fileName = `新手保护协会_${safeNick}_${resultName}.png`;
 
   if (isMobileDevice()) {
-    // 移动端优先走分享 / 预览保存
     await tryShareOrPreview(canvas, fileName);
   } else {
-    // 桌面端优先直接下载，失败再弹出预览
     const ok = await tryDownload(canvas, fileName);
     if (!ok) openCaptureModal(canvas, fileName);
   }
@@ -1122,7 +1212,6 @@ async function tryDownload(canvas, fileName) {
 }
 
 async function tryShareOrPreview(canvas, fileName) {
-  // 尝试 Web Share API（移动端主流：iOS Safari 15+、Android Chrome 等）
   let canShareFiles = false;
   try {
     const testFile = new File([new Blob(["x"], { type: "image/png" })], "test.png", { type: "image/png" });
@@ -1139,18 +1228,13 @@ async function tryShareOrPreview(canvas, fileName) {
         files: [file],
         title: "新手保护协会 · 入会申请面试结果"
       });
-      // 分享成功（iOS 用户可选“存储图像”进相册）
       return;
     } catch (e) {
-      if (e && e.name === "AbortError") {
-        // 用户主动取消，不弹预览
-        return;
-      }
+      if (e && e.name === "AbortError") return;
       console.warn("share failed", e);
     }
   }
 
-  // share 不可用或失败 -> 预览模态框 + 长按保存
   openCaptureModal(canvas, fileName);
 }
 
@@ -1200,7 +1284,6 @@ function openCaptureModal(canvas, fileName) {
     tipEl.textContent = "请长按上方图片，选择「存储图像」或「保存图片」。";
   }
 
-  // 保存按钮
   if (canShareFiles || canDownload) {
     const saveBtn = document.createElement("button");
     saveBtn.className = "btn btn-primary";
@@ -1228,7 +1311,6 @@ function openCaptureModal(canvas, fileName) {
             return;
           } catch (e) {
             if (e && e.name === "AbortError") return;
-            // 继续走 download 兜底
           }
         }
 
@@ -1244,9 +1326,7 @@ function openCaptureModal(canvas, fileName) {
             document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(url), 2000);
             return;
-          } catch (e) {
-            // 继续走提示
-          }
+          } catch (e) {}
         }
 
         alert("当前浏览器不支持直接保存，请长按上方图片选择「存储图像」。");
@@ -1273,7 +1353,7 @@ function openCaptureModal(canvas, fileName) {
    初始化
    ========================= */
 fillWatermark(document.getElementById("watermark"));
-fillWatermark(document.getElementById("capWatermark"));
+applyCaptureWatermark();
 
 ensureHashesReady().catch(err => console.error("hash init failed", err));
 
