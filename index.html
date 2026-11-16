@@ -354,6 +354,80 @@
     line-height: 1.7;
   }
 
+  /* ============ 截图预览模态框（移动端） ============ */
+  .capture-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: capFadeIn .2s ease;
+  }
+  @keyframes capFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .capture-modal-inner {
+    background: #fff;
+    border-radius: 18px;
+    max-width: 680px;
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  }
+  .capture-modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef3f0;
+    font-weight: 800;
+    font-size: 17px;
+    color: #075c45;
+    flex: 0 0 auto;
+    text-align: center;
+  }
+  .capture-modal-body {
+    padding: 14px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #f6fbf9;
+  }
+  .capture-modal-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+    margin: 0 auto;
+    background: #fff;
+    -webkit-user-select: auto;
+    user-select: auto;
+    -webkit-touch-callout: default;
+    touch-action: manipulation;
+  }
+  .capture-modal-tip {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #4f7468;
+    text-align: center;
+    line-height: 1.7;
+  }
+  .capture-modal-actions {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #eef3f0;
+    flex: 0 0 auto;
+  }
+  .capture-modal-actions .btn {
+    flex: 1;
+    margin-top: 0;
+    width: auto;
+  }
+
   @media (max-width: 620px) {
     .app { width: min(100% - 18px, 980px); padding-top: 16px; }
     .card { padding: 18px; border-radius: 16px; }
@@ -408,21 +482,20 @@
         <button class="btn btn-secondary" onclick="restartQuiz()">重新答题</button>
       </div>
       <div class="footnote">
-        截图会保存为 PNG 图片。若截图无反应，请确认网络可加载 html2canvas。
+        截图会保存为 PNG 图片。移动端如未自动保存，可在弹出的预览中长按图片选择「存储图像」。
       </div>
     </section>
   </main>
 
 <script>
 /* =========================================================
-   题库数据（已按最新题库更新）
+   题库数据
    - 必出 15 题 + 随机池 7 题（每次抽 5 题）= 20 题
    - opts 已在源码中打乱存储，正确答案位置不固定
    - enc 仅用于初始化时定位正确选项文本
    - 判分走选项文本的迭代 SHA-256 比对
    ========================================================= */
 const BANK = [
-  // ============ 必出 15 题 ============
   { id: 1, type: "required",
     q: "打远征时，大家俗称的“下绿包”，具体是指什么？",
     opts: [
@@ -514,7 +587,6 @@ const BANK = [
       "19-24线、彩虹村地图、以及个别场景过大的地图"
     ], enc: 244 },
 
-  // ============ 随机池 7 题，每次抽 5 题 ============
   { id: 16, type: "random",
     q: "哪2个远征Boss会掉落用来增加血量上限的洗血圣杯？",
     opts: ["红蜗牛王、蘑菇王", "九尾狐、大脚怪", "扎昆、黑龙", "伊利丹、死亡之翼"], enc: 227 },
@@ -667,6 +739,14 @@ function fillWatermark(container) {
   }
 }
 
+function isMobileDevice() {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
+  // iPadOS 13+ 的 UA 伪装成 Mac，用触摸点判断
+  if (navigator.maxTouchPoints > 1 && /Mac/.test(ua)) return true;
+  return false;
+}
+
 /* =========================
    抽题 & 生成题目实例
    ========================= */
@@ -746,7 +826,7 @@ async function startQuiz() {
 }
 
 /* =========================
-   重新答题（保留昵称，重新抽题+打乱）
+   重新答题
    ========================= */
 function restartQuiz() {
   if (!state.nickname) {
@@ -870,7 +950,7 @@ async function submitQuiz(event) {
 }
 
 /* =========================
-   渲染错题（合格/不合格都用到）
+   渲染错题
    ========================= */
 function buildWrongListHtml(pass, results) {
   const resultMap = new Map(results.map(r => [r.qid, r.ok]));
@@ -947,9 +1027,35 @@ function renderResult(correctCount, scoreText, pass, results) {
   }
 }
 
-/* =========================
-   一键截图
-   ========================= */
+/* =========================================================
+   截图核心
+   - canvas -> Blob
+   - 移动端：优先 navigator.share(files)（iOS 可选“存储图像”进相册）
+   - 不支持 share：弹出预览模态框，让用户长按保存
+   - 桌面端：直接 a.download 下载，失败再弹出预览
+   ========================================================= */
+function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error("toBlob returned null"));
+      }, "image/png");
+    } else {
+      try {
+        const dataUrl = canvas.toDataURL("image/png");
+        const bin = atob(dataUrl.split(",")[1]);
+        const len = bin.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+        resolve(new Blob([bytes], { type: "image/png" }));
+      } catch (e) {
+        reject(e);
+      }
+    }
+  });
+}
+
 async function captureResult() {
   const btn = document.getElementById("captureBtn");
   const target = document.getElementById("resultCapture");
@@ -963,30 +1069,204 @@ async function captureResult() {
   const oldText = btn.textContent;
   btn.textContent = "正在生成截图...";
 
+  let canvas = null;
   try {
-    const canvas = await html2canvas(target, {
+    canvas = await html2canvas(target, {
       backgroundColor: "#ffffff",
       scale: 2,
       useCORS: true,
       logging: false
     });
-
-    const dataUrl = canvas.toDataURL("image/png");
-    const a = document.createElement("a");
-    const safeNick = state.nickname.replace(/[\\/:*?"<>|]/g, "_") || "答题者";
-    const resultName = document.querySelector(".result-card.pass") ? "合格" : "不合格";
-    a.download = `新手保护协会_${safeNick}_${resultName}.png`;
-    a.href = dataUrl;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
   } catch (err) {
     console.error(err);
     alert("截图生成失败，请重试。");
+    btn.disabled = false;
+    btn.textContent = oldText;
+    return;
   } finally {
     btn.disabled = false;
     btn.textContent = oldText;
   }
+
+  const safeNick = (state.nickname || "答题者").replace(/[\\/:*?"<>|]/g, "_");
+  const resultName = document.querySelector(".result-card.pass") ? "合格" : "不合格";
+  const fileName = `新手保护协会_${safeNick}_${resultName}.png`;
+
+  if (isMobileDevice()) {
+    // 移动端优先走分享 / 预览保存
+    await tryShareOrPreview(canvas, fileName);
+  } else {
+    // 桌面端优先直接下载，失败再弹出预览
+    const ok = await tryDownload(canvas, fileName);
+    if (!ok) openCaptureModal(canvas, fileName);
+  }
+}
+
+async function tryDownload(canvas, fileName) {
+  try {
+    const blob = await canvasToBlob(canvas);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = url;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return true;
+  } catch (e) {
+    console.warn("download failed", e);
+    return false;
+  }
+}
+
+async function tryShareOrPreview(canvas, fileName) {
+  // 尝试 Web Share API（移动端主流：iOS Safari 15+、Android Chrome 等）
+  let canShareFiles = false;
+  try {
+    const testFile = new File([new Blob(["x"], { type: "image/png" })], "test.png", { type: "image/png" });
+    canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [testFile] }));
+  } catch (e) {
+    canShareFiles = false;
+  }
+
+  if (canShareFiles) {
+    try {
+      const blob = await canvasToBlob(canvas);
+      const file = new File([blob], fileName, { type: "image/png" });
+      await navigator.share({
+        files: [file],
+        title: "新手保护协会 · 入会申请面试结果"
+      });
+      // 分享成功（iOS 用户可选“存储图像”进相册）
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") {
+        // 用户主动取消，不弹预览
+        return;
+      }
+      console.warn("share failed", e);
+    }
+  }
+
+  // share 不可用或失败 -> 预览模态框 + 长按保存
+  openCaptureModal(canvas, fileName);
+}
+
+function openCaptureModal(canvas, fileName) {
+  const existing = document.querySelector(".capture-modal");
+  if (existing) existing.remove();
+
+  let dataUrl;
+  try {
+    dataUrl = canvas.toDataURL("image/png");
+  } catch (e) {
+    alert("生成图片失败，请重试。");
+    return;
+  }
+
+  let canShareFiles = false;
+  try {
+    const testFile = new File([new Blob(["x"], { type: "image/png" })], "test.png", { type: "image/png" });
+    canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [testFile] }));
+  } catch (e) {
+    canShareFiles = false;
+  }
+  const canDownload = "download" in document.createElement("a");
+
+  const modal = document.createElement("div");
+  modal.className = "capture-modal";
+  modal.innerHTML = `
+    <div class="capture-modal-inner">
+      <div class="capture-modal-header">面试结果截图</div>
+      <div class="capture-modal-body">
+        <img src="${dataUrl}" alt="面试结果截图" />
+        <div class="capture-modal-tip"></div>
+      </div>
+      <div class="capture-modal-actions"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const tipEl = modal.querySelector(".capture-modal-tip");
+  const actionsEl = modal.querySelector(".capture-modal-actions");
+
+  if (canShareFiles) {
+    tipEl.textContent = "点击「保存到相册」，然后在系统弹窗中选择「存储图像」。";
+  } else if (canDownload) {
+    tipEl.textContent = "点击「下载图片」保存；若未响应，请长按上方图片选择「存储图像」。";
+  } else {
+    tipEl.textContent = "请长按上方图片，选择「存储图像」或「保存图片」。";
+  }
+
+  // 保存按钮
+  if (canShareFiles || canDownload) {
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn btn-primary";
+    saveBtn.textContent = canShareFiles ? "保存到相册" : "下载图片";
+    saveBtn.onclick = async () => {
+      saveBtn.disabled = true;
+      const old = saveBtn.textContent;
+      saveBtn.textContent = "正在保存…";
+      try {
+        let blob;
+        try {
+          blob = await canvasToBlob(canvas);
+        } catch (e) {
+          alert("生成图片失败，请长按上方图片保存。");
+          return;
+        }
+
+        if (canShareFiles) {
+          try {
+            const file = new File([blob], fileName, { type: "image/png" });
+            await navigator.share({
+              files: [file],
+              title: "新手保护协会 · 入会申请面试结果"
+            });
+            return;
+          } catch (e) {
+            if (e && e.name === "AbortError") return;
+            // 继续走 download 兜底
+          }
+        }
+
+        if (canDownload) {
+          try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.download = fileName;
+            a.href = url;
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            return;
+          } catch (e) {
+            // 继续走提示
+          }
+        }
+
+        alert("当前浏览器不支持直接保存，请长按上方图片选择「存储图像」。");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = old;
+      }
+    };
+    actionsEl.appendChild(saveBtn);
+  }
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn btn-secondary";
+  closeBtn.textContent = "关闭";
+  closeBtn.onclick = () => modal.remove();
+  actionsEl.appendChild(closeBtn);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.remove();
+  });
 }
 
 /* =========================
