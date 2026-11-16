@@ -479,7 +479,7 @@
     <div class="brand">
       <h1>新手保护协会 · 入会申请面试</h1>
       <p>请认真作答，提交后自动评分。满分 100 分，60 分及以上合格。</p>
-      <span class="version-tag" id="versionTag">v1.0.9</span>
+      <span class="version-tag" id="versionTag">v1.0.10</span>
     </div>
 
     <section id="startScreen" class="card start-box">
@@ -533,7 +533,7 @@
 /* =========================================================
    版本号（想改版本号直接改这一行）
    ========================================================= */
-const APP_VERSION = "v1.0.9";
+const APP_VERSION = "v1.0.10";
 
 /* =========================================================
    题库
@@ -1099,7 +1099,7 @@ function renderResult(correctCount, scoreText, pass, results) {
 
 /* =========================================================
    截图合成
-   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层，字号更大）
+   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层，交错平铺）
    ========================================================= */
 const CAP_SCALE = 2;
 const CAP_PAD_X = 26;
@@ -1113,7 +1113,6 @@ function drawTiledWatermark(ctx, width, height) {
   const text = "新手保护协会 · 入会申请面试";
 
   ctx.save();
-  // 覆盖在最上层，透明度略降，避免粗字压过正文
   ctx.fillStyle = "rgba(7, 131, 95, 0.07)";
   ctx.font = `700 ${30 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
   ctx.textAlign = "center";
@@ -1124,10 +1123,14 @@ function drawTiledWatermark(ctx, width, height) {
   ctx.translate(width / 2, height / 2);
   ctx.rotate(-Math.PI / 4);
 
+  // 交错排列：奇数行水平偏移半个 tile，形成砖墙式错位
+  let rowIndex = 0;
   for (let y = -diagonal / 2; y <= diagonal / 2; y += tileH) {
-    for (let x = -diagonal / 2; x <= diagonal / 2; x += tileW) {
+    const offsetX = (rowIndex % 2 === 0) ? 0 : tileW / 2;
+    for (let x = -diagonal / 2 + offsetX; x <= diagonal / 2 + offsetX; x += tileW) {
       ctx.fillText(text, x, y);
     }
+    rowIndex++;
   }
   ctx.restore();
 }
@@ -1206,7 +1209,7 @@ async function composeFinalCanvas(contentCanvas) {
   ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, footerTop + 68 * CAP_SCALE);
   ctx.restore();
 
-  // 5) 最后叠加平铺水印（最上层，字号更大）
+  // 5) 最后叠加平铺水印（最上层，交错排列）
   drawTiledWatermark(ctx, finalW, finalH);
 
   return final;
@@ -1463,7 +1466,7 @@ ensureHashesReady().catch(err => console.error("hash init failed", err));
   });
   input.addEventListener("blur", function () {
     if (!input.value.trim()) {
-    input.setAttribute("placeholder", originalPlaceholder);
+      input.setAttribute("placeholder", originalPlaceholder);
     }
   });
   input.addEventListener("input", function () {
