@@ -59,9 +59,27 @@
   }
   .brand p { margin: 8px 0 0; color: #4f7468; font-size: 14px; }
 
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .bank-date {
+    font-size: 12px;
+    color: #6b857d;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .meta-sep {
+    font-size: 12px;
+    color: #b8cbc3;
+    user-select: none;
+  }
   .version-tag {
     display: inline-block;
-    margin-top: 10px;
     padding: 3px 11px;
     border-radius: 999px;
     background: rgba(7, 131, 95, 0.08);
@@ -305,6 +323,38 @@
   .result-card.fail .score { color: #d13f3f; }
   .result-card .sub { color: #6b857d; font-size: 14px; line-height: 1.8; }
 
+  /* 结果卡片下方的按钮行 + 分享提示 */
+  .inline-actions {
+    margin: 0 0 20px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f4fffb, #f9fffd);
+    border: 1px dashed rgba(7, 131, 95, 0.3);
+    text-align: center;
+  }
+  .inline-actions .share-tip {
+    font-size: 14px;
+    color: #3f665a;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .inline-actions .share-tip strong {
+    color: #07835f;
+    font-weight: 800;
+  }
+  .inline-actions .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .inline-actions .btn-row .btn {
+    margin-top: 0;
+    width: auto;
+    min-width: 130px;
+    flex: 0 1 auto;
+  }
+
   .wrong-title {
     margin: 10px 0 14px;
     color: #8f3030;
@@ -368,14 +418,6 @@
   }
   .wrong-item.pass-item .your-choice-tag { background: #e08a3c; }
 
-  .result-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 18px;
-  }
-
   .footnote {
     margin-top: 16px;
     text-align: center;
@@ -384,6 +426,29 @@
     line-height: 1.7;
   }
 
+  /* 截图加载提示 */
+  .cap-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: capFadeIn .18s ease;
+  }
+  .cap-loading-inner {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #075c45;
+    box-shadow: 0 18px 45px rgba(0,0,0,.3);
+  }
+
+  /* 截图预览模态框 */
   .capture-modal {
     position: fixed;
     inset: 0;
@@ -469,6 +534,16 @@
     .cap-header-title { font-size: 17px; }
     #captureContent { padding: 16px 18px 18px; }
     .cap-footer { padding: 14px 18px 16px; }
+
+    .inline-actions { padding: 14px 14px; }
+    .inline-actions .share-tip { font-size: 13px; }
+    .inline-actions .btn-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .inline-actions .btn-row .btn {
+      width: 100%;
+    }
   }
 </style>
 </head>
@@ -479,7 +554,11 @@
     <div class="brand">
       <h1>新手保护协会 · 入会申请面试</h1>
       <p>请认真作答，提交后自动评分。满分 100 分，60 分及以上合格。</p>
-      <span class="version-tag" id="versionTag">v1.0.10</span>
+      <div class="meta-row">
+        <span class="bank-date" id="bankDate">题库更新 2026-11-10</span>
+        <span class="meta-sep">·</span>
+        <span class="version-tag" id="versionTag">v1.0.11</span>
+      </div>
     </div>
 
     <section id="startScreen" class="card start-box">
@@ -519,10 +598,6 @@
           <div class="cap-footer-brand">新手保护协会 · 入会申请面试</div>
         </div>
       </div>
-      <div class="result-actions">
-        <button id="captureBtn" class="btn btn-primary" onclick="captureResult()">一键截图</button>
-        <button class="btn btn-secondary" onclick="restartQuiz()">重新答题</button>
-      </div>
       <div class="footnote">
         截图会保存为 PNG 图片。移动端如未自动保存，可在弹出的预览中长按图片选择「存储图像」。
       </div>
@@ -531,9 +606,10 @@
 
 <script>
 /* =========================================================
-   版本号（想改版本号直接改这一行）
+   版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.10";
+const APP_VERSION = "v1.0.11";
+const BANK_UPDATED_AT = "2026-11-10";
 
 /* =========================================================
    题库
@@ -673,6 +749,8 @@ const state = {
   results: []
 };
 
+let isCapturing = false;
+
 /* =========================================================
    Hash 层
    ========================================================= */
@@ -803,6 +881,20 @@ function scrollPageToTop() {
       setTimeout(forceScrollTop, 200);
     });
   });
+}
+
+function showLoading(msg) {
+  hideLoading();
+  const el = document.createElement("div");
+  el.id = "capLoading";
+  el.className = "cap-loading";
+  el.innerHTML = `<div class="cap-loading-inner">${msg}</div>`;
+  document.body.appendChild(el);
+  return el;
+}
+function hideLoading() {
+  const el = document.getElementById("capLoading");
+  if (el) el.remove();
 }
 
 /* =========================
@@ -1048,12 +1140,26 @@ function buildWrongListHtml(pass, results) {
 }
 
 /* =========================
-   渲染结果
+   渲染结果（按钮紧跟结果卡片，截图时临时隐藏）
    ========================= */
 function renderResult(correctCount, scoreText, pass, results) {
   const content = document.getElementById("captureContent");
   const total = state.questions.length;
   const wrongListHtml = buildWrongListHtml(pass, results);
+
+  const actionsHtml = `
+    <div class="inline-actions">
+      <div class="share-tip">
+        ${pass
+          ? `面试已通过！请 <strong>一键截图</strong> 后发给家族管理验证～`
+          : `请 <strong>一键截图</strong> 后发给家族管理查看错题，复习后再来挑战～`}
+      </div>
+      <div class="btn-row">
+        <button id="captureBtn" class="btn btn-primary" onclick="captureResult()">一键截图</button>
+        <button class="btn btn-secondary" onclick="restartQuiz()">重新答题</button>
+      </div>
+    </div>
+  `;
 
   if (pass) {
     content.innerHTML = `
@@ -1066,6 +1172,7 @@ function renderResult(correctCount, scoreText, pass, results) {
           欢迎加入新手保护协会，期待与你一起冒险。
         </div>
       </div>
+      ${actionsHtml}
       <div class="wrong-title pass-title">答错题目回顾（只显示你的选择）</div>
       ${wrongListHtml}
     `;
@@ -1080,6 +1187,7 @@ function renderResult(correctCount, scoreText, pass, results) {
           合格线为 60 分，请复习下方错题后再来挑战。
         </div>
       </div>
+      ${actionsHtml}
       <div class="wrong-title">错题回顾（只显示你的选择）</div>
       ${wrongListHtml}
     `;
@@ -1107,7 +1215,6 @@ const CAP_HEADER_H = 88;
 const CAP_FOOTER_H = 96;
 
 function drawTiledWatermark(ctx, width, height) {
-  // 字号明显大于正文（正文 css 14-16px，水印 30px）
   const tileW = 640 * CAP_SCALE;
   const tileH = 220 * CAP_SCALE;
   const text = "新手保护协会 · 入会申请面试";
@@ -1123,7 +1230,6 @@ function drawTiledWatermark(ctx, width, height) {
   ctx.translate(width / 2, height / 2);
   ctx.rotate(-Math.PI / 4);
 
-  // 交错排列：奇数行水平偏移半个 tile，形成砖墙式错位
   let rowIndex = 0;
   for (let y = -diagonal / 2; y <= diagonal / 2; y += tileH) {
     const offsetX = (rowIndex % 2 === 0) ? 0 : tileW / 2;
@@ -1163,11 +1269,9 @@ async function composeFinalCanvas(contentCanvas) {
   final.height = finalH;
   const ctx = final.getContext("2d");
 
-  // 1) 白色背景
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, finalW, finalH);
 
-  // 2) 页眉
   ctx.save();
   ctx.fillStyle = "#075c45";
   ctx.font = `700 ${20 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
@@ -1182,10 +1286,8 @@ async function composeFinalCanvas(contentCanvas) {
 
   drawDashedLine(ctx, padX, headerH - 8 * CAP_SCALE, finalW - padX);
 
-  // 3) 内容
   ctx.drawImage(contentCanvas, padX, headerH);
 
-  // 4) 页脚
   const footerTop = headerH + contentH;
   drawDashedLine(ctx, padX, footerTop + 8 * CAP_SCALE, finalW - padX);
 
@@ -1209,7 +1311,6 @@ async function composeFinalCanvas(contentCanvas) {
   ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, footerTop + 68 * CAP_SCALE);
   ctx.restore();
 
-  // 5) 最后叠加平铺水印（最上层，交错排列）
   drawTiledWatermark(ctx, finalW, finalH);
 
   return final;
@@ -1241,20 +1342,25 @@ function canvasToBlob(canvas) {
 }
 
 async function captureResult() {
-  const btn = document.getElementById("captureBtn");
+  if (isCapturing) return;
   const content = document.getElementById("captureContent");
+  const actionsToHide = content.querySelector(".inline-actions");
 
   if (typeof html2canvas !== "function") {
     alert("截图库尚未加载成功，请检查网络后刷新页面重试。");
     return;
   }
 
-  btn.disabled = true;
-  const oldText = btn.textContent;
-  btn.textContent = "正在生成截图...";
+  isCapturing = true;
+  // 隐藏按钮容器（否则会被截进图片，也避免用户重复点击）
+  if (actionsToHide) actionsToHide.style.display = "none";
+  showLoading("正在生成截图…");
 
   let finalCanvas = null;
   try {
+    // 等两帧让布局稳定（容器隐藏后高度变化需要重新测量）
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
     const contentCanvas = await html2canvas(content, {
       backgroundColor: "#ffffff",
       scale: CAP_SCALE,
@@ -1268,12 +1374,11 @@ async function captureResult() {
   } catch (err) {
     console.error(err);
     alert("截图生成失败，请重试。");
-    btn.disabled = false;
-    btn.textContent = oldText;
     return;
   } finally {
-    btn.disabled = false;
-    btn.textContent = oldText;
+    if (actionsToHide) actionsToHide.style.display = "";
+    hideLoading();
+    isCapturing = false;
   }
 
   const safeNick = (state.nickname || "答题者").replace(/[\\/:*?"<>|]/g, "_");
@@ -1450,9 +1555,11 @@ function openCaptureModal(canvas, fileName) {
    ========================= */
 fillWatermark(document.getElementById("watermark"));
 
-(function initVersion() {
-  const el = document.getElementById("versionTag");
-  if (el) el.textContent = APP_VERSION;
+(function initMeta() {
+  const vEl = document.getElementById("versionTag");
+  if (vEl) vEl.textContent = APP_VERSION;
+  const dEl = document.getElementById("bankDate");
+  if (dEl) dEl.textContent = "题库更新 " + BANK_UPDATED_AT;
 })();
 
 ensureHashesReady().catch(err => console.error("hash init failed", err));
