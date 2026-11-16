@@ -59,7 +59,6 @@
   }
   .brand p { margin: 8px 0 0; color: #4f7468; font-size: 14px; }
 
-  /* 版本号徽标 */
   .version-tag {
     display: inline-block;
     margin-top: 10px;
@@ -480,7 +479,7 @@
     <div class="brand">
       <h1>新手保护协会 · 入会申请面试</h1>
       <p>请认真作答，提交后自动评分。满分 100 分，60 分及以上合格。</p>
-      <span class="version-tag" id="versionTag">v1.0.8</span>
+      <span class="version-tag" id="versionTag">v1.0.9</span>
     </div>
 
     <section id="startScreen" class="card start-box">
@@ -534,7 +533,7 @@
 /* =========================================================
    版本号（想改版本号直接改这一行）
    ========================================================= */
-const APP_VERSION = "v1.0.8";
+const APP_VERSION = "v1.0.9";
 
 /* =========================================================
    题库
@@ -1100,7 +1099,7 @@ function renderResult(correctCount, scoreText, pass, results) {
 
 /* =========================================================
    截图合成
-   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层）
+   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层，字号更大）
    ========================================================= */
 const CAP_SCALE = 2;
 const CAP_PAD_X = 26;
@@ -1108,14 +1107,15 @@ const CAP_HEADER_H = 88;
 const CAP_FOOTER_H = 96;
 
 function drawTiledWatermark(ctx, width, height) {
-  const tileW = 300 * CAP_SCALE;
-  const tileH = 150 * CAP_SCALE;
+  // 字号明显大于正文（正文 css 14-16px，水印 30px）
+  const tileW = 640 * CAP_SCALE;
+  const tileH = 220 * CAP_SCALE;
   const text = "新手保护协会 · 入会申请面试";
 
   ctx.save();
-  // 覆盖在最上层，用略低的透明度避免太影响阅读
-  ctx.fillStyle = "rgba(7, 131, 95, 0.08)";
-  ctx.font = `700 ${18 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  // 覆盖在最上层，透明度略降，避免粗字压过正文
+  ctx.fillStyle = "rgba(7, 131, 95, 0.07)";
+  ctx.font = `700 ${30 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -1206,7 +1206,7 @@ async function composeFinalCanvas(contentCanvas) {
   ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, footerTop + 68 * CAP_SCALE);
   ctx.restore();
 
-  // 5) 最后叠加平铺水印（保证在最上层，不被内容遮挡）
+  // 5) 最后叠加平铺水印（最上层，字号更大）
   drawTiledWatermark(ctx, finalW, finalH);
 
   return final;
@@ -1447,7 +1447,6 @@ function openCaptureModal(canvas, fileName) {
    ========================= */
 fillWatermark(document.getElementById("watermark"));
 
-// 版本号注入
 (function initVersion() {
   const el = document.getElementById("versionTag");
   if (el) el.textContent = APP_VERSION;
@@ -1464,7 +1463,7 @@ ensureHashesReady().catch(err => console.error("hash init failed", err));
   });
   input.addEventListener("blur", function () {
     if (!input.value.trim()) {
-      input.setAttribute("placeholder", originalPlaceholder);
+    input.setAttribute("placeholder", originalPlaceholder);
     }
   });
   input.addEventListener("input", function () {
