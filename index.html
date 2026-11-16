@@ -323,7 +323,6 @@
   .result-card.fail .score { color: #d13f3f; }
   .result-card .sub { color: #6b857d; font-size: 14px; line-height: 1.8; }
 
-  /* 结果卡片下方的按钮行 + 分享提示 */
   .inline-actions {
     margin: 0 0 20px;
     padding: 16px 18px;
@@ -426,7 +425,6 @@
     line-height: 1.7;
   }
 
-  /* 截图加载提示 */
   .cap-loading {
     position: fixed;
     inset: 0;
@@ -448,7 +446,6 @@
     box-shadow: 0 18px 45px rgba(0,0,0,.3);
   }
 
-  /* 截图预览模态框 */
   .capture-modal {
     position: fixed;
     inset: 0;
@@ -555,9 +552,9 @@
       <h1>新手保护协会 · 入会申请面试</h1>
       <p>请认真作答，提交后自动评分。满分 100 分，60 分及以上合格。</p>
       <div class="meta-row">
-        <span class="bank-date" id="bankDate">题库更新 2026-11-10</span>
+        <span class="bank-date" id="bankDate">题库更新 2026-11-16</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.11</span>
+        <span class="version-tag" id="versionTag">v1.0.12</span>
       </div>
     </div>
 
@@ -608,8 +605,8 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.11";
-const BANK_UPDATED_AT = "2026-11-10";
+const APP_VERSION = "v1.0.12";
+const BANK_UPDATED_AT = "2026-11-16";
 
 /* =========================================================
    题库
@@ -652,8 +649,13 @@ const BANK = [
     q: "新手保护协会 和 新手保护组织 目前每周的会费是多少金币？",
     opts: ["1000万", "21亿4748万3647", "200", "20万"], enc: 13 },
   { id: 8, type: "required",
-    q: "哪两个职业是不需要在两个新手保护家族交会费的？",
-    opts: ["鬼剑士、神枪手", "冰雷、刀飞", "冲锋队长、圣骑士", "铁匠、车头"], enc: 59 },
+    q: "哪两个职业，以及多少等级以下是不需要在两个新手保护家族交会费的？",
+    opts: [
+      "鬼剑士、神枪手；220级",
+      "铁匠、车头；120级",
+      "冰雷、刀飞；30级",
+      "冲锋队长、圣骑士；70级"
+    ], enc: 56 },
   { id: 9, type: "required",
     q: "在<对所有人>中输入什么可以查看当前地图的归属人？",
     opts: ["@老A", "无法查看", "@巡查", "@归属"], enc: 55 },
@@ -1140,7 +1142,7 @@ function buildWrongListHtml(pass, results) {
 }
 
 /* =========================
-   渲染结果（按钮紧跟结果卡片，截图时临时隐藏）
+   渲染结果
    ========================= */
 function renderResult(correctCount, scoreText, pass, results) {
   const content = document.getElementById("captureContent");
@@ -1207,7 +1209,6 @@ function renderResult(correctCount, scoreText, pass, results) {
 
 /* =========================================================
    截图合成
-   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层，交错平铺）
    ========================================================= */
 const CAP_SCALE = 2;
 const CAP_PAD_X = 26;
@@ -1352,13 +1353,11 @@ async function captureResult() {
   }
 
   isCapturing = true;
-  // 隐藏按钮容器（否则会被截进图片，也避免用户重复点击）
   if (actionsToHide) actionsToHide.style.display = "none";
   showLoading("正在生成截图…");
 
   let finalCanvas = null;
   try {
-    // 等两帧让布局稳定（容器隐藏后高度变化需要重新测量）
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const contentCanvas = await html2canvas(content, {
