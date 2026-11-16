@@ -59,6 +59,19 @@
   }
   .brand p { margin: 8px 0 0; color: #4f7468; font-size: 14px; }
 
+  /* 版本号徽标 */
+  .version-tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 11px;
+    border-radius: 999px;
+    background: rgba(7, 131, 95, 0.08);
+    color: #4f7468;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
   .card {
     background: rgba(255,255,255,.92);
     border: 1px solid rgba(7, 131, 95, .18);
@@ -215,7 +228,6 @@
   }
   .submit-bar .btn { min-width: 140px; }
 
-  /* 屏幕显示：结果卡片 + 页眉页脚 + 背景水印 */
   #resultCapture {
     position: relative;
     overflow: hidden;
@@ -243,7 +255,6 @@
     letter-spacing: 2px;
   }
 
-  /* 截图的核心内容区（html2canvas 只截这块） */
   #captureContent {
     background: #fff;
     padding: 20px 26px 22px;
@@ -374,7 +385,6 @@
     line-height: 1.7;
   }
 
-  /* 截图预览模态框 */
   .capture-modal {
     position: fixed;
     inset: 0;
@@ -470,6 +480,7 @@
     <div class="brand">
       <h1>新手保护协会 · 入会申请面试</h1>
       <p>请认真作答，提交后自动评分。满分 100 分，60 分及以上合格。</p>
+      <span class="version-tag" id="versionTag">v1.0.8</span>
     </div>
 
     <section id="startScreen" class="card start-box">
@@ -520,6 +531,11 @@
   </main>
 
 <script>
+/* =========================================================
+   版本号（想改版本号直接改这一行）
+   ========================================================= */
+const APP_VERSION = "v1.0.8";
+
 /* =========================================================
    题库
    ========================================================= */
@@ -774,11 +790,6 @@ function isMobileDevice() {
   return false;
 }
 
-/* =========================================================
-   移动端可靠地回到顶部
-   - DOM 高度突变后 smooth 会被打断
-   - 先等两帧布局稳定，再用瞬时滚动 + 三保险
-   ========================================================= */
 function forceScrollTop() {
   try { window.scrollTo(0, 0); } catch (e) {}
   if (document.documentElement) document.documentElement.scrollTop = 0;
@@ -786,11 +797,9 @@ function forceScrollTop() {
 }
 
 function scrollPageToTop() {
-  // 等两帧，确保 DOM 尺寸变化已应用
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       forceScrollTop();
-      // 再补一次延时兜底，覆盖部分机型异步布局
       setTimeout(forceScrollTop, 60);
       setTimeout(forceScrollTop, 200);
     });
@@ -990,7 +999,6 @@ async function submitQuiz(event) {
     document.getElementById("quizScreen").classList.add("hidden");
     document.getElementById("resultScreen").classList.remove("hidden");
 
-    // 关键：结果页高度远小于答题页，要等布局稳定后强制回顶部
     scrollPageToTop();
   } catch (e) {
     console.error(e);
@@ -1078,7 +1086,6 @@ function renderResult(correctCount, scoreText, pass, results) {
     `;
   }
 
-  // 填充页脚
   const nickEl = document.getElementById("capFooterNick");
   const timeEl = document.getElementById("capFooterTime");
   if (nickEl) nickEl.textContent = state.nickname || "-";
@@ -1093,19 +1100,12 @@ function renderResult(correctCount, scoreText, pass, results) {
 
 /* =========================================================
    截图合成
-   思路：html2canvas 只截 #captureContent（题目内容区）
-   然后在新 canvas 上手动绘制：
-     - 白色背景
-     - 平铺 45° 水印（直接 canvas 画，不依赖 CSS）
-     - 页眉（标题 + 副标题 + 虚线）
-     - 中间贴入 #captureContent 截图
-     - 页脚（虚线 + 昵称 + 时间 + 品牌）
-   这样 100% 保证水印和页眉页脚存在
+   顺序：白底 → 页眉 → 内容 → 页脚 → 水印（最上层）
    ========================================================= */
 const CAP_SCALE = 2;
-const CAP_PAD_X = 26;      // css px
-const CAP_HEADER_H = 88;   // css px
-const CAP_FOOTER_H = 96;   // css px
+const CAP_PAD_X = 26;
+const CAP_HEADER_H = 88;
+const CAP_FOOTER_H = 96;
 
 function drawTiledWatermark(ctx, width, height) {
   const tileW = 300 * CAP_SCALE;
@@ -1113,12 +1113,12 @@ function drawTiledWatermark(ctx, width, height) {
   const text = "新手保护协会 · 入会申请面试";
 
   ctx.save();
-  ctx.fillStyle = "rgba(7, 131, 95, 0.09)";
+  // 覆盖在最上层，用略低的透明度避免太影响阅读
+  ctx.fillStyle = "rgba(7, 131, 95, 0.08)";
   ctx.font = `700 ${18 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  // 旋转 -45° 后要覆盖整个区域，需要足够大的铺设范围
   const diagonal = Math.ceil(Math.sqrt(width * width + height * height)) + Math.max(tileW, tileH);
 
   ctx.translate(width / 2, height / 2);
@@ -1164,10 +1164,7 @@ async function composeFinalCanvas(contentCanvas) {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, finalW, finalH);
 
-  // 2) 平铺水印（先画，再画内容压在上面）
-  drawTiledWatermark(ctx, finalW, finalH);
-
-  // 3) 页眉
+  // 2) 页眉
   ctx.save();
   ctx.fillStyle = "#075c45";
   ctx.font = `700 ${20 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
@@ -1182,11 +1179,10 @@ async function composeFinalCanvas(contentCanvas) {
 
   drawDashedLine(ctx, padX, headerH - 8 * CAP_SCALE, finalW - padX);
 
-  // 4) 内容（贴在页眉下方，注意内容截图自身含 padding，因此从 padX 开始）
-  //    contentCanvas 已经是 scale=2 的像素尺寸，直接绘制
+  // 3) 内容
   ctx.drawImage(contentCanvas, padX, headerH);
 
-  // 5) 页脚
+  // 4) 页脚
   const footerTop = headerH + contentH;
   drawDashedLine(ctx, padX, footerTop + 8 * CAP_SCALE, finalW - padX);
 
@@ -1209,6 +1205,9 @@ async function composeFinalCanvas(contentCanvas) {
   ctx.font = `700 ${12 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
   ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, footerTop + 68 * CAP_SCALE);
   ctx.restore();
+
+  // 5) 最后叠加平铺水印（保证在最上层，不被内容遮挡）
+  drawTiledWatermark(ctx, finalW, finalH);
 
   return final;
 }
@@ -1253,7 +1252,6 @@ async function captureResult() {
 
   let finalCanvas = null;
   try {
-    // 只截内容区（题目+结果），不截外部页眉页脚（这些由 canvas 合成）
     const contentCanvas = await html2canvas(content, {
       backgroundColor: "#ffffff",
       scale: CAP_SCALE,
@@ -1448,6 +1446,12 @@ function openCaptureModal(canvas, fileName) {
    初始化
    ========================= */
 fillWatermark(document.getElementById("watermark"));
+
+// 版本号注入
+(function initVersion() {
+  const el = document.getElementById("versionTag");
+  if (el) el.textContent = APP_VERSION;
+})();
 
 ensureHashesReady().catch(err => console.error("hash init failed", err));
 
