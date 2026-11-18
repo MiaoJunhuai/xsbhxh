@@ -323,6 +323,57 @@
   .result-card.fail .score { color: #d13f3f; }
   .result-card .sub { color: #6b857d; font-size: 14px; line-height: 1.8; }
 
+  .archetype-card {
+    margin: 0 0 20px;
+    padding: 18px 20px 16px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f2f8ff, #f9fbff);
+    border: 1px solid #c8dcf0;
+    text-align: center;
+  }
+  .archetype-label {
+    font-size: 12px;
+    color: #6b857d;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .archetype-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .arch-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .arch-emoji {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .arch-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: #2a4a6f;
+    letter-spacing: 1px;
+  }
+  .arch-plus {
+    color: #8fa8c4;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 2px;
+  }
+  .archetype-desc {
+    font-size: 14px;
+    color: #3f5f7a;
+    line-height: 1.7;
+    margin-top: 6px;
+  }
+
   .inline-actions {
     margin: 0 0 20px;
     padding: 16px 18px;
@@ -541,6 +592,10 @@
     .inline-actions .btn-row .btn {
       width: 100%;
     }
+
+    .arch-name { font-size: 18px; }
+    .arch-emoji { font-size: 22px; }
+    .archetype-desc { font-size: 13px; }
   }
 </style>
 </head>
@@ -554,7 +609,7 @@
       <div class="meta-row">
         <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.15</span>
+        <span class="version-tag" id="versionTag">v1.0.19</span>
       </div>
     </div>
 
@@ -605,11 +660,61 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.15";
+const APP_VERSION = "v1.0.19";
 const BANK_UPDATED_AT = "2026-11-17";
 
 /* 及格分数（满分 100） */
 const PASS_SCORE = 80;
+
+/* =========================================================
+   玩家身份原型（趣味附加，不影响判分）
+   ========================================================= */
+const ARCHETYPES = {
+  scholar: { name: "学霸", emoji: "🎓",
+    desc: "20 题全对，家族规则倒背如流。本群面试题已被你完全掌握，管理看了都直呼内行。" },
+  steady:  { name: "稳健老司机", emoji: "🧭",
+    desc: "家族规矩熟、心里有数。远征规则、地图归属、奶扫地分工全都门儿清，是家族的定海神针。" },
+  gentle:  { name: "温柔辅助",   emoji: "💚",
+    desc: "遇事先劝、遇骂先忍，团队里的润滑剂。有你在，远征氛围不会差。" },
+  hothead: { name: "暴躁老哥",   emoji: "🔥",
+    desc: "心里有火、嘴上不软。建议把火气留给 Boss，别留给队友，家族会更喜欢你。" },
+  slacker: { name: "佛系摸鱼王", emoji: "🛋️",
+    desc: "能挂就挂、能省就省。偶尔来一趟也很好，来了记得打声招呼~" },
+  loner:   { name: "i人",        emoji: "😶",
+    desc: "线上社交电量有限，遇事更习惯自己消化。家族里其实有很多人愿意和你一起玩，慢慢来就好。" },
+  clown:   { name: "整活达人",   emoji: "🤡",
+    desc: "认真答题是副业，造梗才是主业。家族快乐源泉，注意别玩过头~" },
+  newbie:  { name: "萌新小白",   emoji: "🌱",
+    desc: "还在熟悉规则。多看群公告、多问管理，很快就能上手。" }
+};
+
+/* 每题每个原始选项索引对应的性格标签
+   说明：newbie 是兜底标签，不参与主类型竞争 */
+const TRAIT_TABLE = {
+  1:  [["newbie"],            ["steady"],            ["slacker","newbie"], ["newbie","clown"]],
+  2:  [["hothead","loner"],   ["slacker"],           ["newbie","gentle"],  ["steady"]],
+  3:  [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  4:  [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  5:  [["hothead","slacker"], ["loner"],             ["slacker","loner"],  ["steady","gentle"]],
+  6:  [["slacker","clown"],   ["steady"],            ["slacker"],          ["hothead"]],
+  7:  [["newbie"],            ["clown"],             ["newbie","clown"],   ["steady"]],
+  8:  [["newbie"],            ["newbie","clown"],    ["newbie"],           ["steady","gentle"]],
+  9:  [["newbie","clown"],    ["newbie","loner"],    ["newbie"],           ["steady"]],
+  10: [["newbie","clown"],    ["newbie","clown"],    ["hothead"],          ["steady"]],
+  11: [["hothead"],           ["gentle","steady"],   ["hothead"],          ["loner"]],
+  12: [["newbie","gentle"],   ["newbie","clown"],    ["gentle","steady"],  ["newbie","clown"]],
+  13: [["hothead"],           ["hothead"],           ["gentle","steady"],  ["loner"]],
+  14: [["newbie","clown"],    ["steady","slacker"],  ["newbie","clown"],   ["newbie","clown"]],
+  15: [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  16: [["newbie"],            ["newbie"],            ["steady"],           ["newbie","clown"]],
+  17: [["newbie","clown"],    ["steady"],            ["newbie","clown"],   ["newbie","clown"]],
+  18: [["newbie"],            ["newbie","clown"],    ["newbie"],           ["steady"]],
+  19: [["newbie"],            ["newbie"],            ["newbie","clown"],   ["steady"]],
+  20: [["newbie","gentle"],   ["steady"],            ["hothead"],          ["newbie"]],
+  21: [["newbie"],            ["newbie"],            ["newbie","gentle"],  ["steady"]],
+  22: [["newbie","gentle"],   ["newbie"],            ["steady"],           ["newbie","clown"]],
+  23: [["newbie"],            ["newbie","clown"],    ["steady"],           ["newbie","clown"]]
+};
 
 /* =========================================================
    题库
@@ -910,9 +1015,9 @@ function hideLoading() {
   if (el) el.remove();
 }
 
-/* =========================
+/* =========================================================
    抽题 & 生成题目实例
-   ========================= */
+   ========================================================= */
 function buildQuestions() {
   const required = BANK.filter(q => q.type === "required");
   const randomPool = BANK.filter(q => q.type === "random");
@@ -920,20 +1025,88 @@ function buildQuestions() {
   const combined = shuffle([...required, ...pickedRandom]);
 
   return combined.map(q => {
-    const correctIndex = decryptAnswer(q.enc, q.id);
-
-    const arr = q.opts.map((text, idx) => ({
-      text,
-      isCorrect: idx === correctIndex
-    }));
+    const arr = q.opts.map((text, idx) => ({ text, origIndex: idx }));
     const shuffledArr = shuffle(arr);
 
     return {
       ...q,
       displayOpts: shuffledArr.map(x => x.text),
-      correctIdx: shuffledArr.findIndex(x => x.isCorrect)
+      origIndexMap: shuffledArr.map(x => x.origIndex)
     };
   });
+}
+
+/* =========================================================
+   身份类型计算
+   规则：
+   1. 满分 100 → 学霸（直接返回，不参与标签）
+   2. 未合格 → 不授予"稳健老司机"，剔除 steady
+   3. newbie 作为兜底标签，不参与主类型竞争
+   4. 在所有非 newbie 标签中，最高分 >= 2 才算数
+   5. 否则回退为 newbie（萌新小白）
+   ========================================================= */
+function computeArchetype(pass, score) {
+  if (pass && score >= 100 - 1e-9) {
+    return { primary: "scholar", secondary: null, scores: {}, pass };
+  }
+
+  const scores = {};
+  state.questions.forEach(q => {
+    const sel = state.answers[q.id];
+    if (sel == null) return;
+    const origIdx = (q.origIndexMap && q.origIndexMap[sel] != null) ? q.origIndexMap[sel] : sel;
+    const row = TRAIT_TABLE[q.id];
+    const tags = row && row[origIdx] ? row[origIdx] : [];
+    tags.forEach(t => { scores[t] = (scores[t] || 0) + 1; });
+  });
+
+  if (!pass) delete scores.steady;
+
+  const newbieScore = scores.newbie || 0;
+  delete scores.newbie;
+
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+
+  if (!sorted.length || sorted[0][1] < 2) {
+    return { primary: "newbie", secondary: null, scores, pass };
+  }
+
+  const [pKey, pScore] = sorted[0];
+  let secondary = null;
+  if (sorted.length > 1) {
+    const [sKey, sScore] = sorted[1];
+    if (sScore >= 2 && sScore >= pScore * 0.6) {
+      secondary = sKey;
+    }
+  }
+  return { primary: pKey, secondary, scores, pass };
+}
+
+function buildArchetypeHtml(info) {
+  const p = ARCHETYPES[info.primary] || ARCHETYPES.newbie;
+  const s = info.secondary ? ARCHETYPES[info.secondary] : null;
+
+  const mainHtml = `
+    <span class="arch-item">
+      <span class="arch-emoji">${p.emoji}</span>
+      <span class="arch-name">${escapeHtml(p.name)}</span>
+    </span>
+  `;
+  const secHtml = s
+    ? `<span class="arch-plus">×</span>
+       <span class="arch-item">
+         <span class="arch-emoji">${s.emoji}</span>
+         <span class="arch-name">${escapeHtml(s.name)}</span>
+       </span>`
+    : "";
+
+  return `
+    <div class="archetype-card">
+      <div class="archetype-label">你的身份类型</div>
+      <div class="archetype-main">${mainHtml}${secHtml}</div>
+      <div class="archetype-desc">${escapeHtml(p.desc)}</div>
+    </div>
+  `;
 }
 
 /* =========================
@@ -1098,7 +1271,7 @@ async function submitQuiz(event) {
     const pass = score >= PASS_SCORE - 1e-9;
 
     state.results = results;
-    renderResult(correctCount, scoreText, pass, results);
+    renderResult(correctCount, scoreText, pass, results, score);
 
     document.getElementById("quizScreen").classList.add("hidden");
     document.getElementById("resultScreen").classList.remove("hidden");
@@ -1155,10 +1328,13 @@ function buildWrongListHtml(pass, results) {
 /* =========================
    渲染结果
    ========================= */
-function renderResult(correctCount, scoreText, pass, results) {
+function renderResult(correctCount, scoreText, pass, results, score) {
   const content = document.getElementById("captureContent");
   const total = state.questions.length;
   const wrongListHtml = buildWrongListHtml(pass, results);
+
+  const archetypeInfo = computeArchetype(pass, score);
+  const archetypeHtml = buildArchetypeHtml(archetypeInfo);
 
   const actionsHtml = `
     <div class="inline-actions">
@@ -1185,6 +1361,7 @@ function renderResult(correctCount, scoreText, pass, results) {
           欢迎加入新手保护协会，期待与你一起冒险。
         </div>
       </div>
+      ${archetypeHtml}
       ${actionsHtml}
       <div class="wrong-title pass-title">答错题目回顾（只显示你的选择）</div>
       ${wrongListHtml}
@@ -1200,6 +1377,7 @@ function renderResult(correctCount, scoreText, pass, results) {
           合格线为 ${PASS_SCORE} 分，请复习下方错题后再来挑战。
         </div>
       </div>
+      ${archetypeHtml}
       ${actionsHtml}
       <div class="wrong-title">错题回顾（只显示你的选择）</div>
       ${wrongListHtml}
