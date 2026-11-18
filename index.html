@@ -609,7 +609,7 @@
       <div class="meta-row">
         <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.19</span>
+        <span class="version-tag" id="versionTag">v1.0.20</span>
       </div>
     </div>
 
@@ -660,7 +660,7 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.19";
+const APP_VERSION = "v1.0.20";
 const BANK_UPDATED_AT = "2026-11-17";
 
 /* 及格分数（满分 100） */
@@ -1037,13 +1037,67 @@ function buildQuestions() {
 }
 
 /* =========================================================
+   身份类型互斥组
+   说明：
+   1. 同一互斥组内的身份不能同时成为主类型和副类型。
+   2. 只把含义明确对立的类型放进同一组，避免过度限制正常的性格组合。
+   3. 如果互斥组内最高分并列，说明答题信号不明确，该组暂不授予身份。
+   4. 后续新增互斥关系时，只需要在下面增加一个 members 数组。
+   ========================================================= */
+const ARCHETYPE_EXCLUSIVE_GROUPS = [
+  {
+    name: "情绪处事风格",
+    members: ["gentle", "hothead"]
+  }
+];
+
+/* 分数相同时的固定排序，避免结果受答题顺序或对象插入顺序影响 */
+const ARCHETYPE_PRIORITY = [
+  "steady", "gentle", "hothead", "slacker", "loner", "clown"
+];
+
+/* 判断两个身份是否属于同一个互斥组 */
+function areArchetypesMutuallyExclusive(a, b) {
+  return ARCHETYPE_EXCLUSIVE_GROUPS.some(group =>
+    group.members.includes(a) && group.members.includes(b)
+  );
+}
+
+/* 对各互斥组进行仲裁：只保留组内得分最高的身份 */
+function resolveExclusiveArchetypeScores(scores) {
+  const resolved = { ...scores };
+
+  ARCHETYPE_EXCLUSIVE_GROUPS.forEach(group => {
+    const members = group.members.filter(key => (resolved[key] || 0) > 0);
+    if (members.length < 2) return;
+
+    const maxScore = Math.max(...members.map(key => resolved[key]));
+    const winners = members.filter(key => resolved[key] === maxScore);
+
+    if (winners.length === 1) {
+      // 有明确胜者：移除同组其他身份，避免主、副类型互相冲突。
+      members.forEach(key => {
+        if (key !== winners[0]) delete resolved[key];
+      });
+    } else {
+      // 最高分并列：不武断地偏向任意一方，整组暂不参与身份竞争。
+      members.forEach(key => delete resolved[key]);
+    }
+  });
+
+  return resolved;
+}
+
+/* =========================================================
    身份类型计算
    规则：
    1. 满分 100 → 学霸（直接返回，不参与标签）
    2. 未合格 → 不授予"稳健老司机"，剔除 steady
    3. newbie 作为兜底标签，不参与主类型竞争
-   4. 在所有非 newbie 标签中，最高分 >= 2 才算数
-   5. 否则回退为 newbie（萌新小白）
+   4. 同一互斥组内只保留得分最高的身份；并列时该组不授予身份
+   5. 在所有非 newbie 标签中，最高分 >= 2 才算数
+   6. 副类型必须达到 2 分且不低于主类型的 60%，并且不能与主类型互斥
+   7. 否则回退为 newbie（萌新小白）
    ========================================================= */
 function computeArchetype(pass, score) {
   if (pass && score >= 100 - 1e-9) {
@@ -1062,26 +1116,34 @@ function computeArchetype(pass, score) {
 
   if (!pass) delete scores.steady;
 
-  const newbieScore = scores.newbie || 0;
+  // newbie 只作为最终兜底，不与其他身份竞争。
   delete scores.newbie;
 
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  // 先解决互斥关系，再进行主类型、副类型排序。
+  const compatibleScores = resolveExclusiveArchetypeScores(scores);
+  const priorityMap = Object.fromEntries(
+    ARCHETYPE_PRIORITY.map((key, index) => [key, index])
+  );
+  const sorted = Object.entries(compatibleScores).sort((a, b) =>
+    b[1] - a[1] ||
+    (priorityMap[a[0]] ?? Number.MAX_SAFE_INTEGER) -
+    (priorityMap[b[0]] ?? Number.MAX_SAFE_INTEGER)
+  );
 
   if (!sorted.length || sorted[0][1] < 2) {
     return { primary: "newbie", secondary: null, scores, pass };
   }
 
   const [pKey, pScore] = sorted[0];
-  let secondary = null;
-  if (sorted.length > 1) {
-    const [sKey, sScore] = sorted[1];
-    if (sScore >= 2 && sScore >= pScore * 0.6) {
-      secondary = sKey;
-    }
-  }
+  const secondaryEntry = sorted.slice(1).find(([key, sScore]) =>
+    sScore >= 2 &&
+    sScore >= pScore * 0.6 &&
+    !areArchetypesMutuallyExclusive(pKey, key)
+  );
+  const secondary = secondaryEntry ? secondaryEntry[0] : null;
+
   return { primary: pKey, secondary, scores, pass };
 }
-
 function buildArchetypeHtml(info) {
   const p = ARCHETYPES[info.primary] || ARCHETYPES.newbie;
   const s = info.secondary ? ARCHETYPES[info.secondary] : null;
