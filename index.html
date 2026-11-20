@@ -609,7 +609,7 @@
       <div class="meta-row">
         <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.20</span>
+        <span class="version-tag" id="versionTag">v1.0.22</span>
       </div>
     </div>
 
@@ -660,7 +660,7 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.20";
+const APP_VERSION = "v1.0.22";
 const BANK_UPDATED_AT = "2026-11-17";
 
 /* 及格分数（满分 100） */
@@ -671,9 +671,15 @@ const PASS_SCORE = 80;
    ========================================================= */
 const ARCHETYPES = {
   scholar: { name: "学霸", emoji: "🎓",
-    desc: "20 题全对，家族规则倒背如流。本群面试题已被你完全掌握，管理看了都直呼内行。" },
+    desc: "20 题全对，题库已经被你打穿了，管理看了都直呼内行。" },
   steady:  { name: "稳健老司机", emoji: "🧭",
     desc: "家族规矩熟、心里有数。远征规则、地图归属、奶扫地分工全都门儿清，是家族的定海神针。" },
+  veteran: { name: "老江湖", emoji: "🎩",
+    desc: "家族里的门道摸得门儿清，远征、归属、奶扫地这些都能答上来，偶尔在小细节上翻个车。" },
+  bulletin: { name: "人形群公告", emoji: "📜",
+    desc: "群公告快被你背下来了，家族规矩基本没有能难住你的。" },
+  squeezer: { name: "擦边怪", emoji: "😅",
+    desc: "分数刚好擦着线过关，再多错一题就没了。" },
   gentle:  { name: "温柔辅助",   emoji: "💚",
     desc: "遇事先劝、遇骂先忍，团队里的润滑剂。有你在，远征氛围不会差。" },
   hothead: { name: "暴躁老哥",   emoji: "🔥",
@@ -687,6 +693,28 @@ const ARCHETYPES = {
   newbie:  { name: "萌新小白",   emoji: "🌱",
     desc: "还在熟悉规则。多看群公告、多问管理，很快就能上手。" }
 };
+
+/* =========================================================
+   及格后的身份类型：按分数段授予
+   说明：
+   1. 80 分及以上不再走性格标签，直接按分数段给身份；
+   2. 区间从高到低排列，命中第一个 score >= min 的档位；
+   3. 未及格仍使用下面的性格标签逻辑（萌新小白、温柔辅助等）。
+   ========================================================= */
+const SCORE_IDENTITIES = [
+  { min: 100, key: "scholar" },   // 学霸
+  { min: 95,  key: "bulletin" },  // 人形群公告
+  { min: 90,  key: "veteran" },   // 老江湖
+  { min: 85,  key: "steady" },    // 稳健老司机
+  { min: 80,  key: "squeezer" }   // 擦边怪
+];
+
+function computeScoreIdentity(score) {
+  for (const item of SCORE_IDENTITIES) {
+    if (score >= item.min - 1e-9) return item.key;
+  }
+  return null;
+}
 
 /* 每题每个原始选项索引对应的性格标签
    说明：newbie 是兜底标签，不参与主类型竞争 */
@@ -1091,8 +1119,9 @@ function resolveExclusiveArchetypeScores(scores) {
 /* =========================================================
    身份类型计算
    规则：
-   1. 满分 100 → 学霸（直接返回，不参与标签）
-   2. 未合格 → 不授予"稳健老司机"，剔除 steady
+   1. 及格（80 分及以上）→ 按分数段授予身份，不再走性格标签：
+      80 擦边怪 / 85 稳健老司机 / 90 老江湖 / 95 人形群公告 / 100 学霸
+   2. 未合格 → 走性格标签，并剔除 steady（及格专属身份）
    3. newbie 作为兜底标签，不参与主类型竞争
    4. 同一互斥组内只保留得分最高的身份；并列时该组不授予身份
    5. 在所有非 newbie 标签中，最高分 >= 2 才算数
@@ -1100,8 +1129,11 @@ function resolveExclusiveArchetypeScores(scores) {
    7. 否则回退为 newbie（萌新小白）
    ========================================================= */
 function computeArchetype(pass, score) {
-  if (pass && score >= 100 - 1e-9) {
-    return { primary: "scholar", secondary: null, scores: {}, pass };
+  if (pass) {
+    const identityKey = computeScoreIdentity(score);
+    if (identityKey) {
+      return { primary: identityKey, secondary: null, scores: {}, pass };
+    }
   }
 
   const scores = {};
