@@ -598,7 +598,7 @@
       <div class="meta-row">
         <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.23</span>
+        <span class="version-tag" id="versionTag">v1.0.25</span>
       </div>
     </div>
 
@@ -649,7 +649,7 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.23";
+const APP_VERSION = "v1.0.25";
 const BANK_UPDATED_AT = "2026-11-21";
 
 /* 及格分数（满分 100） */
@@ -703,6 +703,39 @@ function computeScoreIdentity(score) {
     if (score >= item.min - 1e-9) return item.key;
   }
   return null;
+}
+
+/* =========================================================
+   态度信号：及格了也按性格给身份的选择
+   说明：
+   1. 命中任意一条，身份类型就不再按分数段算，直接给对应性格；
+   2. 暴躁和 i人 同时命中时按条数多的走，条数相同按暴躁处理；
+   3. 不分及不及格，一律优先于分数段和性格标签。
+   ========================================================= */
+const ATTITUDE_SIGNALS = [
+  { qid: 11, idx: 0, key: "hothead" },  // 亲切问候他的家人
+  { qid: 11, idx: 2, key: "hothead" },  // 发"?"阴阳怪气把他逼走
+  { qid: 13, idx: 0, key: "hothead" },  // 复读机骂回去，顺便问候老妈
+  { qid: 13, idx: 1, key: "hothead" },  // 刷紫喇叭刷屏骂他
+  { qid: 11, idx: 3, key: "loner" },    // 截图发KOOK举报区然后生闷气
+  { qid: 13, idx: 3, key: "loner" }     // 马上下线躲在被窝里偷偷抹眼泪
+];
+
+/* 统计答题里命中的态度信号，返回要授予的性格 key */
+function detectAttitudeIdentity() {
+  const counts = { hothead: 0, loner: 0 };
+
+  state.questions.forEach(q => {
+    const sel = state.answers[q.id];
+    if (sel == null) return;
+    const origIdx = (q.origIndexMap && q.origIndexMap[sel] != null) ? q.origIndexMap[sel] : sel;
+    ATTITUDE_SIGNALS.forEach(sig => {
+      if (sig.qid === q.id && sig.idx === origIdx) counts[sig.key]++;
+    });
+  });
+
+  if (counts.hothead === 0 && counts.loner === 0) return null;
+  return counts.hothead >= counts.loner ? "hothead" : "loner";
 }
 
 /* 每题每个原始选项索引对应的性格标签
@@ -1108,16 +1141,23 @@ function resolveExclusiveArchetypeScores(scores) {
 /* =========================================================
    身份类型计算
    规则：
-   1. 及格（80 分及以上）→ 按分数段授予身份，不再走性格标签：
+   1. 命中态度信号（不管及不及格）→ 直接给 暴躁老哥 / i人
+   2. 及格且没命中态度信号 → 按分数段授予身份：
       80 擦边怪 / 85 稳健老司机 / 90 老江湖 / 95 人形群公告 / 100 学霸
-   2. 未合格 → 走性格标签，并剔除 steady（及格专属身份）
-   3. newbie 作为兜底标签，不参与主类型竞争
-   4. 同一互斥组内只保留得分最高的身份；并列时该组不授予身份
-   5. 在所有非 newbie 标签中，最高分 >= 2 才算数
-   6. 副类型必须达到 2 分且不低于主类型的 60%，并且不能与主类型互斥
-   7. 否则回退为 newbie（萌新小白）
+   3. 未合格且没命中态度信号 → 走性格标签，并剔除 steady（及格专属身份）
+   4. newbie 作为兜底标签，不参与主类型竞争
+   5. 同一互斥组内只保留得分最高的身份；并列时该组不授予身份
+   6. 在所有非 newbie 标签中，最高分 >= 2 才算数
+   7. 副类型必须达到 2 分且不低于主类型的 60%，并且不能与主类型互斥
+   8. 否则回退为 newbie（萌新小白）
    ========================================================= */
 function computeArchetype(pass, score) {
+  // 态度信号优先：选了暴躁 / i人 的选项，分数高低都按性格给身份。
+  const attitudeKey = detectAttitudeIdentity();
+  if (attitudeKey) {
+    return { primary: attitudeKey, secondary: null, scores: {}, pass };
+  }
+
   if (pass) {
     const identityKey = computeScoreIdentity(score);
     if (identityKey) {
