@@ -412,25 +412,24 @@
     font-weight: 800;
     text-align: center;
   }
-  .wrong-title.pass-title { color: #2a6f5b; }
   .wrong-item {
     margin-bottom: 14px;
     padding: 16px;
     border-radius: 16px;
-    background: #fffafa;
-    border: 1px solid #f2c7c7;
+    background: linear-gradient(135deg, #fff6f6, #fffafa);
+    border: 1px solid #f0c4c4;
   }
-  .wrong-item.pass-item {
-    background: #f8fffc;
+  .wrong-item.all-correct {
+    background: linear-gradient(135deg, #f2fff9, #f9fffd);
     border-color: #bfe8da;
   }
+  .wrong-item.all-correct .wrong-question { color: #245c4a; }
   .wrong-question {
     font-weight: 800;
     line-height: 1.65;
     color: #4a2222;
     margin-bottom: 10px;
   }
-  .wrong-item.pass-item .wrong-question { color: #245c4a; }
   .wrong-options { display: grid; gap: 8px; }
   .wrong-option {
     padding: 9px 11px;
@@ -441,20 +440,11 @@
     line-height: 1.55;
     font-size: 14px;
   }
-  .wrong-item.pass-item .wrong-option {
-    border-color: #d7ece4;
-    color: #4c6259;
-  }
   .wrong-option.selected {
     border: 2px solid #e05252;
-    background: #fff0f0;
+    background: #ffeaea;
     color: #a62d2d;
     font-weight: 700;
-  }
-  .wrong-item.pass-item .wrong-option.selected {
-    border: 2px solid #e08a3c;
-    background: #fff7ec;
-    color: #8a5a10;
   }
   .your-choice-tag {
     display: inline-block;
@@ -466,7 +456,6 @@
     font-size: 12px;
     font-weight: 700;
   }
-  .wrong-item.pass-item .your-choice-tag { background: #e08a3c; }
 
   .footnote {
     margin-top: 16px;
@@ -609,7 +598,7 @@
       <div class="meta-row">
         <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
         <span class="meta-sep">·</span>
-        <span class="version-tag" id="versionTag">v1.0.22</span>
+        <span class="version-tag" id="versionTag">v1.0.23</span>
       </div>
     </div>
 
@@ -660,7 +649,7 @@
 /* =========================================================
    版本号 & 题库更新日期（想改直接改这两行）
    ========================================================= */
-const APP_VERSION = "v1.0.22";
+const APP_VERSION = "v1.0.23";
 const BANK_UPDATED_AT = "2026-11-21";
 
 /* 及格分数（满分 100） */
@@ -1383,12 +1372,12 @@ async function submitQuiz(event) {
 /* =========================
    渲染错题
    ========================= */
-function buildWrongListHtml(pass, results) {
+function buildWrongListHtml(results) {
   const resultMap = new Map(results.map(r => [r.qid, r.ok]));
   const wrongQuestions = state.questions.filter(q => !resultMap.get(q.id));
 
   if (wrongQuestions.length === 0) {
-    return `<div class="wrong-item ${pass ? "pass-item" : ""}">
+    return `<div class="wrong-item all-correct">
       <div class="wrong-question">本次没有答错题。</div>
     </div>`;
   }
@@ -1409,7 +1398,7 @@ function buildWrongListHtml(pass, results) {
     });
 
     html += `
-      <div class="wrong-item ${pass ? "pass-item" : ""}">
+      <div class="wrong-item">
         <div class="wrong-question">第 ${idx + 1} 道答错题：${escapeHtml(q.q)}</div>
         <div class="wrong-options">${optionHtml}</div>
       </div>
@@ -1425,7 +1414,7 @@ function buildWrongListHtml(pass, results) {
 function renderResult(correctCount, scoreText, pass, results, score) {
   const content = document.getElementById("captureContent");
   const total = state.questions.length;
-  const wrongListHtml = buildWrongListHtml(pass, results);
+  const wrongListHtml = buildWrongListHtml(results);
 
   const archetypeInfo = computeArchetype(pass, score);
   const archetypeHtml = buildArchetypeHtml(archetypeInfo);
@@ -1457,7 +1446,7 @@ function renderResult(correctCount, scoreText, pass, results, score) {
       </div>
       ${archetypeHtml}
       ${actionsHtml}
-      <div class="wrong-title pass-title">答错题目回顾（只显示你的选择）</div>
+      <div class="wrong-title">答错题目回顾</div>
       ${wrongListHtml}
     `;
   } else {
@@ -1473,7 +1462,7 @@ function renderResult(correctCount, scoreText, pass, results, score) {
       </div>
       ${archetypeHtml}
       ${actionsHtml}
-      <div class="wrong-title">错题回顾（只显示你的选择）</div>
+      <div class="wrong-title">错题回顾</div>
       ${wrongListHtml}
     `;
   }
