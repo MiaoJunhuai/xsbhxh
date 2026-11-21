@@ -883,11 +883,17 @@
                                 <div class="voice-info">
                                     <p><span class="voice-label">联盟KOOK地址</span><br>
                                         <span class="voice-value">https://kook.vip/gDnx1j</span>
-                                        <button type="button" class="copy-mini" data-copy="https://kook.vip/gDnx1j" aria-label="复制 KOOK 地址">复制</button>
+                                        <button type="button" class="copy-mini" data-copy="https://kook.vip/gDnx1j" aria-label="复制 KOOK 地址" title="复制">
+                                            <svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                            <svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                        </button>
                                     </p>
                                     <p><span class="voice-label">联盟KOOK ID</span><br>
                                         <span class="voice-id">47625960</span>
-                                        <button type="button" class="copy-mini" data-copy="47625960" aria-label="复制 KOOK ID">复制</button>
+                                        <button type="button" class="copy-mini" data-copy="47625960" aria-label="复制 KOOK ID" title="复制">
+                                            <svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                            <svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                        </button>
                                     </p>
                                 </div>
                             </div>
@@ -1283,37 +1289,40 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
   .copy-mini {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
     margin-left: 8px;
-    padding: 2px 10px;
-    border-radius: 999px;
+    padding: 0;
+    border-radius: 8px;
     border: 1px solid #b9ddc2;
     background: #e6f4e9;
     color: #1e5c26;
-    font-family: inherit;
-    font-size: 0.72rem;
-    font-weight: 700;
-    line-height: 1.5;
     cursor: pointer;
     vertical-align: middle;
     transition: background .18s ease, color .18s ease, border-color .18s ease;
   }
+  .copy-mini svg { width: 14px; height: 14px; display: block; }
   .copy-mini:hover { background: #1e5c26; border-color: #1e5c26; color: #fff; }
   .copy-mini.is-copied { background: #2f7d4f; border-color: #2f7d4f; color: #fff; }
+  .copy-mini .icon-check { display: none; }
+  .copy-mini.is-copied .icon-copy { display: none; }
+  .copy-mini.is-copied .icon-check { display: block; }
 </style>
 <script>
   (function () {
     var btns = Array.prototype.slice.call(document.querySelectorAll('.copy-mini'));
     if (!btns.length) return;
 
-    function fallbackCopy(text) {
+    function legacyCopy(text) {
       var ta = document.createElement('textarea');
       ta.value = text;
       ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.top = '-1000px';
-      ta.style.opacity = '0';
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;';
       document.body.appendChild(ta);
+      ta.focus();
       ta.select();
+      ta.setSelectionRange(0, text.length);
       var ok = false;
       try { ok = document.execCommand('copy'); } catch (e) {}
       document.body.removeChild(ta);
@@ -1321,27 +1330,23 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
     }
 
     function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
+      if (legacyCopy(text)) return Promise.resolve(true);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text).then(
           function () { return true; },
-          function () { return fallbackCopy(text); }
+          function () { return false; }
         );
       }
-      return Promise.resolve(fallbackCopy(text));
+      return Promise.resolve(false);
     }
 
     btns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         copyText(btn.getAttribute('data-copy')).then(function (ok) {
           if (!ok) return;
-          if (btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent;
-          btn.textContent = '已复制';
           btn.classList.add('is-copied');
           clearTimeout(btn._t);
-          btn._t = setTimeout(function () {
-            btn.textContent = btn.dataset.orig;
-            btn.classList.remove('is-copied');
-          }, 1500);
+          btn._t = setTimeout(function () { btn.classList.remove('is-copied'); }, 1500);
         });
       });
     });

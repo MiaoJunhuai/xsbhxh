@@ -1023,15 +1023,16 @@
     var btns = Array.prototype.slice.call(document.querySelectorAll('[data-copy]'));
     if (!btns.length) return;
 
-    function fallbackCopy(text) {
+    // execCommand 同步执行，在移动端（含微信内置浏览器）兼容性最好
+    function legacyCopy(text) {
       var ta = document.createElement('textarea');
       ta.value = text;
       ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.top = '-1000px';
-      ta.style.opacity = '0';
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;';
       document.body.appendChild(ta);
+      ta.focus();
       ta.select();
+      ta.setSelectionRange(0, text.length);
       var ok = false;
       try { ok = document.execCommand('copy'); } catch (e) {}
       document.body.removeChild(ta);
@@ -1039,23 +1040,29 @@
     }
 
     function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
+      if (legacyCopy(text)) return Promise.resolve(true);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text).then(
           function () { return true; },
-          function () { return fallbackCopy(text); }
+          function () { return false; }
         );
       }
-      return Promise.resolve(fallbackCopy(text));
+      return Promise.resolve(false);
     }
 
     btns.forEach(function (btn) {
       btn.addEventListener('click', function () {
+        var original = btn.dataset.orig === undefined ? btn.textContent : btn.dataset.orig;
         copyText(btn.getAttribute('data-copy')).then(function (ok) {
-          if (!ok) return;
-          if (btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent;
+          clearTimeout(btn._copyTimer);
+          if (!ok) {
+            btn.textContent = '复制失败，请长按选择';
+            btn._copyTimer = setTimeout(function () { btn.textContent = original; }, 1800);
+            return;
+          }
+          if (btn.dataset.orig === undefined) btn.dataset.orig = original;
           btn.textContent = '已复制 ✓';
           btn.classList.add('is-copied');
-          clearTimeout(btn._copyTimer);
           btn._copyTimer = setTimeout(function () {
             btn.textContent = btn.dataset.orig;
             btn.classList.remove('is-copied');
