@@ -161,10 +161,9 @@
     letter-spacing: 1px;
     color: var(--green-d);
     text-shadow: 0 1px 0 #fff;
-    text-wrap: balance;
   }
 
-  .m-br { display: none; }
+  .hero-copy h1 .line { display: inline; }
 
   .hero-copy .lead {
     max-width: 640px;
@@ -497,8 +496,10 @@
     .hero-media { border-radius: 18px; }
     .hero-copy { padding: 22px 6px 4px; }
     .hero-copy .lead { font-size: 14px; }
-    .hero-copy h1 { font-size: 24px; }
-    .m-br { display: inline; }
+    .hero-copy h1 { font-size: 24px; line-height: 1.28; }
+    .hero-copy h1 .line { display: block; }
+    .hero-copy h1 .line-1 { text-align: left; }
+    .hero-copy h1 .line-2 { text-align: right; }
     .hero-badges { gap: 6px; margin-top: 14px; }
     .hero-badges span { font-size: 11.5px; padding: 4px 11px; }
     .group { padding-top: 34px; scroll-margin-top: 70px; }
@@ -568,7 +569,7 @@
     </div>
     <div class="hero-copy">
       <p class="eyebrow">WINGSMS · 家族官网</p>
-      <h1>守护每一位新手，<br class="m-br" />一起走得更远</h1>
+      <h1><span class="line line-1">守护每一位新手，</span><span class="line line-2">一起走得更远</span></h1>
       <p class="lead">新手保护联盟是在 WingsMS 服务器致力于保护新手的家族联盟。我们组织远征一条龙以及各种副本，制定公平的分配与处罚规则，也用入会面试认识每一位新伙伴。</p>
       <div class="hero-badges">
         <span>WingsMS 服务器</span>
