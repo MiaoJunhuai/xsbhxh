@@ -462,6 +462,59 @@
 
   .card-feature:hover .feature-go { gap: 12px; filter: brightness(1.06); }
 
+  /* ================= 关于我们 ================= */
+  .about-panel {
+    background: linear-gradient(180deg, #fffefb 0%, #fdf8ef 100%);
+    border: 1px solid rgba(120, 98, 64, .13);
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 16px 34px -28px rgba(90, 66, 30, .6), inset 0 1px 0 rgba(255, 255, 255, .9);
+  }
+
+  .about-copy {
+    margin: 0 0 20px;
+    max-width: 780px;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.95;
+  }
+
+  .about-photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .about-photos figure {
+    margin: 0;
+    padding: 10px;
+    background: #fffdf9;
+    border: 1px solid rgba(120, 98, 64, .14);
+    border-radius: 18px;
+    box-shadow: 0 14px 28px -24px rgba(90, 66, 30, .55);
+  }
+
+  .about-photos picture { display: block; }
+
+  .about-photos img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #f3ead9;
+  }
+
+  .about-photos figcaption {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: var(--ink-3);
+  }
+
   /* ================= 页脚 ================= */
   footer {
     width: min(1120px, calc(100% - 32px));
@@ -505,6 +558,9 @@
     .hero-badges span { font-size: 11.5px; padding: 4px 11px; }
     .group { padding-top: 34px; scroll-margin-top: 70px; }
     .group-head h2 { font-size: 20px; }
+    .about-panel { padding: 18px; border-radius: 20px; }
+    .about-copy { font-size: 14px; margin-bottom: 16px; }
+    .about-photos { grid-template-columns: 1fr; gap: 14px; }
     .cards { grid-template-columns: 1fr; gap: 14px; }
     .card { padding: 20px; }
     .card-feature {
@@ -575,6 +631,37 @@
       <div class="hero-badges">
         <span>QQ群 956341484</span>
         <span>KOOK ID 47625960</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 关于我们 ==================== -->
+  <section class="group" id="about">
+    <div class="group-head">
+      <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div>
+        <h2>关于我们</h2>
+        <p>一群在 WingsMS 服务器一起远征的伙伴。</p>
+      </div>
+    </div>
+
+    <div class="about-panel">
+      <p class="about-copy">新手保护联盟是 WingsMS 服务器的新手家族。我们平时一起开远征、打副本，也会组织家族活动。希望每个刚入坑的新手都有人带、有规则可依，也能在这里找到一起玩下去的伙伴。</p>
+      <div class="about-photos">
+        <figure>
+          <picture>
+            <source srcset="assets/activity-1.webp" type="image/webp" />
+            <img src="assets/activity-1.jpg" width="1200" height="675" loading="lazy" alt="第一届活动合影" />
+          </picture>
+          <figcaption>第一届活动合影</figcaption>
+        </figure>
+        <figure>
+          <picture>
+            <source srcset="assets/activity-2.webp" type="image/webp" />
+            <img src="assets/activity-2.jpg" width="1200" height="675" loading="lazy" alt="第二届活动合影" />
+          </picture>
+          <figcaption>第二届活动合影</figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -689,7 +776,6 @@
 <footer>
   <p class="foot-title">WINGSMS · 新手保护联盟</p>
   <p>WingsMS 服务器 · 守护每一位新手</p>
-  <p>内容随「同步GitHub」文件夹自动同步 · <a href="https://github.com/MiaoJunhuai/xsbhxh" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></p>
 </footer>
 
 <script>
