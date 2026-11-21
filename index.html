@@ -30,7 +30,7 @@
 
   * { box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
 
   body {
     margin: 0;
@@ -143,6 +143,7 @@
   .hero-copy {
     text-align: center;
     padding: 30px 12px 8px;
+    overflow: hidden;
   }
 
   .eyebrow {
@@ -182,7 +183,7 @@
     margin-top: 18px;
   }
 
-  .hero-badges span {
+  .hero-badges .hero-badge {
     padding: 5px 13px;
     border-radius: 999px;
     background: rgba(255, 253, 248, .78);
@@ -191,6 +192,21 @@
     font-size: 12px;
     font-weight: 700;
     letter-spacing: .3px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+  }
+
+  .hero-badges .hero-badge:hover {
+    background: #fffdf8;
+    border-color: rgba(47, 125, 79, .38);
+    color: var(--green-d);
+  }
+
+  .hero-badges .hero-badge.is-copied {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
   }
 
   /* ================= 分区 ================= */
@@ -577,6 +593,15 @@
 
   .lightbox.is-open { opacity: 1; visibility: visible; }
 
+  .lightbox-stage {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .lightbox img {
     display: block;
     max-width: min(1200px, 100%);
@@ -647,7 +672,7 @@
     .hero-copy h1 .line-2 { transform: translateX(26px); }
     .hero-copy h1 .comma { display: none; }
     .hero-badges { gap: 6px; margin-top: 14px; }
-    .hero-badges span { font-size: 11.5px; padding: 4px 11px; }
+    .hero-badges .hero-badge { font-size: 11.5px; padding: 4px 11px; }
     .group { padding-top: 34px; scroll-margin-top: 70px; }
     .group-head h2 { font-size: 20px; }
     .about-panel { padding: 18px; border-radius: 20px; }
@@ -722,8 +747,8 @@
       <h1><span class="line line-1">守护每一位新手<span class="comma">，</span></span><span class="line line-2">一起走得更远</span></h1>
       <p class="lead">新手保护联盟是在 WingsMS 服务器致力于保护新手的家族联盟。我们组织远征一条龙以及各种副本，制定公平的分配与处罚规则，也用入会面试认识每一位新伙伴。</p>
       <div class="hero-badges">
-        <span>QQ群 956341484</span>
-        <span>KOOK ID 47625960</span>
+        <button type="button" class="hero-badge" data-copy="956341484">QQ群 956341484</button>
+        <button type="button" class="hero-badge" data-copy="47625960">KOOK ID 47625960</button>
       </div>
     </div>
   </section>
@@ -931,10 +956,10 @@
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-modal', 'true');
     box.setAttribute('aria-label', '查看大图');
-    box.innerHTML = '<button type="button" class="lightbox-close" aria-label="关闭">×</button><img alt="" />';
+    box.innerHTML = '<button type="button" class="lightbox-close" aria-label="关闭">×</button><div class="lightbox-stage"></div>';
     document.body.appendChild(box);
 
-    var img = box.querySelector('img');
+    var stage = box.querySelector('.lightbox-stage');
     var closeBtn = box.querySelector('.lightbox-close');
     var lastFocus = null;
     var loadToken = 0;
@@ -945,20 +970,23 @@
       var fullSrc = link.getAttribute('href');
       var placeholder = thumb ? (thumb.currentSrc || thumb.src) : '';
 
-      img.alt = thumb ? thumb.alt : '';
+      // 每次打开都新建 img，彻底避免复用旧元素造成串图
+      var next = document.createElement('img');
+      next.alt = thumb ? thumb.alt : '';
+      if (placeholder) next.src = placeholder;
 
-      // 先用页面里已缓存的小图占位，避免新大图加载期间显示上一张
-      if (placeholder) {
-        img.src = placeholder;
+      var old = stage.querySelector('img');
+      if (old) {
+        stage.replaceChild(next, old);
       } else {
-        img.removeAttribute('src');
+        stage.appendChild(next);
       }
 
       // 预加载大图，完成后替换（丢弃过期请求，防止快速切换时串图）
       var full = new Image();
       full.onload = function () {
         if (token !== loadToken) return;
-        if (full.src !== img.src) img.src = full.src;
+        if (next.src !== full.src) next.src = full.src;
       };
       full.src = fullSrc;
 
@@ -988,6 +1016,52 @@
     closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && box.classList.contains('is-open')) close();
+    });
+  })();
+
+  (function () {
+    var btns = Array.prototype.slice.call(document.querySelectorAll('[data-copy]'));
+    if (!btns.length) return;
+
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(
+          function () { return true; },
+          function () { return fallbackCopy(text); }
+        );
+      }
+      return Promise.resolve(fallbackCopy(text));
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        copyText(btn.getAttribute('data-copy')).then(function (ok) {
+          if (!ok) return;
+          if (btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent;
+          btn.textContent = '已复制 ✓';
+          btn.classList.add('is-copied');
+          clearTimeout(btn._copyTimer);
+          btn._copyTimer = setTimeout(function () {
+            btn.textContent = btn.dataset.orig;
+            btn.classList.remove('is-copied');
+          }, 1500);
+        });
+      });
     });
   })();
 </script>

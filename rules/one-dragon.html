@@ -675,7 +675,8 @@
   </div>
 </header>
 <style>
-  body { padding-top: 76px !important; }
+  html { overflow-x: hidden !important; }
+  body { padding-top: 76px !important; overflow-x: hidden !important; }
 
   .xsb-nav {
     position: fixed;
@@ -746,7 +747,7 @@
   .xsb-links a.is-active { color: #1f5a3a; background: rgba(47, 125, 79, .14); }
 
   @media (max-width: 760px) {
-    body { padding-top: 72px !important; }
+    body { padding-top: 72px !important; overflow-x: hidden !important; }
     .xsb-nav-inner { height: 56px; }
     .xsb-brand { font-size: 14px; gap: 7px; }
     .xsb-badge { width: 28px; height: 28px; font-size: 15px; border-radius: 9px; }
@@ -882,9 +883,11 @@
                                 <div class="voice-info">
                                     <p><span class="voice-label">联盟KOOK地址</span><br>
                                         <span class="voice-value">https://kook.vip/gDnx1j</span>
+                                        <button type="button" class="copy-mini" data-copy="https://kook.vip/gDnx1j" aria-label="复制 KOOK 地址">复制</button>
                                     </p>
                                     <p><span class="voice-label">联盟KOOK ID</span><br>
                                         <span class="voice-id">47625960</span>
+                                        <button type="button" class="copy-mini" data-copy="47625960" aria-label="复制 KOOK ID">复制</button>
                                     </p>
                                 </div>
                             </div>
@@ -1275,6 +1278,76 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
 
         initVoiceTabs();
     </script>
+<!-- ===== KOOK 一键复制 ===== -->
+<style>
+  .copy-mini {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid #b9ddc2;
+    background: #e6f4e9;
+    color: #1e5c26;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.5;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background .18s ease, color .18s ease, border-color .18s ease;
+  }
+  .copy-mini:hover { background: #1e5c26; border-color: #1e5c26; color: #fff; }
+  .copy-mini.is-copied { background: #2f7d4f; border-color: #2f7d4f; color: #fff; }
+</style>
+<script>
+  (function () {
+    var btns = Array.prototype.slice.call(document.querySelectorAll('.copy-mini'));
+    if (!btns.length) return;
+
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).then(
+          function () { return true; },
+          function () { return fallbackCopy(text); }
+        );
+      }
+      return Promise.resolve(fallbackCopy(text));
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        copyText(btn.getAttribute('data-copy')).then(function (ok) {
+          if (!ok) return;
+          if (btn.dataset.orig === undefined) btn.dataset.orig = btn.textContent;
+          btn.textContent = '已复制';
+          btn.classList.add('is-copied');
+          clearTimeout(btn._t);
+          btn._t = setTimeout(function () {
+            btn.textContent = btn.dataset.orig;
+            btn.classList.remove('is-copied');
+          }, 1500);
+        });
+      });
+    });
+  })();
+</script>
+<!-- ===== 结束 ===== -->
 </body>
 
 </html>
