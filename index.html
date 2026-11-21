@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>新手保护联盟 · 资源导航</title>
-<meta name="description" content="WingsMS 新手保护联盟资源导航：入会申请面试、带队与交易工具、远征规则，一个页面全部找到。" />
-<meta property="og:title" content="新手保护联盟 · 资源导航" />
-<meta property="og:description" content="入会申请面试、带队与交易工具、远征规则，一个页面全部找到。" />
+<title>新手保护联盟 · WingsMS 家族官网</title>
+<meta name="description" content="WingsMS 服务器新手保护联盟官网：家族介绍、入会申请面试、带队工具与远征规则。" />
+<meta property="og:title" content="新手保护联盟 · WingsMS 家族官网" />
+<meta property="og:description" content="守护每一位新手，一起走得更远。WingsMS 服务器新手家族官网。" />
 <meta property="og:image" content="https://miaojunhuai.github.io/xsbhxh/assets/banner.webp" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#fbf4e3" />
@@ -161,16 +161,38 @@
     letter-spacing: 1px;
     color: var(--green-d);
     text-shadow: 0 1px 0 #fff;
+    text-wrap: balance;
   }
 
+  .m-br { display: none; }
+
   .hero-copy .lead {
-    max-width: 620px;
+    max-width: 640px;
     margin: 12px auto 0;
     color: var(--ink-2);
     font-size: 15px;
   }
 
   .hero-copy .lead strong { color: var(--ink); }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .hero-badges span {
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: rgba(255, 253, 248, .78);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+  }
 
   /* ================= 分区 ================= */
   .group {
@@ -418,6 +440,10 @@
     .hero-media { border-radius: 18px; }
     .hero-copy { padding: 22px 6px 4px; }
     .hero-copy .lead { font-size: 14px; }
+    .hero-copy h1 { font-size: 24px; }
+    .m-br { display: inline; }
+    .hero-badges { gap: 6px; margin-top: 14px; }
+    .hero-badges span { font-size: 11.5px; padding: 4px 11px; }
     .group { padding-top: 34px; scroll-margin-top: 70px; }
     .group-head h2 { font-size: 20px; }
     .cards { grid-template-columns: 1fr; gap: 14px; }
@@ -469,9 +495,14 @@
       </picture>
     </div>
     <div class="hero-copy">
-      <p class="eyebrow">WingsMS · 新手保护联盟</p>
-      <h1>一个页面，找到所有常用资源</h1>
-      <p class="lead">入会面试、带队和交易小工具、远征规则，全部整理在这里。<strong>从顶部导航选择分类</strong>，或直接点击下面的卡片进入。</p>
+      <p class="eyebrow">WINGSMS · 家族官网</p>
+      <h1>守护每一位新手，<br class="m-br" />一起走得更远</h1>
+      <p class="lead">新手保护联盟是 WingsMS 服务器的新手家族。我们组织远征一条龙与泰扎副本，制定公平的分配与处罚规则，也用入会面试认识每一位新伙伴。</p>
+      <div class="hero-badges">
+        <span>WingsMS 服务器</span>
+        <span>KOOK 语音 47625960</span>
+        <span>远征一条龙 · 泰扎</span>
+      </div>
     </div>
   </section>
 
@@ -481,7 +512,7 @@
       <div class="group-icon" aria-hidden="true">📝</div>
       <div>
         <h2>申请入会</h2>
-        <p>想加入新手保护协会？先完成入会申请面试。</p>
+        <p>想成为联盟的一员？先完成入会申请面试。</p>
       </div>
     </div>
 
@@ -508,7 +539,7 @@
       <div class="group-icon" aria-hidden="true">🧰</div>
       <div>
         <h2>工具</h2>
-        <p>带队和交易时用得上的小工具，打开即用。</p>
+        <p>联盟内部工具，带队和报价时都能用上。</p>
       </div>
     </div>
 
@@ -584,7 +615,8 @@
 
 <footer>
   <p class="foot-title">WINGSMS · 新手保护联盟</p>
-  <p>页面内容随本地「同步GitHub」文件夹自动同步 · <a href="https://github.com/MiaoJunhuai/xsbhxh" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></p>
+  <p>WingsMS 服务器 · 守护每一位新手</p>
+  <p>内容随「同步GitHub」文件夹自动同步 · <a href="https://github.com/MiaoJunhuai/xsbhxh" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></p>
 </footer>
 
 <script>

@@ -1,6 +1,6 @@
-# xsbhxh · 新手保护联盟资源站
+# xsbhxh · 新手保护联盟官网
 
-WingsMS 新手保护联盟的网页资源，已整合成一个带导航栏的站点。
+WingsMS 服务器新手保护联盟的家族官网。
 
 **在线地址：** https://miaojunhuai.github.io/xsbhxh/
 
@@ -8,7 +8,7 @@ WingsMS 新手保护联盟的网页资源，已整合成一个带导航栏的站
 
 | 路径 | 页面 | 说明 |
 |---|---|---|
-| `index.html` | 首页 | 横幅 + 导航栏（申请入会 / 工具 / 远征规则） |
+| `index.html` | 官网首页 | 横幅 + 导航栏（申请入会 / 工具 / 远征规则） |
 | `apply/index.html` | 入会申请面试 | v1.0.25，随机 20 题，80 分合格 |
 | `tools/leader-checklist.html` | 实习团长检查清单 | v1.0.3，9 个阶段 31 项检查点 |
 | `tools/price-formatter.html` | 商店价格规范器 | v1.0.1，千分位 + 中文单位 |
