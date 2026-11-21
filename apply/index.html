@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新手保护协会 · 入会申请面试</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #e8fff7 0%, #f4fbff 45%, #fff8e8 100%);
+    color: #17352c;
+  }
+
+  body { position: relative; overflow-x: hidden; }
+
+  .watermark {
+    position: fixed;
+    left: -50%;
+    top: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 0;
+    pointer-events: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 70px 110px;
+    padding: 40px;
+    transform: rotate(-45deg);
+    opacity: 0.065;
+    color: #07835f;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: 2px;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    width: min(980px, calc(100% - 28px));
+    margin: 0 auto;
+    padding: 26px 0 60px;
+  }
+
+  .brand { text-align: center; margin-bottom: 18px; }
+  .brand h1 {
+    margin: 0;
+    font-size: clamp(24px, 4vw, 38px);
+    color: #075c45;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 rgba(255,255,255,.8);
+  }
+  .brand p { margin: 8px 0 0; color: #4f7468; font-size: 14px; }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .bank-date {
+    font-size: 12px;
+    color: #6b857d;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .meta-sep {
+    font-size: 12px;
+    color: #b8cbc3;
+    user-select: none;
+  }
+  .version-tag {
+    display: inline-block;
+    padding: 3px 11px;
+    border-radius: 999px;
+    background: rgba(7, 131, 95, 0.08);
+    color: #4f7468;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .card {
+    background: rgba(255,255,255,.92);
+    border: 1px solid rgba(7, 131, 95, .18);
+    border-radius: 20px;
+    box-shadow: 0 18px 45px rgba(18, 78, 61, .12);
+    padding: 24px;
+    backdrop-filter: blur(4px);
+  }
+
+  .hidden { display: none !important; }
+
+  .start-box {
+    max-width: 560px;
+    margin: 34px auto 0;
+    text-align: center;
+  }
+  .start-box h2 { margin: 0 0 10px; color: #075c45; }
+  .start-box .tip {
+    color: #5c7b70;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  .nickname-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #bde6d7;
+    border-radius: 14px;
+    outline: none;
+    font-size: 16px;
+    text-align: center;
+    background: #fbfffd;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .nickname-input:focus {
+    border-color: #0aa574;
+    box-shadow: 0 0 0 4px rgba(10, 165, 116, .12);
+  }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    border-radius: 14px;
+    padding: 13px 22px;
+    font-size: 16px;
+    font-weight: 700;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    font-family: inherit;
+  }
+  .btn:active { transform: translateY(1px) scale(.99); }
+  .btn:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-primary {
+    margin-top: 16px;
+    width: 100%;
+    color: #fff;
+    background: linear-gradient(135deg, #08a572, #067a57);
+    box-shadow: 0 10px 22px rgba(8, 165, 114, .26);
+  }
+  .btn-primary:hover { box-shadow: 0 14px 26px rgba(8, 165, 114, .34); }
+
+  .btn-secondary {
+    color: #075c45;
+    background: #e9fff7;
+    border: 1px solid #bde6d7;
+  }
+
+  .quiz-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(7,131,95,.14);
+  }
+  .quiz-header .who { font-weight: 700; color: #075c45; }
+  .quiz-header .count { color: #5c7b70; font-size: 14px; }
+
+  .question-card {
+    margin-bottom: 16px;
+    padding: 18px 18px 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.94);
+    border: 1px solid rgba(7,131,95,.14);
+    box-shadow: 0 8px 24px rgba(18,78,61,.06);
+  }
+  .question-title {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    font-size: 16px;
+    line-height: 1.7;
+    font-weight: 700;
+    color: #123c31;
+  }
+  .q-index {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: #e4fff5;
+    color: #07835f;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .options { display: grid; gap: 9px; }
+  .option-label {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 11px 13px;
+    border-radius: 13px;
+    border: 1.5px solid #d9efe7;
+    background: #fbfffd;
+    cursor: pointer;
+    transition: .16s;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  .option-label:hover { border-color: #8ed9bf; background: #f2fffa; }
+  .option-label input {
+    margin-top: 4px;
+    accent-color: #08a572;
+    flex: 0 0 auto;
+  }
+  .option-label:has(input:checked) {
+    border-color: #08a572;
+    background: #e8fff7;
+    box-shadow: 0 0 0 3px rgba(8,165,114,.1);
+  }
+
+  .submit-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    margin-top: 22px;
+    padding: 14px;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.96));
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(7,131,95,.12);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  .submit-bar .btn { min-width: 140px; }
+
+  #resultCapture {
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff;
+    border-radius: 20px;
+    border: 1px solid rgba(7,131,95,.14);
+  }
+  .cap-header {
+    padding: 22px 26px 16px;
+    text-align: center;
+    border-bottom: 1px dashed rgba(7,131,95,.22);
+    background: #fff;
+  }
+  .cap-header-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #075c45;
+    letter-spacing: 1px;
+    line-height: 1.4;
+  }
+  .cap-header-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #4f7468;
+    letter-spacing: 2px;
+  }
+
+  #captureContent {
+    background: #fff;
+    padding: 20px 26px 22px;
+  }
+
+  .cap-footer {
+    padding: 16px 26px 20px;
+    border-top: 1px dashed rgba(7,131,95,.22);
+    text-align: center;
+    font-size: 12px;
+    color: #5c7b70;
+    line-height: 1.9;
+    background: #fff;
+  }
+  .cap-footer-line { margin-bottom: 1px; }
+  .cap-footer-brand {
+    margin-top: 8px;
+    color: #07835f;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .result-card {
+    border-radius: 18px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .result-card.pass {
+    background: linear-gradient(135deg, #eafff7, #f5fffb);
+    border: 2px solid #72d9b6;
+  }
+  .result-card.fail {
+    background: linear-gradient(135deg, #fff2f2, #fffafa);
+    border: 2px solid #f0a7a7;
+  }
+  .result-card h2 { margin: 0 0 8px; font-size: 30px; }
+  .result-card.pass h2 { color: #07835f; }
+  .result-card.fail h2 { color: #c83e3e; }
+  .result-card .nick { color: #3f665a; font-size: 16px; margin: 6px 0; }
+  .result-card .score {
+    font-size: 42px;
+    font-weight: 900;
+    margin: 12px 0 4px;
+    letter-spacing: 1px;
+  }
+  .result-card.pass .score { color: #08a572; }
+  .result-card.fail .score { color: #d13f3f; }
+  .result-card .sub { color: #6b857d; font-size: 14px; line-height: 1.8; }
+
+  .archetype-card {
+    margin: 0 0 20px;
+    padding: 18px 20px 16px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f2f8ff, #f9fbff);
+    border: 1px solid #c8dcf0;
+    text-align: center;
+  }
+  .archetype-label {
+    font-size: 12px;
+    color: #6b857d;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .archetype-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .arch-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .arch-emoji {
+    font-size: 26px;
+    line-height: 1;
+  }
+  .arch-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: #2a4a6f;
+    letter-spacing: 1px;
+  }
+  .arch-plus {
+    color: #8fa8c4;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 2px;
+  }
+  .archetype-desc {
+    font-size: 14px;
+    color: #3f5f7a;
+    line-height: 1.7;
+    margin-top: 6px;
+  }
+
+  .inline-actions {
+    margin: 0 0 20px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f4fffb, #f9fffd);
+    border: 1px dashed rgba(7, 131, 95, 0.3);
+    text-align: center;
+  }
+  .inline-actions .share-tip {
+    font-size: 14px;
+    color: #3f665a;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .inline-actions .share-tip strong {
+    color: #07835f;
+    font-weight: 800;
+  }
+  .inline-actions .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .inline-actions .btn-row .btn {
+    margin-top: 0;
+    width: auto;
+    min-width: 130px;
+    flex: 0 1 auto;
+  }
+
+  .wrong-title {
+    margin: 10px 0 14px;
+    color: #8f3030;
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .wrong-item {
+    margin-bottom: 14px;
+    padding: 16px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fff6f6, #fffafa);
+    border: 1px solid #f0c4c4;
+  }
+  .wrong-item.all-correct {
+    background: linear-gradient(135deg, #f2fff9, #f9fffd);
+    border-color: #bfe8da;
+  }
+  .wrong-item.all-correct .wrong-question { color: #245c4a; }
+  .wrong-question {
+    font-weight: 800;
+    line-height: 1.65;
+    color: #4a2222;
+    margin-bottom: 10px;
+  }
+  .wrong-options { display: grid; gap: 8px; }
+  .wrong-option {
+    padding: 9px 11px;
+    border-radius: 11px;
+    border: 1px solid #f0dada;
+    background: #fff;
+    color: #5b4a4a;
+    line-height: 1.55;
+    font-size: 14px;
+  }
+  .wrong-option.selected {
+    border: 2px solid #e05252;
+    background: #ffeaea;
+    color: #a62d2d;
+    font-weight: 700;
+  }
+  .your-choice-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #e05252;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .footnote {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #78948b;
+    line-height: 1.7;
+  }
+
+  .cap-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: capFadeIn .18s ease;
+  }
+  .cap-loading-inner {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #075c45;
+    box-shadow: 0 18px 45px rgba(0,0,0,.3);
+  }
+
+  .capture-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: capFadeIn .2s ease;
+  }
+  @keyframes capFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .capture-modal-inner {
+    background: #fff;
+    border-radius: 18px;
+    max-width: 680px;
+    width: 100%;
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  }
+  .capture-modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eef3f0;
+    font-weight: 800;
+    font-size: 17px;
+    color: #075c45;
+    flex: 0 0 auto;
+    text-align: center;
+  }
+  .capture-modal-body {
+    padding: 14px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #f6fbf9;
+  }
+  .capture-modal-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+    margin: 0 auto;
+    background: #fff;
+    -webkit-user-select: auto;
+    user-select: auto;
+    -webkit-touch-callout: default;
+    touch-action: manipulation;
+  }
+  .capture-modal-tip {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #4f7468;
+    text-align: center;
+    line-height: 1.7;
+  }
+  .capture-modal-actions {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #eef3f0;
+    flex: 0 0 auto;
+  }
+  .capture-modal-actions .btn {
+    flex: 1;
+    margin-top: 0;
+    width: auto;
+  }
+
+  @media (max-width: 620px) {
+    .app { width: min(100% - 18px, 980px); padding-top: 16px; }
+    .card { padding: 18px; border-radius: 16px; }
+    .question-card { padding: 15px; }
+    .submit-bar { justify-content: stretch; }
+    .submit-bar .btn { flex: 1; min-width: 0; }
+    .result-card h2 { font-size: 25px; }
+    .result-card .score { font-size: 36px; }
+    .cap-header { padding: 18px 18px 14px; }
+    .cap-header-title { font-size: 17px; }
+    #captureContent { padding: 16px 18px 18px; }
+    .cap-footer { padding: 14px 18px 16px; }
+
+    .inline-actions { padding: 14px 14px; }
+    .inline-actions .share-tip { font-size: 13px; }
+    .inline-actions .btn-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .inline-actions .btn-row .btn {
+      width: 100%;
+    }
+
+    .arch-name { font-size: 18px; }
+    .arch-emoji { font-size: 22px; }
+    .archetype-desc { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+  <div class="watermark" id="watermark" aria-hidden="true"></div>
+
+  <main class="app">
+    <div class="brand">
+      <h1>新手保护协会 · 入会申请面试</h1>
+      <p>请认真作答，提交后自动评分。满分 100 分，80 分及以上合格。</p>
+      <div class="meta-row">
+        <span class="bank-date" id="bankDate">题库更新 2026-11-17</span>
+        <span class="meta-sep">·</span>
+        <span class="version-tag" id="versionTag">v1.0.25</span>
+      </div>
+    </div>
+
+    <section id="startScreen" class="card start-box">
+      <h2>填写答题者游戏昵称</h2>
+      <p class="tip">
+        每次开始会抽取 20 道题，题目顺序与选项顺序每次都会随机打乱。
+      </p>
+      <input id="nicknameInput" class="nickname-input" type="text" maxlength="20" placeholder="请输入游戏昵称" autocomplete="off" />
+      <button id="startBtn" class="btn btn-primary" onclick="startQuiz()">开始答题</button>
+    </section>
+
+    <section id="quizScreen" class="hidden">
+      <div class="quiz-header">
+        <div class="who">答题者：<span id="quizNickname"></span></div>
+        <div class="count" id="quizCount"></div>
+      </div>
+      <form id="quizForm" onsubmit="submitQuiz(event)">
+        <div id="questionList"></div>
+        <div class="submit-bar">
+          <button type="button" class="btn btn-secondary" onclick="if(confirm('确定要重新开始吗？当前答题内容会丢失。')) restartQuiz();">重新开始</button>
+          <button type="submit" id="submitBtn" class="btn btn-primary">提交答卷</button>
+        </div>
+      </form>
+      <div class="footnote">水印：新手保护协会 · 入会申请面试</div>
+    </section>
+
+    <section id="resultScreen" class="hidden">
+      <div id="resultCapture">
+        <div class="cap-header">
+          <div class="cap-header-title">新手保护协会 · 入会申请面试</div>
+          <div class="cap-header-sub">入会申请面试结果单</div>
+        </div>
+        <div id="captureContent" class="capture-content"></div>
+        <div class="cap-footer">
+          <div class="cap-footer-line">答题者：<span id="capFooterNick">-</span></div>
+          <div class="cap-footer-line">生成时间：<span id="capFooterTime">-</span></div>
+          <div class="cap-footer-brand">新手保护协会 · 入会申请面试</div>
+        </div>
+      </div>
+      <div class="footnote">
+        截图会保存为 PNG 图片。移动端如未自动保存，可在弹出的预览中长按图片选择「存储图像」。
+      </div>
+    </section>
+  </main>
+
+<script>
+/* =========================================================
+   版本号 & 题库更新日期（想改直接改这两行）
+   ========================================================= */
+const APP_VERSION = "v1.0.25";
+const BANK_UPDATED_AT = "2026-11-21";
+
+/* 及格分数（满分 100） */
+const PASS_SCORE = 80;
+
+/* =========================================================
+   玩家身份原型（趣味附加，不影响判分）
+   ========================================================= */
+const ARCHETYPES = {
+  scholar: { name: "学霸", emoji: "🎓",
+    desc: "20 题全对，题库已经被你打穿了，管理看了都直呼内行。" },
+  steady:  { name: "稳健老司机", emoji: "🧭",
+    desc: "家族规矩熟、心里有数。远征规则、地图归属、奶扫地分工全都门儿清，是家族的定海神针。" },
+  veteran: { name: "老江湖", emoji: "🎩",
+    desc: "家族里的门道摸得门儿清，远征、归属、奶扫地这些都能答上来，偶尔在小细节上翻个车。" },
+  bulletin: { name: "人形群公告", emoji: "📜",
+    desc: "群公告快被你背下来了，家族规矩基本没有能难住你的。" },
+  squeezer: { name: "擦边怪", emoji: "😅",
+    desc: "分数刚好擦着线过关，再多错一题就没了。" },
+  gentle:  { name: "温柔辅助",   emoji: "💚",
+    desc: "遇事先劝、遇骂先忍，团队里的润滑剂。有你在，远征氛围不会差。" },
+  hothead: { name: "暴躁老哥",   emoji: "🔥",
+    desc: "心里有火、嘴上不软。建议把火气留给 Boss，别留给队友，家族会更喜欢你。" },
+  slacker: { name: "佛系摸鱼王", emoji: "🛋️",
+    desc: "能挂就挂、能省就省。偶尔来一趟也很好，来了记得打声招呼~" },
+  loner:   { name: "i人",        emoji: "😶",
+    desc: "线上社交电量有限，遇事更习惯自己消化。家族里其实有很多人愿意和你一起玩，慢慢来就好。" },
+  clown:   { name: "整活达人",   emoji: "🤡",
+    desc: "认真答题是副业，造梗才是主业。家族快乐源泉，注意别玩过头~" },
+  newbie:  { name: "萌新小白",   emoji: "🌱",
+    desc: "还在熟悉规则。多看群公告、多问管理，很快就能上手。" }
+};
+
+/* =========================================================
+   及格后的身份类型：按分数段授予
+   说明：
+   1. 80 分及以上不再走性格标签，直接按分数段给身份；
+   2. 区间从高到低排列，命中第一个 score >= min 的档位；
+   3. 未及格仍使用下面的性格标签逻辑（萌新小白、温柔辅助等）。
+   ========================================================= */
+const SCORE_IDENTITIES = [
+  { min: 100, key: "scholar" },   // 学霸
+  { min: 95,  key: "bulletin" },  // 人形群公告
+  { min: 90,  key: "veteran" },   // 老江湖
+  { min: 85,  key: "steady" },    // 稳健老司机
+  { min: 80,  key: "squeezer" }   // 擦边怪
+];
+
+function computeScoreIdentity(score) {
+  for (const item of SCORE_IDENTITIES) {
+    if (score >= item.min - 1e-9) return item.key;
+  }
+  return null;
+}
+
+/* =========================================================
+   态度信号：及格了也按性格给身份的选择
+   说明：
+   1. 命中任意一条，身份类型就不再按分数段算，直接给对应性格；
+   2. 暴躁和 i人 同时命中时按条数多的走，条数相同按暴躁处理；
+   3. 不分及不及格，一律优先于分数段和性格标签。
+   ========================================================= */
+const ATTITUDE_SIGNALS = [
+  { qid: 11, idx: 0, key: "hothead" },  // 亲切问候他的家人
+  { qid: 11, idx: 2, key: "hothead" },  // 发"?"阴阳怪气把他逼走
+  { qid: 13, idx: 0, key: "hothead" },  // 复读机骂回去，顺便问候老妈
+  { qid: 13, idx: 1, key: "hothead" },  // 刷紫喇叭刷屏骂他
+  { qid: 11, idx: 3, key: "loner" },    // 截图发KOOK举报区然后生闷气
+  { qid: 13, idx: 3, key: "loner" }     // 马上下线躲在被窝里偷偷抹眼泪
+];
+
+/* 统计答题里命中的态度信号，返回要授予的性格 key */
+function detectAttitudeIdentity() {
+  const counts = { hothead: 0, loner: 0 };
+
+  state.questions.forEach(q => {
+    const sel = state.answers[q.id];
+    if (sel == null) return;
+    const origIdx = (q.origIndexMap && q.origIndexMap[sel] != null) ? q.origIndexMap[sel] : sel;
+    ATTITUDE_SIGNALS.forEach(sig => {
+      if (sig.qid === q.id && sig.idx === origIdx) counts[sig.key]++;
+    });
+  });
+
+  if (counts.hothead === 0 && counts.loner === 0) return null;
+  return counts.hothead >= counts.loner ? "hothead" : "loner";
+}
+
+/* 每题每个原始选项索引对应的性格标签
+   说明：newbie 是兜底标签，不参与主类型竞争 */
+const TRAIT_TABLE = {
+  1:  [["newbie"],            ["steady"],            ["slacker","newbie"], ["newbie","clown"]],
+  2:  [["hothead","loner"],   ["slacker"],           ["newbie","gentle"],  ["steady"]],
+  3:  [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  4:  [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  5:  [["hothead","slacker"], ["loner"],             ["slacker","loner"],  ["steady","gentle"]],
+  6:  [["slacker","clown"],   ["steady"],            ["slacker"],          ["hothead"]],
+  7:  [["newbie"],            ["clown"],             ["newbie","clown"],   ["steady"]],
+  8:  [["newbie"],            ["newbie","clown"],    ["newbie"],           ["steady","gentle"]],
+  9:  [["newbie","clown"],    ["newbie","loner"],    ["newbie"],           ["steady"]],
+  10: [["newbie","clown"],    ["newbie","clown"],    ["hothead"],          ["steady"]],
+  11: [["hothead"],           ["gentle","steady"],   ["hothead"],          ["loner"]],
+  12: [["newbie","gentle"],   ["newbie","clown"],    ["gentle","steady"],  ["newbie","clown"]],
+  13: [["hothead"],           ["hothead"],           ["gentle","steady"],  ["loner"]],
+  14: [["newbie","clown"],    ["steady","slacker"],  ["newbie","clown"],   ["newbie","clown"]],
+  15: [["newbie"],            ["newbie"],            ["steady"],           ["newbie"]],
+  16: [["newbie"],            ["newbie"],            ["steady"],           ["newbie","clown"]],
+  17: [["newbie","clown"],    ["steady"],            ["newbie","clown"],   ["newbie","clown"]],
+  18: [["newbie"],            ["newbie","clown"],    ["newbie"],           ["steady"]],
+  19: [["newbie"],            ["newbie"],            ["newbie","clown"],   ["steady"]],
+  20: [["newbie","gentle"],   ["steady"],            ["hothead"],          ["newbie"]],
+  21: [["newbie"],            ["newbie"],            ["newbie","gentle"],  ["steady"]],
+  22: [["newbie","gentle"],   ["newbie"],            ["steady"],           ["newbie","clown"]],
+  23: [["newbie"],            ["newbie","clown"],    ["steady"],           ["newbie","clown"]]
+};
+
+/* =========================================================
+   题库
+   ========================================================= */
+const BANK = [
+  { id: 1, type: "required",
+    q: "打远征时，大家俗称的“下绿包”，具体是指什么？",
+    opts: [
+      "天上会下绿色手提包雨",
+      "取消装备<宠物自动拾取道具>功能",
+      "下载一个叫做“绿包”的辅助软件，帮忙抢掉落物",
+      "地图靠下的位置有一个绿色的包裹，里面会出极品道具"
+    ], enc: 73 },
+  { id: 2, type: "required",
+    q: "远征Boss爆卡通常是如何分配的？",
+    opts: [
+      "所有人拼手速谁捡到就是谁的",
+      "不能手动捡取，只能上绿包看谁的宠物跑得快",
+      "副本中的人有序地站成一排，卡片掉的离谁最近就由谁来捡卡",
+      "主力队成员在<对所有人>频道中输入\"@roll\"进行随机点数PK，由团长判断并点名roll点数由高到低的玩家依次捡卡"
+    ], enc: 122 },
+  { id: 3, type: "required",
+    q: "远征中下线后，多少时间内再上线能重连回远征中？",
+    opts: ["30秒", "无限", "10分钟", "1分钟"], enc: 112 },
+  { id: 4, type: "required",
+    q: "远征重连有没有次数限制？没死亡和死亡后分别能重连几次？（狮子王除外）",
+    opts: [
+      "没死亡和死亡重连都只有1次",
+      "没死亡只有1次、死亡重连无限次",
+      "没死亡连无限次、死亡重连只有1次",
+      "没死亡和死亡重连都是无限次"
+    ], enc: 111 },
+  { id: 5, type: "required",
+    q: "本群的远征要如何报名？",
+    opts: ["在群里刷屏喊求组", "私聊找管理索要报名表", "守着群聊消息等别人发布", "在群公告置顶有报名表"], enc: 27 },
+  { id: 6, type: "required",
+    q: "我们群的“一条远征”规则中，填表的主力队队员迟到多少分钟视为迟到？",
+    opts: ["1天", "10分钟", "没有时间限制", "1秒钟"], enc: 16 },
+  { id: 7, type: "required",
+    q: "新手保护协会 和 新手保护组织 目前每周的会费是多少金币？",
+    opts: ["1000万", "21亿4748万3647", "200", "20万"], enc: 13 },
+  { id: 8, type: "required",
+    q: "哪两个职业，以及多少等级以下是不需要在两个新手保护家族交会费的？",
+    opts: [
+      "鬼剑士、神枪手；220级",
+      "铁匠、车头；120级",
+      "冰雷、刀飞；30级",
+      "冲锋队长、圣骑士；70级"
+    ], enc: 56 },
+  { id: 9, type: "required",
+    q: "在<对所有人>中输入什么可以查看当前地图的归属人？",
+    opts: ["@老A", "无法查看", "@巡查", "@归属"], enc: 55 },
+  { id: 10, type: "required",
+    q: "地图归属是什么意思？",
+    opts: [
+      "某人找老A买断了这张地图的所有权，想在这张图打怪必须找老A用更高的价格买下地图归属",
+      "只有角色名中带有\"属\"字的人才能在这张地图中刷怪",
+      "纯属玩家捏造的概念，服务器没有地图归属这种说法",
+      "当前地图因为某人先来打怪了，所以地图暂时归他所有，除了他和他的队友以外其他人不能在这里抢怪"
+    ], enc: 34 },
+  { id: 11, type: "required",
+    q: "遇到有人无视归属抢怪，以下做法正确的是什么？",
+    opts: [
+      "亲切问候他的家人",
+      "先礼貌劝离，劝离无效的话，点商城上面的举报按钮举报，等巡查来处理他",
+      "马上发\"?\"以及阴阳怪气嘲讽他，把他逼走",
+      "截图发到KOOK举报区然后生闷气"
+    ], enc: 219 },
+  { id: 12, type: "required",
+    q: "远征中的“奶扫地”是什么意思？",
+    opts: [
+      "奶妈要及时扫干净地板上刀飞“敛财术”爆出来的金币，这是奶妈在远征中的主要责任",
+      "用道具“牛奶”铺满整个地面，作为贡品提高Boss掉落率，是大家约定俗成祈求丰收的一种仪式",
+      "队伍中有奶妈的情况下，远征打完了让奶妈捡取除了怪物卡以外的所有Boss掉落物",
+      "奶妈使用道具“扫帚”在远征开始前先把地面扫一遍，防止Boss使用推人技能的时候有玩家滑倒"
+    ], enc: 215 },
+  { id: 13, type: "required",
+    q: "在游戏中遇到有路人骂你时，怎样正确应对？",
+    opts: [
+      "做一个没有感情的复读机，他骂啥就骂回去，不要忘记问候他的老妈",
+      "刷紫喇叭刷屏骂他，绝不能落了下风，紫喇叭肯定是对的，并准备随时线下真实他",
+      "理性回复，不和他对骂，截图保留他骂人的相关证据发在KOOK举报区",
+      "马上下线躲在被窝里偷偷抹眼泪"
+    ], enc: 194 },
+  { id: 14, type: "required",
+    q: "“单挂”是什么意思？",
+    opts: [
+      "单纯进来体验一下挂掉是什么感觉",
+      "在远征中不进入主力队伍输出，而是单纯在一旁挂机，并通过下上线重连的方式规避伤害，主要目的是获得护肩经验或道具。",
+      "单依纯挂名赞助本场远征，是单依纯粉丝的应援广告行为",
+      "简单的挂在绳子上的意思"
+    ], enc: 248 },
+  { id: 15, type: "required",
+    q: "现在哪些图、线（频道）是无归属的？",
+    opts: [
+      "19-24线、Boss地图、以及个别场景过大的地图",
+      "23-28线、彩虹村地图、以及个别场景过大的地图",
+      "23-28线、Boss地图、以及个别场景过大的地图",
+      "19-24线、彩虹村地图、以及个别场景过大的地图"
+    ], enc: 244 },
+
+  { id: 16, type: "random",
+    q: "哪2个远征Boss会掉落用来增加血量上限的洗血圣杯？",
+    opts: ["红蜗牛王、蘑菇王", "九尾狐、大脚怪", "扎昆、黑龙", "伊利丹、死亡之翼"], enc: 227 },
+  { id: 17, type: "random",
+    q: "JJB指的是什么远征BOSS？",
+    opts: ["救酱爆", "进阶巴洛克", "猪猪侠", "鸡鸡爆"], enc: 153 },
+  { id: 18, type: "random",
+    q: "玩家俗称“猪闹”指的是什么？",
+    opts: [
+      "野猪很闹腾",
+      "灌水区的猪头诈骗事件很闹心",
+      "某个叫猪猪的玩家闹事",
+      "查乌（野猪）、帕普拉图斯（闹钟）这两个远征Boss"
+    ], enc: 138 },
+  { id: 19, type: "random",
+    q: "目前进入新手线（频道）的等级要求是小于等于多少级？",
+    opts: ["30", "220", "10", "140"], enc: 129 },
+  { id: 20, type: "random",
+    q: "新手线（频道）的特殊福利是什么？",
+    opts: [
+      "经验双倍、爆率双倍",
+      "刷怪更快更满、怪物卡爆率+100%、护肩经验+100%",
+      "可以随便开飞天外挂",
+      "没有归属"
+    ], enc: 190 },
+  { id: 21, type: "random",
+    q: "在<对所有人>中输入什么可以屏蔽掉喇叭和抽奖？",
+    opts: ["@屏蔽抽奖", "@屏蔽", "@屏蔽抽奖和喇叭", "@屏蔽喇叭"], enc: 171 },
+  { id: 22, type: "random",
+    q: "使用什么指令可以查询当前游戏角色各个远征的剩余挑战次数？",
+    opts: ["@远征次数查询", "@查询", "@boss查询", "@百度"], enc: 161 },
+  { id: 23, type: "random",
+    q: "除了勇士部落的麦吉以外，还有哪个NPC可以进到巴洛克副本门口？",
+    opts: [
+      "蚂蚁洞里的无意义的存在者",
+      "意大利的卡拉瓦乔",
+      "天空之城叫波达的狗",
+      "自由市场1洞"
+    ], enc: 348 }
+];
+
+/* =========================
+   全局状态
+   ========================= */
+const state = {
+  nickname: "",
+  questions: [],
+  answers: {},
+  results: []
+};
+
+let isCapturing = false;
+
+/* =========================================================
+   Hash 层
+   ========================================================= */
+const PEPPER = "XinShouBaoHu_2024#_v3_pepper";
+const HASH_ITERATIONS = 50;
+const CORRECT_HASHES = Object.create(null);
+let HASH_READY = false;
+let HASH_INIT_PROMISE = null;
+
+function simpleHashHex(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0).toString(16).padStart(8, "0") +
+         (h1 >>> 0).toString(16).padStart(8, "0");
+}
+
+async function sha256Hex(str) {
+  if (window.crypto && window.crypto.subtle) {
+    const buf = new TextEncoder().encode(str);
+    const digest = await window.crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(digest))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  return simpleHashHex(str);
+}
+
+async function iterHash(str) {
+  let h = str;
+  for (let i = 0; i < HASH_ITERATIONS; i++) {
+    h = await sha256Hex(h + "|" + PEPPER + "|" + i);
+  }
+  return h;
+}
+
+function makeSalt(qid) {
+  return "s" + qid + "_" + ((qid * 2654435761) % 1000003) + "_" + PEPPER.slice(0, 6);
+}
+
+function decryptAnswer(enc, qid) {
+  const idx = ((enc ^ 0x5A) - qid * 11 - 7);
+  return Number.isInteger(idx) ? idx : 0;
+}
+
+async function initCorrectHashes() {
+  if (HASH_READY) return;
+  for (const q of BANK) {
+    const correctIndex = decryptAnswer(q.enc, q.id);
+    const correctText = q.opts[correctIndex];
+    const salt = makeSalt(q.id);
+    CORRECT_HASHES[q.id] = await iterHash(`${correctText}|${salt}|${q.id}`);
+  }
+  HASH_READY = true;
+}
+
+function ensureHashesReady() {
+  if (!HASH_INIT_PROMISE) HASH_INIT_PROMISE = initCorrectHashes();
+  return HASH_INIT_PROMISE;
+}
+
+async function checkAnswerByText(qid, selectedText) {
+  if (!HASH_READY) await ensureHashesReady();
+  const salt = makeSalt(qid);
+  const userHash = await iterHash(`${selectedText}|${salt}|${qid}`);
+  return userHash === CORRECT_HASHES[qid];
+}
+
+/* =========================
+   通用工具
+   ========================= */
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function (m) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[m];
+  });
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function fillWatermark(container) {
+  if (!container) return;
+  container.innerHTML = "";
+  for (let i = 0; i < 180; i++) {
+    const span = document.createElement("span");
+    span.textContent = "新手保护协会 · 入会申请面试";
+    container.appendChild(span);
+  }
+}
+
+function isMobileDevice() {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod|Android/i.test(ua)) return true;
+  if (navigator.maxTouchPoints > 1 && /Mac/.test(ua)) return true;
+  return false;
+}
+
+function forceScrollTop() {
+  try { window.scrollTo(0, 0); } catch (e) {}
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+}
+
+function scrollPageToTop() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      forceScrollTop();
+      setTimeout(forceScrollTop, 60);
+      setTimeout(forceScrollTop, 200);
+    });
+  });
+}
+
+function showLoading(msg) {
+  hideLoading();
+  const el = document.createElement("div");
+  el.id = "capLoading";
+  el.className = "cap-loading";
+  el.innerHTML = `<div class="cap-loading-inner">${msg}</div>`;
+  document.body.appendChild(el);
+  return el;
+}
+function hideLoading() {
+  const el = document.getElementById("capLoading");
+  if (el) el.remove();
+}
+
+/* =========================================================
+   抽题 & 生成题目实例
+   ========================================================= */
+function buildQuestions() {
+  const required = BANK.filter(q => q.type === "required");
+  const randomPool = BANK.filter(q => q.type === "random");
+  const pickedRandom = shuffle(randomPool).slice(0, 5);
+  const combined = shuffle([...required, ...pickedRandom]);
+
+  return combined.map(q => {
+    const arr = q.opts.map((text, idx) => ({ text, origIndex: idx }));
+    const shuffledArr = shuffle(arr);
+
+    return {
+      ...q,
+      displayOpts: shuffledArr.map(x => x.text),
+      origIndexMap: shuffledArr.map(x => x.origIndex)
+    };
+  });
+}
+
+/* =========================================================
+   身份类型互斥组
+   说明：
+   1. 同一互斥组内的身份不能同时成为主类型和副类型。
+   2. 只把含义明确对立的类型放进同一组，避免过度限制正常的性格组合。
+   3. 如果互斥组内最高分并列，说明答题信号不明确，该组暂不授予身份。
+   4. 后续新增互斥关系时，只需要在下面增加一个 members 数组。
+   ========================================================= */
+const ARCHETYPE_EXCLUSIVE_GROUPS = [
+  {
+    name: "情绪处事风格",
+    members: ["gentle", "hothead"]
+  }
+];
+
+/* 分数相同时的固定排序，避免结果受答题顺序或对象插入顺序影响 */
+const ARCHETYPE_PRIORITY = [
+  "steady", "gentle", "hothead", "slacker", "loner", "clown"
+];
+
+/* 判断两个身份是否属于同一个互斥组 */
+function areArchetypesMutuallyExclusive(a, b) {
+  return ARCHETYPE_EXCLUSIVE_GROUPS.some(group =>
+    group.members.includes(a) && group.members.includes(b)
+  );
+}
+
+/* 对各互斥组进行仲裁：只保留组内得分最高的身份 */
+function resolveExclusiveArchetypeScores(scores) {
+  const resolved = { ...scores };
+
+  ARCHETYPE_EXCLUSIVE_GROUPS.forEach(group => {
+    const members = group.members.filter(key => (resolved[key] || 0) > 0);
+    if (members.length < 2) return;
+
+    const maxScore = Math.max(...members.map(key => resolved[key]));
+    const winners = members.filter(key => resolved[key] === maxScore);
+
+    if (winners.length === 1) {
+      // 有明确胜者：移除同组其他身份，避免主、副类型互相冲突。
+      members.forEach(key => {
+        if (key !== winners[0]) delete resolved[key];
+      });
+    } else {
+      // 最高分并列：不武断地偏向任意一方，整组暂不参与身份竞争。
+      members.forEach(key => delete resolved[key]);
+    }
+  });
+
+  return resolved;
+}
+
+/* =========================================================
+   身份类型计算
+   规则：
+   1. 命中态度信号（不管及不及格）→ 直接给 暴躁老哥 / i人
+   2. 及格且没命中态度信号 → 按分数段授予身份：
+      80 擦边怪 / 85 稳健老司机 / 90 老江湖 / 95 人形群公告 / 100 学霸
+   3. 未合格且没命中态度信号 → 走性格标签，并剔除 steady（及格专属身份）
+   4. newbie 作为兜底标签，不参与主类型竞争
+   5. 同一互斥组内只保留得分最高的身份；并列时该组不授予身份
+   6. 在所有非 newbie 标签中，最高分 >= 2 才算数
+   7. 副类型必须达到 2 分且不低于主类型的 60%，并且不能与主类型互斥
+   8. 否则回退为 newbie（萌新小白）
+   ========================================================= */
+function computeArchetype(pass, score) {
+  // 态度信号优先：选了暴躁 / i人 的选项，分数高低都按性格给身份。
+  const attitudeKey = detectAttitudeIdentity();
+  if (attitudeKey) {
+    return { primary: attitudeKey, secondary: null, scores: {}, pass };
+  }
+
+  if (pass) {
+    const identityKey = computeScoreIdentity(score);
+    if (identityKey) {
+      return { primary: identityKey, secondary: null, scores: {}, pass };
+    }
+  }
+
+  const scores = {};
+  state.questions.forEach(q => {
+    const sel = state.answers[q.id];
+    if (sel == null) return;
+    const origIdx = (q.origIndexMap && q.origIndexMap[sel] != null) ? q.origIndexMap[sel] : sel;
+    const row = TRAIT_TABLE[q.id];
+    const tags = row && row[origIdx] ? row[origIdx] : [];
+    tags.forEach(t => { scores[t] = (scores[t] || 0) + 1; });
+  });
+
+  if (!pass) delete scores.steady;
+
+  // newbie 只作为最终兜底，不与其他身份竞争。
+  delete scores.newbie;
+
+  // 先解决互斥关系，再进行主类型、副类型排序。
+  const compatibleScores = resolveExclusiveArchetypeScores(scores);
+  const priorityMap = Object.fromEntries(
+    ARCHETYPE_PRIORITY.map((key, index) => [key, index])
+  );
+  const sorted = Object.entries(compatibleScores).sort((a, b) =>
+    b[1] - a[1] ||
+    (priorityMap[a[0]] ?? Number.MAX_SAFE_INTEGER) -
+    (priorityMap[b[0]] ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  if (!sorted.length || sorted[0][1] < 2) {
+    return { primary: "newbie", secondary: null, scores, pass };
+  }
+
+  const [pKey, pScore] = sorted[0];
+  const secondaryEntry = sorted.slice(1).find(([key, sScore]) =>
+    sScore >= 2 &&
+    sScore >= pScore * 0.6 &&
+    !areArchetypesMutuallyExclusive(pKey, key)
+  );
+  const secondary = secondaryEntry ? secondaryEntry[0] : null;
+
+  return { primary: pKey, secondary, scores, pass };
+}
+function buildArchetypeHtml(info) {
+  const p = ARCHETYPES[info.primary] || ARCHETYPES.newbie;
+  const s = info.secondary ? ARCHETYPES[info.secondary] : null;
+
+  const mainHtml = `
+    <span class="arch-item">
+      <span class="arch-emoji">${p.emoji}</span>
+      <span class="arch-name">${escapeHtml(p.name)}</span>
+    </span>
+  `;
+  const secHtml = s
+    ? `<span class="arch-plus">×</span>
+       <span class="arch-item">
+         <span class="arch-emoji">${s.emoji}</span>
+         <span class="arch-name">${escapeHtml(s.name)}</span>
+       </span>`
+    : "";
+
+  return `
+    <div class="archetype-card">
+      <div class="archetype-label">你的身份类型</div>
+      <div class="archetype-main">${mainHtml}${secHtml}</div>
+      <div class="archetype-desc">${escapeHtml(p.desc)}</div>
+    </div>
+  `;
+}
+
+/* =========================
+   开始答题
+   ========================= */
+async function startQuiz() {
+  const input = document.getElementById("nicknameInput");
+  const startBtn = document.getElementById("startBtn");
+  const nickname = input.value.trim();
+
+  if (!nickname) {
+    alert("请先输入你的游戏昵称。");
+    input.focus();
+    return;
+  }
+  if (nickname.length > 20) {
+    alert("昵称太长了，请控制在 20 个字符以内。");
+    return;
+  }
+
+  if (!HASH_READY) {
+    const oldText = startBtn.textContent;
+    startBtn.disabled = true;
+    startBtn.textContent = "正在初始化…";
+    try {
+      await ensureHashesReady();
+    } catch (e) {
+      console.error(e);
+      alert("初始化失败，请刷新页面重试。");
+      startBtn.disabled = false;
+      startBtn.textContent = oldText;
+      return;
+    }
+    startBtn.disabled = false;
+    startBtn.textContent = oldText;
+  }
+
+  state.nickname = nickname;
+  state.answers = {};
+  state.results = [];
+  state.questions = buildQuestions();
+
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
+
+  document.getElementById("quizNickname").textContent = state.nickname;
+  document.getElementById("quizCount").textContent =
+    `共 ${state.questions.length} 题，每题约 ${(100 / state.questions.length).toFixed(2)} 分`;
+
+  renderQuestions();
+  scrollPageToTop();
+}
+
+/* =========================
+   重新答题
+   ========================= */
+function restartQuiz() {
+  if (!state.nickname) {
+    location.reload();
+    return;
+  }
+
+  state.answers = {};
+  state.results = [];
+  state.questions = buildQuestions();
+
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("quizScreen").classList.remove("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
+
+  document.getElementById("quizNickname").textContent = state.nickname;
+  document.getElementById("quizCount").textContent =
+    `共 ${state.questions.length} 题，每题约 ${(100 / state.questions.length).toFixed(2)} 分`;
+
+  renderQuestions();
+  scrollPageToTop();
+}
+
+/* =========================
+   渲染题目
+   ========================= */
+function renderQuestions() {
+  const list = document.getElementById("questionList");
+  list.innerHTML = "";
+
+  state.questions.forEach((q, index) => {
+    const card = document.createElement("div");
+    card.className = "question-card";
+    card.dataset.qid = q.id;
+
+    let optionsHtml = "";
+    q.displayOpts.forEach((opt, optIndex) => {
+      const inputId = `q_${q.id}_${optIndex}`;
+      optionsHtml += `
+        <label class="option-label" for="${inputId}">
+          <input type="radio" id="${inputId}" name="q_${q.id}" value="${optIndex}" />
+          <span>${escapeHtml(opt)}</span>
+        </label>
+      `;
+    });
+
+    card.innerHTML = `
+      <div class="question-title">
+        <span class="q-index">${index + 1}</span>
+        <span>${escapeHtml(q.q)}</span>
+      </div>
+      <div class="options">${optionsHtml}</div>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+/* =========================
+   提交答卷
+   ========================= */
+async function submitQuiz(event) {
+  event.preventDefault();
+  const submitBtn = document.getElementById("submitBtn");
+
+  const answers = {};
+  let firstUnanswered = null;
+
+  for (const q of state.questions) {
+    const checked = document.querySelector(`input[name="q_${q.id}"]:checked`);
+    if (!checked) {
+      if (!firstUnanswered) firstUnanswered = q.id;
+      continue;
+    }
+    answers[q.id] = Number(checked.value);
+  }
+
+  if (firstUnanswered) {
+    alert("还有题目没有作答，请完成所有题目后再提交。");
+    const target = document.querySelector(`.question-card[data-qid="${firstUnanswered}"]`);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  state.answers = answers;
+
+  const oldText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "正在判分…";
+
+  try {
+    await ensureHashesReady();
+
+    let correctCount = 0;
+    const results = [];
+    for (const q of state.questions) {
+      const selectedIndex = state.answers[q.id];
+      const selectedText = q.displayOpts[selectedIndex];
+      const ok = await checkAnswerByText(q.id, selectedText);
+      if (ok) correctCount++;
+      results.push({ qid: q.id, ok });
+    }
+
+    const score = (correctCount * 100) / state.questions.length;
+    const scoreText = score.toFixed(2);
+    const pass = score >= PASS_SCORE - 1e-9;
+
+    state.results = results;
+    renderResult(correctCount, scoreText, pass, results, score);
+
+    document.getElementById("quizScreen").classList.add("hidden");
+    document.getElementById("resultScreen").classList.remove("hidden");
+
+    scrollPageToTop();
+  } catch (e) {
+    console.error(e);
+    alert("判分失败，请重试。");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText;
+  }
+}
+
+/* =========================
+   渲染错题
+   ========================= */
+function buildWrongListHtml(results) {
+  const resultMap = new Map(results.map(r => [r.qid, r.ok]));
+  const wrongQuestions = state.questions.filter(q => !resultMap.get(q.id));
+
+  if (wrongQuestions.length === 0) {
+    return `<div class="wrong-item all-correct">
+      <div class="wrong-question">本次没有答错题。</div>
+    </div>`;
+  }
+
+  let html = "";
+  wrongQuestions.forEach((q, idx) => {
+    const userChoice = state.answers[q.id];
+
+    let optionHtml = "";
+    q.displayOpts.forEach((opt, optIndex) => {
+      const selected = optIndex === userChoice;
+      optionHtml += `
+        <div class="wrong-option ${selected ? "selected" : ""}">
+          ${escapeHtml(opt)}
+          ${selected ? '<span class="your-choice-tag">你的选择</span>' : ""}
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="wrong-item">
+        <div class="wrong-question">第 ${idx + 1} 道答错题：${escapeHtml(q.q)}</div>
+        <div class="wrong-options">${optionHtml}</div>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+/* =========================
+   渲染结果
+   ========================= */
+function renderResult(correctCount, scoreText, pass, results, score) {
+  const content = document.getElementById("captureContent");
+  const total = state.questions.length;
+  const wrongListHtml = buildWrongListHtml(results);
+
+  const archetypeInfo = computeArchetype(pass, score);
+  const archetypeHtml = buildArchetypeHtml(archetypeInfo);
+
+  const actionsHtml = `
+    <div class="inline-actions">
+      <div class="share-tip">
+        ${pass
+          ? `面试已通过！请 <strong>一键截图</strong> 后发给家族管理验证～`
+          : `请 <strong>一键截图</strong> 后发给家族管理查看错题，复习后再来挑战～`}
+      </div>
+      <div class="btn-row">
+        <button id="captureBtn" class="btn btn-primary" onclick="captureResult()">一键截图</button>
+        <button class="btn btn-secondary" onclick="restartQuiz()">重新答题</button>
+      </div>
+    </div>
+  `;
+
+  if (pass) {
+    content.innerHTML = `
+      <div class="result-card pass">
+        <h2>恭喜合格</h2>
+        <div class="nick">答题者：${escapeHtml(state.nickname)}</div>
+        <div class="score">${scoreText} 分</div>
+        <div class="sub">
+          答对 ${correctCount} / ${total} 题<br />
+          欢迎加入新手保护协会，期待与你一起冒险。
+        </div>
+      </div>
+      ${archetypeHtml}
+      ${actionsHtml}
+      <div class="wrong-title">答错题目回顾</div>
+      ${wrongListHtml}
+    `;
+  } else {
+    content.innerHTML = `
+      <div class="result-card fail">
+        <h2>很遗憾，未合格</h2>
+        <div class="nick">答题者：${escapeHtml(state.nickname)}</div>
+        <div class="score">${scoreText} 分</div>
+        <div class="sub">
+          答对 ${correctCount} / ${total} 题<br />
+          合格线为 ${PASS_SCORE} 分，请复习下方错题后再来挑战。
+        </div>
+      </div>
+      ${archetypeHtml}
+      ${actionsHtml}
+      <div class="wrong-title">错题回顾</div>
+      ${wrongListHtml}
+    `;
+  }
+
+  const nickEl = document.getElementById("capFooterNick");
+  const timeEl = document.getElementById("capFooterTime");
+  if (nickEl) nickEl.textContent = state.nickname || "-";
+  if (timeEl) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    timeEl.textContent =
+      `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+      `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+}
+
+/* =========================================================
+   截图合成
+   ========================================================= */
+const CAP_SCALE = 2;
+const CAP_PAD_X = 26;
+const CAP_HEADER_H = 88;
+const CAP_FOOTER_H = 96;
+
+function drawTiledWatermark(ctx, width, height) {
+  const tileW = 640 * CAP_SCALE;
+  const tileH = 220 * CAP_SCALE;
+  const text = "新手保护协会 · 入会申请面试";
+
+  ctx.save();
+  ctx.fillStyle = "rgba(7, 131, 95, 0.07)";
+  ctx.font = `700 ${30 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const diagonal = Math.ceil(Math.sqrt(width * width + height * height)) + Math.max(tileW, tileH);
+
+  ctx.translate(width / 2, height / 2);
+  ctx.rotate(-Math.PI / 4);
+
+  let rowIndex = 0;
+  for (let y = -diagonal / 2; y <= diagonal / 2; y += tileH) {
+    const offsetX = (rowIndex % 2 === 0) ? 0 : tileW / 2;
+    for (let x = -diagonal / 2 + offsetX; x <= diagonal / 2 + offsetX; x += tileW) {
+      ctx.fillText(text, x, y);
+    }
+    rowIndex++;
+  }
+  ctx.restore();
+}
+
+function drawDashedLine(ctx, x1, y, x2) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(7, 131, 95, 0.3)";
+  ctx.lineWidth = 1 * CAP_SCALE;
+  ctx.setLineDash([4 * CAP_SCALE, 4 * CAP_SCALE]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y);
+  ctx.lineTo(x2, y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+async function composeFinalCanvas(contentCanvas) {
+  const padX = CAP_PAD_X * CAP_SCALE;
+  const headerH = CAP_HEADER_H * CAP_SCALE;
+  const footerH = CAP_FOOTER_H * CAP_SCALE;
+
+  const contentW = contentCanvas.width;
+  const contentH = contentCanvas.height;
+
+  const finalW = contentW + padX * 2;
+  const finalH = headerH + contentH + footerH;
+
+  const final = document.createElement("canvas");
+  final.width = finalW;
+  final.height = finalH;
+  const ctx = final.getContext("2d");
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, finalW, finalH);
+
+  ctx.save();
+  ctx.fillStyle = "#075c45";
+  ctx.font = `700 ${20 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, headerH * 0.42);
+
+  ctx.fillStyle = "#4f7468";
+  ctx.font = `400 ${13 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  ctx.fillText("入会申请面试结果单", finalW / 2, headerH * 0.42 + 26 * CAP_SCALE);
+  ctx.restore();
+
+  drawDashedLine(ctx, padX, headerH - 8 * CAP_SCALE, finalW - padX);
+
+  ctx.drawImage(contentCanvas, padX, headerH);
+
+  const footerTop = headerH + contentH;
+  drawDashedLine(ctx, padX, footerTop + 8 * CAP_SCALE, finalW - padX);
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  const timeStr =
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+    `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillStyle = "#5c7b70";
+  ctx.font = `400 ${12 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  ctx.fillText(`答题者：${state.nickname || "-"}`, finalW / 2, footerTop + 28 * CAP_SCALE);
+  ctx.fillText(`生成时间：${timeStr}`, finalW / 2, footerTop + 46 * CAP_SCALE);
+
+  ctx.fillStyle = "#07835f";
+  ctx.font = `700 ${12 * CAP_SCALE}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  ctx.fillText("新手保护协会 · 入会申请面试", finalW / 2, footerTop + 68 * CAP_SCALE);
+  ctx.restore();
+
+  drawTiledWatermark(ctx, finalW, finalH);
+
+  return final;
+}
+
+/* =========================================================
+   截图入口
+   ========================================================= */
+function canvasToBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error("toBlob returned null"));
+      }, "image/png");
+    } else {
+      try {
+        const dataUrl = canvas.toDataURL("image/png");
+        const bin = atob(dataUrl.split(",")[1]);
+        const len = bin.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+        resolve(new Blob([bytes], { type: "image/png" }));
+      } catch (e) {
+        reject(e);
+      }
+    }
+  });
+}
+
+async function captureResult() {
+  if (isCapturing) return;
+  const content = document.getElementById("captureContent");
+  const actionsToHide = content.querySelector(".inline-actions");
+
+  if (typeof html2canvas !== "function") {
+    alert("截图库尚未加载成功，请检查网络后刷新页面重试。");
+    return;
+  }
+
+  isCapturing = true;
+  if (actionsToHide) actionsToHide.style.display = "none";
+  showLoading("正在生成截图…");
+
+  let finalCanvas = null;
+  try {
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const contentCanvas = await html2canvas(content, {
+      backgroundColor: "#ffffff",
+      scale: CAP_SCALE,
+      useCORS: true,
+      logging: false,
+      windowWidth: document.documentElement.clientWidth,
+      windowHeight: document.documentElement.clientHeight
+    });
+
+    finalCanvas = await composeFinalCanvas(contentCanvas);
+  } catch (err) {
+    console.error(err);
+    alert("截图生成失败，请重试。");
+    return;
+  } finally {
+    if (actionsToHide) actionsToHide.style.display = "";
+    hideLoading();
+    isCapturing = false;
+  }
+
+  const safeNick = (state.nickname || "答题者").replace(/[\\/:*?"<>|]/g, "_");
+  const resultName = document.querySelector(".result-card.pass") ? "合格" : "不合格";
+  const fileName = `新手保护协会_${safeNick}_${resultName}.png`;
+
+  if (isMobileDevice()) {
+    await tryShareOrPreview(finalCanvas, fileName);
+  } else {
+    const ok = await tryDownload(finalCanvas, fileName);
+    if (!ok) openCaptureModal(finalCanvas, fileName);
+  }
+}
+
+async function tryDownload(canvas, fileName) {
+  try {
+    const blob = await canvasToBlob(canvas);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = url;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return true;
+  } catch (e) {
+    console.warn("download failed", e);
+    return false;
+  }
+}
+
+async function tryShareOrPreview(canvas, fileName) {
+  let canShareFiles = false;
+  try {
+    const testFile = new File([new Blob(["x"], { type: "image/png" })], "test.png", { type: "image/png" });
+    canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [testFile] }));
+  } catch (e) {
+    canShareFiles = false;
+  }
+
+  if (canShareFiles) {
+    try {
+      const blob = await canvasToBlob(canvas);
+      const file = new File([blob], fileName, { type: "image/png" });
+      await navigator.share({
+        files: [file],
+        title: "新手保护协会 · 入会申请面试结果"
+      });
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return;
+      console.warn("share failed", e);
+    }
+  }
+
+  openCaptureModal(canvas, fileName);
+}
+
+function openCaptureModal(canvas, fileName) {
+  const existing = document.querySelector(".capture-modal");
+  if (existing) existing.remove();
+
+  let dataUrl;
+  try {
+    dataUrl = canvas.toDataURL("image/png");
+  } catch (e) {
+    alert("生成图片失败，请重试。");
+    return;
+  }
+
+  let canShareFiles = false;
+  try {
+    const testFile = new File([new Blob(["x"], { type: "image/png" })], "test.png", { type: "image/png" });
+    canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [testFile] }));
+  } catch (e) {
+    canShareFiles = false;
+  }
+  const canDownload = "download" in document.createElement("a");
+
+  const modal = document.createElement("div");
+  modal.className = "capture-modal";
+  modal.innerHTML = `
+    <div class="capture-modal-inner">
+      <div class="capture-modal-header">面试结果截图</div>
+      <div class="capture-modal-body">
+        <img src="${dataUrl}" alt="面试结果截图" />
+        <div class="capture-modal-tip"></div>
+      </div>
+      <div class="capture-modal-actions"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const tipEl = modal.querySelector(".capture-modal-tip");
+  const actionsEl = modal.querySelector(".capture-modal-actions");
+
+  if (canShareFiles) {
+    tipEl.textContent = "点击「保存到相册」，然后在系统弹窗中选择「存储图像」。";
+  } else if (canDownload) {
+    tipEl.textContent = "点击「下载图片」保存；若未响应，请长按上方图片选择「存储图像」。";
+  } else {
+    tipEl.textContent = "请长按上方图片，选择「存储图像」或「保存图片」。";
+  }
+
+  if (canShareFiles || canDownload) {
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn btn-primary";
+    saveBtn.textContent = canShareFiles ? "保存到相册" : "下载图片";
+    saveBtn.onclick = async () => {
+      saveBtn.disabled = true;
+      const old = saveBtn.textContent;
+      saveBtn.textContent = "正在保存…";
+      try {
+        let blob;
+        try {
+          blob = await canvasToBlob(canvas);
+        } catch (e) {
+          alert("生成图片失败，请长按上方图片保存。");
+          return;
+        }
+
+        if (canShareFiles) {
+          try {
+            const file = new File([blob], fileName, { type: "image/png" });
+            await navigator.share({
+              files: [file],
+              title: "新手保护协会 · 入会申请面试结果"
+            });
+            return;
+          } catch (e) {
+            if (e && e.name === "AbortError") return;
+          }
+        }
+
+        if (canDownload) {
+          try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.download = fileName;
+            a.href = url;
+            a.style.display = "none";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            return;
+          } catch (e) {}
+        }
+
+        alert("当前浏览器不支持直接保存，请长按上方图片选择「存储图像」。");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = old;
+      }
+    };
+    actionsEl.appendChild(saveBtn);
+  }
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn btn-secondary";
+  closeBtn.textContent = "关闭";
+  closeBtn.onclick = () => modal.remove();
+  actionsEl.appendChild(closeBtn);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+/* =========================
+   初始化
+   ========================= */
+fillWatermark(document.getElementById("watermark"));
+
+(function initMeta() {
+  const vEl = document.getElementById("versionTag");
+  if (vEl) vEl.textContent = APP_VERSION;
+  const dEl = document.getElementById("bankDate");
+  if (dEl) dEl.textContent = "题库更新 " + BANK_UPDATED_AT;
+})();
+
+ensureHashesReady().catch(err => console.error("hash init failed", err));
+
+(function initNicknameInput() {
+  const input = document.getElementById("nicknameInput");
+  const originalPlaceholder = input.getAttribute("placeholder") || "请输入游戏昵称";
+
+  input.addEventListener("focus", function () {
+    input.setAttribute("placeholder", "");
+  });
+  input.addEventListener("blur", function () {
+    if (!input.value.trim()) {
+      input.setAttribute("placeholder", originalPlaceholder);
+    }
+  });
+  input.addEventListener("input", function () {
+    if (input.value) {
+      input.setAttribute("placeholder", "");
+    } else if (document.activeElement !== input) {
+      input.setAttribute("placeholder", originalPlaceholder);
+    }
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      startQuiz();
+    }
+  });
+})();
+</script>
+
+<!-- ===== 资源导航：返回首页（由首页统一挂载） ===== -->
+<style>
+  .xsbhxh-home {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .93);
+    color: #075c45;
+    font: 700 13px/1 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    text-decoration: none;
+    letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+    border: 1px solid rgba(7, 131, 95, .24);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, transform .18s ease;
+  }
+  .xsbhxh-home:hover { background: #fff; transform: translateY(-1px); }
+  .xsbhxh-home:focus-visible { outline: 3px solid rgba(7, 131, 95, .45); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .xsbhxh-home { left: 10px; bottom: 10px; padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+<a class="xsbhxh-home" href="../index.html" aria-label="返回首页导航">
+  <span aria-hidden="true">&#8962;</span> 首页
+</a>
+<!-- ===== 资源导航结束 ===== -->
+</body>
+</html>

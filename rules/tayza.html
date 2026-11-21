@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WingsMS新手保护联盟 · 泰扎副本规则</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #fdf8f0;
+            --card-bg: #ffffff;
+            --text: #4a3b2f;
+            --text-soft: #6b5e4f;
+            --gold: #b8861e;
+            --gold-light: #d4a843;
+            --accent: #8b5a2b;
+            --highlight: #a0522d;
+            --border-soft: #e5d5b5;
+            --shadow-sm: 0 2px 8px rgba(139, 90, 43, 0.08);
+            --shadow-card: 0 4px 16px rgba(139, 90, 43, 0.06);
+            --font-serif: 'Noto Serif SC', 'STSong', 'Songti SC', 'KaiTi', '楷体', '华文楷体', serif;
+            --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5efe0;
+            background-image: radial-gradient(circle at 20% 10%, rgba(212, 168, 67, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(180, 140, 80, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-sans);
+            padding: 30px 16px;
+            color: var(--text);
+            line-height: 1.65;
+        }
+
+        .main-wrapper {
+            max-width: 880px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* 截图区域 */
+        #screenshot-area {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius);
+            padding: 36px 32px 28px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            background-image: linear-gradient(to bottom, #fffdf7, #fffbf2);
+        }
+
+        #screenshot-area::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 24px;
+            right: 24px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4a843, #e0c78a, #d4a843, transparent);
+            opacity: 0.4;
+        }
+
+        /* 头部标识 */
+        .clan-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .clan-badge {
+            display: inline-block;
+            background: #fef9e7;
+            border: 1px solid #e7cfa0;
+            border-radius: 30px;
+            padding: 6px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #8b5a2b;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 4px rgba(139, 90, 43, 0.08);
+            font-family: var(--font-serif);
+        }
+
+        .clan-badge .icon-shield {
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+
+        .main-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #5e3a1c;
+            letter-spacing: 0.06em;
+            margin: 8px 0 4px;
+        }
+
+        .sub-title {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            letter-spacing: 0.1em;
+            font-weight: 400;
+        }
+
+        .description-box {
+            background: #fdf8ee;
+            border: 1px dashed #d4a843;
+            border-radius: 8px;
+            padding: 10px 18px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #5e3a1c;
+        }
+
+        .description-box strong {
+            color: #a0522d;
+            margin: 0 3px;
+        }
+
+        .divider-simple {
+            margin: 20px 0 22px;
+            border-top: 1px dashed #d6c09b;
+            opacity: 0.6;
+        }
+
+        /* 规则卡片 */
+        .rules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .rule-card {
+            background: #fffcf5;
+            border: 1px solid #f0e4ce;
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+            border-left: 4px solid #e0c080;
+        }
+
+        .rule-card:hover {
+            border-left-color: #b8861e;
+            background: #fffef9;
+        }
+
+        .rule-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rule-icon {
+            font-size: 1.3rem;
+            color: #8b5a2b;
+            background: #f8f0e0;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rule-title {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #5e3a1c;
+            letter-spacing: 0.03em;
+        }
+
+        .rule-body {
+            font-size: 0.92rem;
+            color: var(--text);
+            padding-left: 42px;
+            line-height: 1.7;
+        }
+
+        .rule-body p {
+            margin: 4px 0;
+        }
+
+        .rule-body .highlight {
+            color: #a0522d;
+            font-weight: 600;
+        }
+
+        .rule-body .note {
+            color: var(--text-soft);
+            font-size: 0.84rem;
+            font-style: italic;
+        }
+
+        .rule-body .warning {
+            color: #c0392b;
+            font-weight: 600;
+        }
+
+        .inline-list {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0;
+        }
+
+        .inline-list li {
+            padding: 4px 0 4px 20px;
+            position: relative;
+            border-bottom: 1px dotted rgba(180, 140, 80, 0.2);
+        }
+
+        .inline-list li:last-child {
+            border-bottom: none;
+        }
+
+        .inline-list li::before {
+            content: '◇';
+            position: absolute;
+            left: 0;
+            color: #b8861e;
+            font-size: 10px;
+            top: 4px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f5efe0;
+            color: #8b5a2b;
+            padding: 2px 12px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            margin: 0 2px;
+            border: 1px solid #e5d5b5;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.78rem;
+            color: #b8a080;
+            letter-spacing: 0.05em;
+        }
+
+        /* 按钮区域 */
+        .button-area {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+            font-family: inherit;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-screenshot {
+            background: #8b5a2b;
+            color: #fff;
+        }
+
+        .btn-screenshot:hover {
+            background: #a0522d;
+            box-shadow: 0 4px 16px rgba(139, 90, 43, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-copy {
+            background: #fff;
+            color: #5e3a1c;
+            border: 1.5px solid #d4a843;
+        }
+
+        .btn-copy:hover {
+            background: #fef9e7;
+            border-color: #b8861e;
+            box-shadow: 0 4px 14px rgba(180, 120, 40, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #4a3b2f;
+            color: #fdf8f0;
+            padding: 12px 26px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            border: 1px solid #b8861e;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: #2e7d32;
+            background: #2e4a2e;
+            color: #e0f0e0;
+        }
+
+        @media (max-width: 600px) {
+            #screenshot-area {
+                padding: 24px 16px 20px;
+            }
+
+            .rule-body {
+                padding-left: 28px;
+                font-size: 0.85rem;
+            }
+
+            .main-title {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="main-wrapper">
+        <!-- 截图核心区域 -->
+        <div id="screenshot-area">
+            <!-- 头部标识 -->
+            <div class="clan-header">
+                <div class="clan-badge">
+                    <span class="icon-shield">🛡️</span> WingsMS新手保护联盟 <span class="icon-shield">🛡️</span>
+                </div>
+                <h1 class="main-title">泰扎副本规则</h1>
+                <p class="sub-title">· 令 行 禁 止 · 公 平 高 效 ·</p>
+                <div class="description-box">
+                    📌 泰扎副本注意要点：<strong>罚款分明</strong> ｜ <strong>流程严格</strong> ｜ <strong>奶妈补助</strong>
+                </div>
+            </div>
+            <div class="divider-simple"></div>
+
+            <!-- 规则卡片组 -->
+            <div class="rules-container">
+
+                <!-- 报名与开团标准 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">📋</span>
+                        <span class="rule-title">报名与开团</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>每天一条日常结束以后，由<span class="highlight">当日团长</span>发布公告并立即开始次日泰扎主力队伍报名。
+                        <p>由团长判断报名人员<span class="highlight">实力足够</span>即开团。</p>
+                        <p>开团前团长会对名单配置优化，尽量保证每队<span class="highlight">火、眼、拳</span>齐全。</p>
+                        <p><span class="highlight">已登记报名者</span>若有事无法参加，需至少提前<span
+                                class="highlight">1小时</span>说明，以便安排替补，否则视为爽约。</p>
+                        <p class="note">※ 泰扎无前置任务，但背包里必须有“太阳火花”道具，可在自由市场买一个</p>
+                    </div>
+                </div>
+
+                <!-- 开团时间 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🕖</span>
+                        <span class="rule-title">开团时间</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>根据<span class="highlight">报名集合时间</span>在<span class="highlight">旅游地图黄金寺院</span>左侧<span
+                                class="highlight">"守卫兵"NPC</span>右侧<span class="highlight">光门内</span>地图集合（或听团长安排）。</p>
+                        <p>奶妈以及队长（火或眼）<span class="highlight">必须准时</span>到位，负责接引各队成员进线抢线。</p>
+                        <p>每日到达集合时间后<span class="highlight">报名表将锁定</span>，并<span
+                                class="highlight">优先按照填表决定</span>远征队成员，超过集合时间<span
+                                class="highlight">10分钟</span>还未到达的主力队成员视为迟到，自动放弃资格，由团长从单挂/替补席递补成员。</p>
+                        <p><span class="highlight">迟到</span>或<span class="highlight">爽约</span>，会进入<span
+                                class="highlight">家族远征未守约黑名单记录</span>，一周内累计<span class="highlight">2次迟到</span>或<span
+                                class="highlight">1次爽约</span>将禁止参与家族远征<span class="highlight">3天</span>。</p>
+                        <p class="note">※ 单挂人员迟到不等，主力人齐且登记确认后立即开团。</p>
+                    </div>
+                </div>
+
+
+                <!-- KOOK语音 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🎙️</span>
+                        <span class="rule-title">KOOK语音</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>所有参团人员请进入联盟KOOK频道（听从指挥，提高效率）。<span
+                                class="highlight">奶妈、火、队长</span>务必进入语音，单挂成员也建议进入，以便收听血量播报及上下线通知。</p>
+                        <p>要带<span class="highlight">家族外</span>的朋友进远征主力队或单挂，必须让朋友也进入<span
+                                class="highlight">KOOK语音与QQ群</span>，保证沟通效率，否则<span class="highlight">无权Roll道具或扫地</span>。
+                        </p>
+                        <p>联盟KOOK地址：<span class="highlight">https://kook.vip/gDnx1j</span></p>
+                        <p>联盟KOOK ID：<span class="highlight">47625960</span></p>
+                    </div>
+                </div>
+
+                <!-- 职业门槛 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🏅</span>
+                        <span class="rule-title">主力队门槛与要求</span>
+                    </div>
+                    <div class="rule-body">
+                        <ul class="inline-list">
+                            <li><span class="highlight">主力奶妈：</span>需拥有圣灵20，无火状态下血量不低于4500。</li>
+                            <li><span class="highlight">输出职业：</span>最低135级，血量不低于6000。</li>
+                            <li><span class="highlight">职业要求：</span>圣骑士必须完成四转。冲锋队长"极速领域"技能点到11点，黑骑士队长须四转。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 分红 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">💰</span>
+                        <span class="rule-title">分红</span>
+                    </div>
+                    <div class="rule-body">
+                        <p><span class="highlight">分红：</span>所有除腰带和卡片以外的地板由<span
+                                class="highlight">团长统一捡取</span>，卖出后进行<span class="highlight">收益均分</span>（仅主力队获得）。
+                        </p>
+                        <p><span class="highlight">泰扎卡：</span><span class="highlight">满足门槛要求</span>的主力队成员<span
+                                class="highlight">优先</span>Roll点，前者无人需求时，再由<span
+                                class="highlight">不满足门槛要求</span>的主力队成员Roll点。</p>
+                        <ul class="inline-list">
+                            <li><span class="highlight">泰扎腰带（有老板包场）：</span>全部<span class="highlight">由老板拾取</span>。</li>
+                            <li><span class="highlight">泰扎腰带（无包场/包场但有多余）：</span><span
+                                    class="highlight">满足门槛要求</span>的主力队成员<span class="highlight">优先</span>Roll点<span
+                                    class="highlight">免费</span>拾取，前者无人需求时，再由<span
+                                    class="highlight">不满足门槛要求</span>的主力队成员Roll点，并以 <span class="highlight">泰扎包场市场价 ÷
+                                    腰带数量</span> 的价格购买。</li>
+                            <li>进入家族<span class="highlight">满一周</span>以上的成员购买腰带可以享受内部价<span class="highlight">9折</span>优惠。每人每周仅限包腰带一次。</li>
+                            <li><span class="highlight">购买腰带</span>所有的费用以及<span class="highlight">地板价值</span>以<span
+                                    class="highlight">总价</span>经<span class="highlight">家族税收</span>计算后<span
+                                    class="highlight">计入总分红</span>，税收规则为与自由摆摊一致的<span class="highlight">阶梯税率</span>。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 毛装备罚款 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">💸</span>
+                        <span class="rule-title">误捡罚款规则</span>
+                    </div>
+                    <div class="rule-body">
+                        <ul class="inline-list">
+                            <li><span class="highlight">毛卡：</span>罚款 <span
+                                    class="warning">300W</span>（150W归老板或roll卡归属人，150W归团队）。一场约4张卡。</li>
+                            <li><span class="highlight">毛腰带：</span>罚款 <span
+                                    class="warning">600W</span>（300W归老板或roll腰带归属人，300W归团队）。一场约3-5个腰带，罚款根据市场调节。</li>
+                            <li>若有老板包场，腰带均属于老板，其他人请勿拾取！误捡同样按上述标准罚款。</li>
+                            <li><span class="highlight">忘记下绿包而扫地：</span>归还所捡掉落物给当场丢眼团长，并罚<span
+                                    class="warning">3个扎昆火眼</span>给团长。若扫地后跑路，直接挂KOOK。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 违规累积惩罚 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">⚖️</span>
+                        <span class="rule-title">违规累积处罚</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>发生任意毛卡、毛装备、误捡等违规情况：第1次罚款，<span class="warning">一个月内第2次</span>发生，禁止参与家族远征三天；<span
+                                class="warning">一个月内</span>累计发生<span class="warning">3次</span>者，将被踢出家族。</p>
+                    </div>
+                </div>
+
+
+
+                <!-- 战斗流程 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">⚔️</span>
+                        <span class="rule-title">泰扎战斗流程</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>丢火花后 → 奶妈开圣灵 → 输出将泰扎推到右边打，<span class="highlight">全程洗澡</span>，<span
+                                class="warning">火不能断，神之保护不能断</span>。当泰扎血量降至<span
+                                class="highlight">3%</span>时，奶妈再次开圣灵，输出将泰扎推到中间打死。</p>
+                    </div>
+                </div>
+
+
+
+                <!-- 团长裁定 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">📜</span>
+                        <span class="rule-title">其他突发状况</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>为覆盖规则外的一切突发状况，任何其他情况由<span class="highlight">团长当场决定</span>，全员需服从安排。</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-note">
+                ◆ WingsMS新手保护联盟 · 泰扎共守 ◆
+            </div>
+        </div>
+
+        <!-- 按钮区（不进入截图） -->
+        <div class="button-area" id="button-area">
+            <button class="btn btn-screenshot" onclick="captureScreenshot()">
+                <span>📸</span> 保存截图
+            </button>
+            <button class="btn btn-copy" onclick="copyText()">
+                <span>📄</span> 复制规则文本
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type + ' show';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        function captureScreenshot() {
+            const area = document.getElementById('screenshot-area');
+            const btns = document.getElementById('button-area');
+            const origDisplay = btns.style.display;
+            btns.style.display = 'none';
+
+            setTimeout(() => {
+                html2canvas(area, {
+                    backgroundColor: '#fffcf5',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                }).then(canvas => {
+                    btns.style.display = origDisplay;
+                    const link = document.createElement('a');
+                    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                    link.download = `WingsMS泰扎副本规则_${ts}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast('✅ 截图已保存！', 'success');
+                }).catch(err => {
+                    btns.style.display = origDisplay;
+                    console.error(err);
+                    showToast('❌ 截图失败，请重试');
+                });
+            }, 120);
+        }
+
+        function copyText() {
+            const text = `WingsMS新手保护联盟 · 泰扎副本规则
+
+KOOK语音
+所有参团人员请进入联盟KOOK频道（听从指挥，提高效率）。奶妈、火、队长务必进入语音，单挂成员也建议进入，以便收听血量播报及上下线通知。
+联盟KOOK地址：https://kook.vip/ow7035
+联盟KOOK ID：47625960
+
+误捡罚款规则
+- 毛卡：罚款300W（150W归老板或roll卡归属人，150W归团队）。一场约4张卡。
+- 毛腰带：罚款600W（300W归老板或roll腰带归属人，300W归团队）。一场约3-5个腰带，罚款根据市场调节。
+- 若有老板包场，腰带、珠子、卡片均属于老板，其他人请勿拾取！误捡同样按上述标准罚款。
+- 忘记下绿包而扫地：归还所捡掉落物给当场丢眼团长，并罚3个扎昆火眼给团长。若扫地后跑路，直接挂KOOK。
+
+违规累积处罚
+发生任意毛卡、毛装备、误捡等违规情况：第1次罚款，一周内第2次发生，禁止参与家族远征三天；累计发生3次者，将被踢出家族。
+
+分红与奶妈补助
+分红：收入均分，所有装备由团长统一捡取，交由族长卖出后进行分红。
+奶妈补助：家族将使用家族资金提供市场价奶补 + 额外25%补助。例如市场价奶补200W，则泰扎奶妈获得200W奶补 + 50W补助。若奶妈中途死亡，则只能获得50W补助。
+
+泰扎战斗流程
+丢火花后 → 奶妈开圣灵 → 输出将泰扎推到右边打，全程洗澡，火不能断，神之保护不能断。当泰扎血量降至3%时，奶妈再次开圣灵，输出将泰扎推到中间打死。
+
+职业门槛与要求
+- 主力奶妈：需拥有圣灵20，无火状态下血量不低于4500。
+- 输出职业：最低126级，血量不低于6000。
+- 骑士要求：必须完成四转。冲锋队长“极速领域”技能点到11点，黑骑士队长须四转。
+
+其他突发状况
+为覆盖规则外的一切突发状况，任何其他情况由团长当场决定，全员需服从安排。`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('✅ 规则文本已复制！', 'success');
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ 规则文本已复制！', 'success');
+            } catch (e) { showToast('❌ 复制失败，请手动选择'); }
+            document.body.removeChild(ta);
+        }
+    </script>
+
+<!-- ===== 资源导航：返回首页（由首页统一挂载） ===== -->
+<style>
+  .xsbhxh-home {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .93);
+    color: #075c45;
+    font: 700 13px/1 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    text-decoration: none;
+    letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+    border: 1px solid rgba(7, 131, 95, .24);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, transform .18s ease;
+  }
+  .xsbhxh-home:hover { background: #fff; transform: translateY(-1px); }
+  .xsbhxh-home:focus-visible { outline: 3px solid rgba(7, 131, 95, .45); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .xsbhxh-home { left: 10px; bottom: 10px; padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+<a class="xsbhxh-home" href="../index.html" aria-label="返回首页导航">
+  <span aria-hidden="true">&#8962;</span> 首页
+</a>
+<!-- ===== 资源导航结束 ===== -->
+</body>
+
+</html>

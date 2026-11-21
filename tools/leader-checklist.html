@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>团长检查清单 · WingsMS 新手保护联盟</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 36px 16px 150px;
+    background: #eef1f7;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  /* ================= 截图容器 ================= */
+  #capture {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 26px 64px -22px rgba(15, 23, 42, .22),
+                0 0 0 1px rgba(15, 23, 42, .045);
+    overflow: hidden;
+  }
+
+  /* ================= 页头 ================= */
+  .hero {
+    padding: 38px 48px 34px;
+    background: #111827;
+    color: #fff;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    padding: 6px 18px 6px 7px;
+    margin-bottom: 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .13);
+  }
+  .brand-mark {
+    padding: 3px 11px;
+    border-radius: 999px;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .6px;
+  }
+  .brand-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+    letter-spacing: 1.2px;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 1.25;
+  }
+
+  .hero-sub {
+    margin: 10px 0 0;
+    font-size: 15px;
+    color: #94a3b8;
+    letter-spacing: .6px;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .1);
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .hero-meta b { color: #818cf8; font-weight: 800; }
+
+  /* ---- 顶部清除打勾按钮 ---- */
+  #clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .13);
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .16s ease, border-color .16s ease,
+                color .16s ease, transform .16s ease;
+  }
+  #clear:hover {
+    background: rgba(239, 68, 68, .2);
+    border-color: rgba(248, 113, 113, .5);
+    color: #fca5a5;
+    transform: translateY(-1px);
+  }
+  #clear:active { transform: translateY(0) scale(.97); }
+  #clear:focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; }
+  #clear svg { width: 14px; height: 14px; }
+
+  /* ================= 分区 ================= */
+  .sec { padding: 30px 48px 8px; }
+  .sec:last-of-type { padding-bottom: 40px; }
+
+  .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 18px;
+  }
+
+  .sec-icon {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14.5px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .5px;
+  }
+
+  .sec-head h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 20.5px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    color: #0f172a;
+  }
+
+  .sec-count {
+    flex: 0 0 auto;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- 分区导语 ---- */
+  .sec-note {
+    margin: -6px 0 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px dashed rgba(15, 23, 42, .14);
+    font-size: 14.5px;
+    color: #475569;
+    letter-spacing: .2px;
+  }
+
+  /* ---- 分区配色 ---- */
+  .sec-1 .sec-icon, .sec-1 .sec-count, .sec-1 .item-num { background: #eef2ff; color: #4f46e5; }
+  .sec-1 .item { background: #f7f8ff; }
+
+  .sec-2 .sec-icon, .sec-2 .sec-count, .sec-2 .item-num { background: #ecfdf5; color: #059669; }
+  .sec-2 .item { background: #f4fdf9; }
+
+  .sec-3 .sec-icon, .sec-3 .sec-count, .sec-3 .item-num { background: #f5f3ff; color: #7c3aed; }
+  .sec-3 .item { background: #faf8ff; }
+
+  .sec-4 .sec-icon, .sec-4 .sec-count, .sec-4 .item-num { background: #fff7ed; color: #ea580c; }
+  .sec-4 .item { background: #fffaf4; }
+
+  .sec-5 .sec-icon, .sec-5 .sec-count, .sec-5 .item-num { background: #eff6ff; color: #2563eb; }
+  .sec-5 .item { background: #f6f9ff; }
+
+  .sec-6 .sec-icon, .sec-6 .sec-count, .sec-6 .item-num { background: #fff1f2; color: #e11d48; }
+  .sec-6 .item { background: #fff7f8; }
+
+  .sec-7 .sec-icon, .sec-7 .sec-count, .sec-7 .item-num { background: #ecfeff; color: #0891b2; }
+  .sec-7 .item { background: #f5fdfe; }
+
+  .sec-8 .sec-icon, .sec-8 .sec-count, .sec-8 .item-num { background: #fffbeb; color: #d97706; }
+  .sec-8 .item { background: #fffdf6; }
+
+  .sec-9 .sec-icon, .sec-9 .sec-count, .sec-9 .item-num { background: #fdf2f8; color: #db2777; }
+  .sec-9 .item { background: #fef8fb; }
+
+  /* ================= 条目 ================= */
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 18px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(15, 23, 42, .055);
+    transition: background .18s ease;
+  }
+  .item:last-child { margin-bottom: 0; }
+
+  /* ---- 勾选框 ---- */
+  .tick {
+    position: relative;
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    margin-top: 2px;
+    border: 2px solid #cbd5e1;
+    border-radius: 9px;
+    background: #ffffff;
+    cursor: pointer;
+    outline: none;
+    transition: background .18s ease, border-color .18s ease, transform .12s ease;
+  }
+  .tick:hover { border-color: #94a3b8; }
+  .tick:active { transform: scale(.92); }
+  .tick:focus-visible { box-shadow: 0 0 0 3px rgba(79, 70, 229, .28); }
+
+  .tick::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 11px;
+    border: solid #ffffff;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) scale(.35);
+    opacity: 0;
+    transition: opacity .16s ease, transform .16s ease;
+  }
+
+  .item.done .tick {
+    background: #16a34a;
+    border-color: #16a34a;
+  }
+  .item.done .tick::after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+
+  /* 条目编号 */
+  .item-num {
+    flex: 0 0 auto;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 9px;
+    margin-top: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .3px;
+  }
+
+  .item-body { flex: 1; min-width: 0; transition: opacity .18s ease; }
+  .item-body p { margin: 0 0 9px; }
+  .item-body p:last-child { margin-bottom: 0; }
+
+  /* 已勾选：内容淡化 */
+  .item.done .item-body { opacity: .4; }
+
+  /* ================= 文字强调 ================= */
+  .k {
+    font-weight: 800;
+    color: #0f172a;
+    background: rgba(15, 23, 42, .055);
+    padding: 1px 7px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .hi {
+    font-weight: 700;
+    color: #92400e;
+    background: #fef3c7;
+    padding: 1px 7px;
+    border-radius: 6px;
+  }
+
+  .warn {
+    font-weight: 800;
+    color: #b91c1c;
+    background: #fee2e2;
+    padding: 1px 7px;
+    border-radius: 6px;
+  }
+
+  /* ================= 分支（胶囊样式） ================= */
+  .branch {
+    margin: 10px 0 12px;
+    padding: 4px 0 4px 14px;
+    border-left: 2px solid rgba(15, 23, 42, .1);
+  }
+  .branch-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .branch-row:last-child { margin-bottom: 0; }
+
+  .pill {
+    flex: 0 0 auto;
+    display: inline-block;
+    padding: 2px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.65;
+    white-space: nowrap;
+  }
+  .pill-g { background: #dcfce7; color: #15803d; }
+  .pill-r { background: #fee2e2; color: #b91c1c; }
+
+  /* ================= 子模块标题 ================= */
+  .subsec { margin-bottom: 16px; }
+  .subsec:last-child { margin-bottom: 0; }
+
+  .subsec-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 2px 0 12px;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: .5px;
+  }
+  .subsec-title i {
+    display: inline-block;
+    width: 4px;
+    height: 15px;
+    border-radius: 2px;
+    background: #0891b2;
+  }
+
+  /* ================= 一键截图按钮 ================= */
+  #shot {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 16px 28px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed 55%, #db2777);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 12px 30px -6px rgba(79, 70, 229, .55),
+                0 0 0 1px rgba(255, 255, 255, .12) inset;
+    transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+  }
+  #shot:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 38px -8px rgba(79, 70, 229, .62),
+                0 0 0 1px rgba(255, 255, 255, .12) inset;
+  }
+  #shot:active { transform: translateY(0) scale(.97); }
+  #shot:disabled { opacity: .7; cursor: wait; transform: none; }
+  #shot svg { width: 19px; height: 19px; }
+
+  /* ================= 提示条 ================= */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 46px;
+    z-index: 1000;
+    transform: translate(-50%, 22px);
+    padding: 13px 26px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, .94);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .3);
+    transition: all .28s cubic-bezier(.4, 0, .2, 1);
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ================= 小屏适配 ================= */
+  @media (max-width: 640px) {
+    body { padding: 14px 8px 128px; font-size: 15.5px; }
+    #capture { border-radius: 18px; }
+    .hero { padding: 26px 20px 24px; }
+    .hero h1 { font-size: 26px; letter-spacing: 1px; }
+    .hero-sub { font-size: 13.5px; }
+    .hero-meta { margin-top: 18px; }
+    .hero-meta span { font-size: 12px; padding: 5px 11px; }
+    #clear { font-size: 12px; padding: 5px 12px; }
+    .brand { margin-bottom: 16px; }
+    .sec { padding: 24px 18px 4px; }
+    .sec:last-of-type { padding-bottom: 28px; }
+    .sec-head h2 { font-size: 17.5px; }
+    .sec-icon { width: 36px; height: 36px; font-size: 13px; border-radius: 11px; }
+    .sec-note { font-size: 13.5px; padding: 10px 13px; }
+    .item { padding: 13px 14px; gap: 10px; }
+    .item-num { min-width: 27px; height: 27px; font-size: 13px; border-radius: 9px; }
+    .tick { width: 24px; height: 24px; border-radius: 8px; }
+    .tick::after { left: 5px; top: 2px; }
+    #shot { right: 14px; bottom: 14px; padding: 14px 22px; font-size: 15px; }
+    #shot svg { width: 17px; height: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== 截图内容区 ==================== -->
+<main id="capture">
+
+  <!-- ---------- 页头 ---------- -->
+  <header class="hero">
+    <div class="brand">
+      <span class="brand-mark">WingsMS</span>
+      <span class="brand-name">新手保护联盟</span>
+    </div>
+    <h1>团长检查清单</h1>
+    <p class="hero-sub">一条龙 · 扎昆 / PB / JJB 全流程执行标准</p>
+
+    <div class="hero-meta">
+      <span><b>9</b> 个阶段</span>
+      <span><b>31</b> 项检查点</span>
+      <button id="clear" data-html2canvas-ignore type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+        </svg>
+        清除打勾
+      </button>
+    </div>
+  </header>
+
+  <!-- ---------- 01 集合前 ---------- -->
+  <section class="sec sec-1">
+    <div class="sec-head">
+      <span class="sec-icon">01</span>
+      <h2>集合前</h2>
+      <span class="sec-count">4 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>集合时间开始前 <span class="k">5 分钟</span>，在 QQ 群 <span class="k">@全体成员</span> 告知哪个队伍即将到达集合时间，并发布 KOOK 语音链接，引导参与成员加入语音，强调 <span class="hi">不进入语音 → 不接、不救、不能捡道具</span>。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">2</span>
+      <div class="item-body">
+        <p>指定固定一位奶妈负责本次一条的跑图、开门、初始接人、零散接人等；家族提供废矿回城卷、魔法石报销以及辛苦费每天共计 <span class="k">50w</span>（可能会随市场价以及金价浮动调整）。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">3</span>
+      <div class="item-body">
+        <p>检查一条报名表，优化队伍配置，把单挂拉上来干活，尽量保证每队 <span class="k">火、眼、拳齐全</span>，可以的话每队再塞个烟（刀飞）。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">4</span>
+      <div class="item-body">
+        <p>提示被接人奶妈组进队伍的人，进门后退出队伍，方便奶妈继续组人接人。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 02 集合时 ---------- -->
+  <section class="sec sec-2">
+    <div class="sec-head">
+      <span class="sec-icon">02</span>
+      <h2>集合时</h2>
+      <span class="sec-count">8 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">0</span>
+      <div class="item-body">
+        <p>确认当前是否有线：</p>
+        <div class="branch">
+          <div class="branch-row">
+            <span class="pill pill-r">没线</span>
+            <span>在语音中向全体人员说明扎昆如何换线不会回到雪域，引导大家自己开队换线抢线</span>
+          </div>
+          <div class="branch-row">
+            <span class="pill pill-g">有线</span>
+            <span>执行下一步，并全程注意远征集合倒计时，时间快到时，提醒队长或单挂人员接线</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>在语音中确认每队队长（通常是火）是否到位：</p>
+        <div class="branch">
+          <div class="branch-row">
+            <span class="pill pill-g">已到位</span>
+            <span>让队长根据优化后的报名表开始组人</span>
+          </div>
+          <div class="branch-row">
+            <span class="pill pill-r">未到位</span>
+            <span>指定一位替补队长先开始组人，并开始寻找替补火</span>
+          </div>
+        </div>
+        <p>若集合时间超过 <span class="k">10 分钟</span> 原火队长还未到位，则由替补火接任队长。若没有替补火，则重新优化队伍配置，在报名表中挨个询问血量较高、不需要火也能生存的队员，放进没有火的队伍中（通常只需要询问奶妈，其余组刀飞、拳手战士这种血量高、生存能力强的就行）。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1.5</span>
+      <div class="item-body">
+        <p>如果有奶妈需要刷新复活，让拳手组上所有需要刷新的奶妈一起刷新。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">2</span>
+      <div class="item-body">
+        <p>等待队长组人的过程中，在语音中提示全体成员：<span class="k">全部走到地图的最右边</span>；还没有在队伍里的主力队员，在左边分开站，并打字发队伍数字，方便队长组人。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">3</span>
+      <div class="item-body">
+        <p>挨个询问每队队长，队伍人组齐了没有。组齐以后执行下一步。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">4</span>
+      <div class="item-body">
+        <p>所有人开始登记。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">5</span>
+      <div class="item-body">
+        <p>提示每队队长开始检查自己的队员登记齐了没有，如果已经登记齐了，打字或在语音中说「<span class="k">x 队登记齐了</span>」。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">6</span>
+      <div class="item-body">
+        <p>所有队伍登记齐了以后，提示单挂登记，并进行最后倒计时；倒计时结束后，让远征队长关闭登记，检查没有外人后，（PB 和 JJB 要额外执行远征开始前注意事项）开始远征。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 03 PB / JJB ---------- -->
+  <section class="sec sec-3">
+    <div class="sec-head">
+      <span class="sec-icon">03</span>
+      <h2>PB 与 JJB · 远征开始前注意事项</h2>
+      <span class="sec-count">3 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>远征进图前，要求所有人站在一起上好 buff，<span class="hi">尤其是火</span>（因为 PB 和 JJB 远征进图 Boss 自动刷新，不上好 buff 再进去会暴毙）。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">2</span>
+      <div class="item-body">
+        <p>提醒奶妈在进去的瞬间放一个 <span class="k">圣灵</span>，不然会中反向 debuff，容易暴毙。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">3</span>
+      <div class="item-body">
+        <p>进去以后，提醒所有成员在走动过程中自己吃血药，走动过程中奶妈可能会奶不到。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 04 扎昆开场前 ---------- -->
+  <section class="sec sec-4">
+    <div class="sec-head">
+      <span class="sec-icon">04</span>
+      <h2>扎昆开场前 · Roll 卡与丢眼</h2>
+      <span class="sec-count">2 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>扎昆进本后喊口号引导全体主力队开始 roll 卡，并进行 roll 卡倒计时；倒计时结束后，将 roll 卡记录 <span class="k">截图发至 QQ 群或 KOOK</span>。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">2</span>
+      <div class="item-body">
+        <p>roll 卡结束后，团长或奶或丢眼老板丢眼，开始本次扎昆。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 05 打手时间 ---------- -->
+  <section class="sec sec-5">
+    <div class="sec-head">
+      <span class="sec-icon">05</span>
+      <h2>打手时间</h2>
+      <span class="sec-count">3 项</span>
+    </div>
+
+    <div class="sec-note">
+      此时是比较空闲的时间段，大家注意力也比较集中，可以看情况说明一些注意事项：
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>询问队伍中是否有 <span class="k">远征新手</span>，尤其是 <span class="hi">新手奶妈</span>。新手奶妈比较容易断奶，提醒队员注意自己吃血。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">2</span>
+      <div class="item-body">
+        <p>队伍中有 <span class="k">新手单挂</span> 的，要说明 <span class="k">如何重连</span>。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">3</span>
+      <div class="item-body">
+        <p>PB 或 JJB 打最后一只手的时候，可以 <span class="k">@血量</span> 查看手的血量；剩下 <span class="k">5%</span> 的时候，让奶妈放个 <span class="k">圣灵</span> 然后爬上去，接着除了 <span class="k">飞侠</span> 以外的所有成员也爬上去，<span class="hi">飞侠留在下面打完手再上去</span>。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 06 死人、复活与魅惑 ---------- -->
+  <section class="sec sec-6">
+    <div class="sec-head">
+      <span class="sec-icon">06</span>
+      <h2>死人、复活与魅惑</h2>
+      <span class="sec-count">6 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">扎昆撞主体死亡</span>：让死亡的人先上下线迁坟，再救。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">主力队员死亡</span>：队内奶妈有救时就救；队内奶妈已经没复活的，优先让担架奶上线救；没有担架奶时，再启动跨队救人。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">单挂人员死亡</span>：原则上不用救，优先将复活资源给主力队，保证顺利打完、不炸团、不翻车。团长个人判断可以救的也可以救。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">拳手的刷新</span>：非紧急情况下，只在打完以后，组上所有需要刷新的奶妈再一起刷新；远征进行中通常不刷。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">魅惑与圣灵</span>：指定一位成员专门负责记录（或者自己记录）下一次奶妈放圣灵的时间，圣灵释放时间为魅惑释放后的 <span class="k">2 分钟</span>。</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p><span class="k">中魅惑处理</span>：普通成员中了魅惑只要没掉下平台，能被奶妈奶到就不用下线。掉下平台如果没有意志则 <span class="warn">立刻下线</span>；奶妈中魅惑且没有意志，<span class="warn">全队立刻下线</span>！</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 07 单挂上线 ---------- -->
+  <section class="sec sec-7">
+    <div class="sec-head">
+      <span class="sec-icon">07</span>
+      <h2>单挂上线</h2>
+      <span class="sec-count">1 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <span class="item-num">1</span>
+      <div class="item-body">
+        <p>时不时在语音中进行 <span class="k">血量播报</span>，提醒单挂人员注意，防止单挂走神；最后提醒单挂人员 <span class="hi">上线重连</span>。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 08 结束后道具分配 ---------- -->
+  <section class="sec sec-8">
+    <div class="sec-head">
+      <span class="sec-icon">08</span>
+      <h2>结束后道具分配</h2>
+      <span class="sec-count">3 项</span>
+    </div>
+
+    <div class="subsec">
+      <div class="subsec-title"><i></i><span>扎昆</span></div>
+      <div class="item">
+        <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+        <div class="item-body">
+          <p>先检查 roll 点结果，点名 roll 点最高者捡卡，然后奶妈或团长扫地。</p>
+        </div>
+      </div>
+      <div class="item">
+        <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+        <div class="item-body">
+          <p>记录单挂捡取头杯母本的情况在报名表中，方便族长收取费用。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsec">
+      <div class="subsec-title"><i></i><span>PB / JJB</span></div>
+      <div class="item">
+        <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+        <div class="item-body">
+          <p>查看是否爆卡，爆卡则开始 roll 卡，然后点名 roll 点最高者捡卡，让奶妈自己协商分配地板。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- 09 误捡处罚 ---------- -->
+  <section class="sec sec-9">
+    <div class="sec-head">
+      <span class="sec-icon">09</span>
+      <h2>误捡处罚</h2>
+      <span class="sec-count">1 项</span>
+    </div>
+
+    <div class="item">
+      <div class="tick" role="checkbox" aria-checked="false" tabindex="0" aria-label="标记完成"></div>
+      <div class="item-body">
+        <p>记录误捡情况在 QQ 群在线文档中，并收取 <span class="warn">火眼惩罚</span>；火眼不足的，引导误捡人员前往族长商店进行罚款。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== 一键截图按钮 ==================== -->
+<button id="shot" data-html2canvas-ignore type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+    <circle cx="12" cy="13" r="4"></circle>
+  </svg>
+  一键截图
+</button>
+
+<div id="toast" data-html2canvas-ignore></div>
+
+<script>
+(function () {
+  const ticks    = Array.prototype.slice.call(document.querySelectorAll('.tick'));
+  const clearBtn = document.getElementById('clear');
+  const shotBtn  = document.getElementById('shot');
+  const toast    = document.getElementById('toast');
+  const target   = document.getElementById('capture');
+
+  /* ---------------- 提示条 ---------------- */
+  function showToast(msg, ms) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), ms || 2400);
+  }
+
+  /* ---------------- 打勾 ---------------- */
+  function setDone(tick, on) {
+    const item = tick.closest('.item');
+    item.classList.toggle('done', on);
+    tick.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  ticks.forEach(function (tick) {
+    function toggle() {
+      setDone(tick, !tick.closest('.item').classList.contains('done'));
+    }
+    tick.addEventListener('click', toggle);
+    tick.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+
+  /* ---------------- 一键清除 ---------------- */
+  function doneCount() {
+    return ticks.filter(t => t.closest('.item').classList.contains('done')).length;
+  }
+
+  clearBtn.addEventListener('click', function () {
+    const n = doneCount();
+    if (n === 0) {
+      showToast('当前没有已勾选的项');
+      return;
+    }
+    ticks.forEach(t => setDone(t, false));
+    showToast('已清除 ' + n + ' 项打勾');
+  });
+
+  /* ---------------- 截图 ---------------- */
+  function stamp() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' +
+           p(d.getHours()) + p(d.getMinutes());
+  }
+
+  shotBtn.addEventListener('click', async function () {
+    if (typeof html2canvas === 'undefined') {
+      showToast('截图库加载失败，请检查网络后刷新页面');
+      return;
+    }
+
+    const label = shotBtn.innerHTML;
+    shotBtn.disabled = true;
+    shotBtn.textContent = '生成中…';
+
+    try {
+      const canvas = await html2canvas(target, {
+        backgroundColor: '#ffffff',
+        scale: Math.min(3, (window.devicePixelRatio || 1) * 2),
+        useCORS: true,
+        logging: false,
+        windowWidth: document.documentElement.scrollWidth,
+        ignoreElements: el => el.hasAttribute && el.hasAttribute('data-html2canvas-ignore')
+      });
+
+      canvas.toBlob(function (blob) {
+        if (!blob) { showToast('生成图片失败，请重试'); return; }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '团长检查清单_' + stamp() + '.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        showToast('✅ 截图已保存到下载文件夹');
+      }, 'image/png');
+
+    } catch (err) {
+      console.error(err);
+      showToast('截图失败：' + (err && err.message ? err.message : '未知错误'));
+    } finally {
+      shotBtn.disabled = false;
+      shotBtn.innerHTML = label;
+    }
+  });
+})();
+</script>
+
+<!-- ===== 资源导航：返回首页（由首页统一挂载） ===== -->
+<style>
+  .xsbhxh-home {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .93);
+    color: #075c45;
+    font: 700 13px/1 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    text-decoration: none;
+    letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+    border: 1px solid rgba(7, 131, 95, .24);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, transform .18s ease;
+  }
+  .xsbhxh-home:hover { background: #fff; transform: translateY(-1px); }
+  .xsbhxh-home:focus-visible { outline: 3px solid rgba(7, 131, 95, .45); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .xsbhxh-home { left: 10px; bottom: 10px; padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+<a class="xsbhxh-home" href="../index.html" aria-label="返回首页导航">
+  <span aria-hidden="true">&#8962;</span> 首页
+</a>
+<!-- ===== 资源导航结束 ===== -->
+</body>
+</html>

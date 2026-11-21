@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WingsMS新手保护联盟 · 远征一条龙规则</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <style>
+        :root {
+            --bg: #fdf8f0;
+            --card-bg: #ffffff;
+            --text: #4a3b2f;
+            --text-soft: #6b5e4f;
+            --gold: #b8861e;
+            --gold-light: #d4a843;
+            --accent: #8b5a2b;
+            --highlight: #a0522d;
+            --border-soft: #e5d5b5;
+            --shadow-sm: 0 2px 8px rgba(139, 90, 43, 0.08);
+            --shadow-card: 0 4px 16px rgba(139, 90, 43, 0.06);
+            --font-serif: 'Noto Serif SC', 'STSong', 'Songti SC', 'KaiTi', '楷体', '华文楷体', serif;
+            --font-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5efe0;
+            background-image: radial-gradient(circle at 20% 10%, rgba(212, 168, 67, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 90%, rgba(180, 140, 80, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-sans);
+            padding: 30px 16px;
+            color: var(--text);
+            line-height: 1.65;
+        }
+
+        .main-wrapper {
+            max-width: 880px;
+            width: 100%;
+            position: relative;
+        }
+
+        #screenshot-area {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius);
+            padding: 36px 32px 28px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            background-image: linear-gradient(to bottom, #fffdf7, #fffbf2);
+        }
+
+        #screenshot-area::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 24px;
+            right: 24px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4a843, #e0c78a, #d4a843, transparent);
+            opacity: 0.4;
+        }
+
+        .clan-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .clan-badge {
+            display: inline-block;
+            background: #fef9e7;
+            border: 1px solid #e7cfa0;
+            border-radius: 30px;
+            padding: 6px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #8b5a2b;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 4px rgba(139, 90, 43, 0.08);
+            font-family: var(--font-serif);
+        }
+
+        .clan-badge .icon-shield {
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+
+        .main-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #5e3a1c;
+            letter-spacing: 0.06em;
+            margin: 8px 0 4px;
+        }
+
+        .sub-title {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            letter-spacing: 0.1em;
+            font-weight: 400;
+        }
+
+        .description-box {
+            background: #fdf8ee;
+            border: 1px dashed #d4a843;
+            border-radius: 8px;
+            padding: 10px 18px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #5e3a1c;
+        }
+
+        .description-box strong {
+            color: #a0522d;
+            margin: 0 3px;
+        }
+
+        .divider-simple {
+            margin: 20px 0 22px;
+            border-top: 1px dashed #d6c09b;
+            opacity: 0.6;
+        }
+
+        .rules-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .rule-card {
+            background: #fffcf5;
+            border: 1px solid #f0e4ce;
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+            border-left: 4px solid #e0c080;
+        }
+
+        .rule-card:hover {
+            border-left-color: #b8861e;
+            background: #fffef9;
+        }
+
+        /* 误捡补偿与违规处罚：重点警示卡片 */
+        .rule-card.rule-alert {
+            background: linear-gradient(135deg, #fff2ef 0%, #ffe4de 100%);
+            border: 1px solid #e8a79a;
+            border-left: 5px solid #c0392b;
+            box-shadow: 0 4px 18px rgba(192, 57, 43, 0.14);
+        }
+
+        .rule-card.rule-alert:hover {
+            background: linear-gradient(135deg, #ffece8 0%, #ffd9d1 100%);
+            border-left-color: #a52a1d;
+        }
+
+        .rule-card.rule-alert .rule-icon {
+            color: #c0392b;
+            background: #fbdcd6;
+            border: 1px solid #eeaea3;
+        }
+
+        .rule-card.rule-alert .rule-title {
+            color: #a31f14;
+        }
+
+        .rule-card.rule-alert .highlight {
+            color: #a31f14;
+        }
+
+        .rule-card.rule-alert .warning {
+            color: #c0392b;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+
+        .rule-card.rule-alert .inline-list li {
+            border-bottom-color: rgba(192, 57, 43, 0.25);
+        }
+
+        .rule-card.rule-alert .inline-list li::before {
+            color: #c0392b;
+        }
+
+        .rule-card.rule-alert .note {
+            color: #9b3a2c;
+        }
+
+        .rule-card.rule-alert .rule-callout {
+            background: #b62f21;
+            background-image: linear-gradient(135deg, #c0392b 0%, #a52a1d 100%);
+            color: #fff7f3;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin: 0 0 12px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            box-shadow: 0 3px 10px rgba(146, 30, 20, 0.25);
+        }
+
+        .rule-card.rule-alert .rule-callout strong {
+            color: #ffe9a8;
+            letter-spacing: 0.02em;
+        }
+
+        .rule-card.rule-alert .rule-callout .stress {
+            color: #ffe09a;
+            font-weight: 700;
+        }
+
+        /* KOOK语音：绿色重点卡片 */
+        .rule-card.rule-voice {
+            background: linear-gradient(135deg, #f2faf4 0%, #e2f4e6 100%);
+            border: 1px solid #a9d6b4;
+            border-left: 5px solid #2e7d32;
+            box-shadow: 0 4px 18px rgba(46, 125, 50, 0.14);
+        }
+
+        .rule-card.rule-voice:hover {
+            background: linear-gradient(135deg, #ecf8ef 0%, #d7efdd 100%);
+            border-left-color: #1f6325;
+        }
+
+        .rule-card.rule-voice .rule-icon {
+            color: #2e7d32;
+            background: #d8f0de;
+            border: 1px solid #a9d6b4;
+        }
+
+        .rule-card.rule-voice .rule-title {
+            color: #1e5c26;
+        }
+
+        .rule-card.rule-voice .highlight {
+            color: #1e5c26;
+        }
+
+        .rule-card.rule-voice .rule-callout {
+            background: #2a7030;
+            background-image: linear-gradient(135deg, #2e7d32 0%, #1f6325 100%);
+            color: #f3fbf4;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin: 0 0 12px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            box-shadow: 0 3px 10px rgba(31, 99, 37, 0.25);
+        }
+
+        .rule-card.rule-voice .rule-callout strong {
+            color: #ffe9a8;
+        }
+
+        .rule-card.rule-voice .rule-callout .stress {
+            color: #ffe09a;
+            font-weight: 700;
+        }
+
+        /* 语音频道切换 */
+        .voice-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px;
+        }
+
+        .voice-tab {
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #1e5c26;
+            background: #ffffff;
+            border: 1.5px solid #a9d6b4;
+            border-radius: 20px;
+            padding: 5px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-tab:hover {
+            border-color: #2e7d32;
+            background: #f2faf4;
+        }
+
+        .voice-tab.active {
+            background: linear-gradient(135deg, #2e7d32 0%, #1f6325 100%);
+            border-color: #1f6325;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(31, 99, 37, 0.28);
+        }
+
+        .voice-panel {
+            display: none;
+            align-items: center;
+            gap: 18px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px dashed #a9d6b4;
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+        .voice-panel.active {
+            display: flex;
+        }
+
+        .voice-qr {
+            margin: 0;
+            flex: 0 0 auto;
+            text-align: center;
+        }
+
+        .voice-qr img {
+            display: block;
+            width: 132px;
+            height: 132px;
+            background: #fff;
+            border: 1px solid #cfe6d4;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 2px 8px rgba(31, 99, 37, 0.12);
+        }
+
+        .voice-qr figcaption {
+            margin-top: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        .voice-info {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .voice-info p {
+            margin: 6px 0;
+        }
+
+        .voice-label {
+            display: inline-block;
+            font-size: 0.78rem;
+            color: #4f7a56;
+            letter-spacing: 0.04em;
+            margin-bottom: 1px;
+        }
+
+        .voice-value {
+            color: #1e5c26;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .voice-id {
+            display: inline-block;
+            background: #e6f4e9;
+            border: 1px solid #b9ddc2;
+            border-radius: 6px;
+            padding: 1px 10px;
+            font-weight: 700;
+            color: #1e5c26;
+        }
+
+        .rule-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .rule-icon {
+            font-size: 1.3rem;
+            color: #8b5a2b;
+            background: #f8f0e0;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rule-title {
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #5e3a1c;
+            letter-spacing: 0.03em;
+        }
+
+        .rule-body {
+            font-size: 0.92rem;
+            color: var(--text);
+            padding-left: 42px;
+            line-height: 1.7;
+        }
+
+        .rule-body p {
+            margin: 4px 0;
+        }
+
+        .rule-body .highlight {
+            color: #a0522d;
+            font-weight: 600;
+        }
+
+        .rule-body .note {
+            color: var(--text-soft);
+            font-size: 0.84rem;
+            font-style: italic;
+        }
+
+        .rule-body .warning {
+            color: #c0392b;
+            font-weight: 600;
+        }
+
+        .inline-list {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0;
+        }
+
+        .inline-list li {
+            padding: 4px 0 4px 20px;
+            position: relative;
+            border-bottom: 1px dotted rgba(180, 140, 80, 0.2);
+        }
+
+        .inline-list li:last-child {
+            border-bottom: none;
+        }
+
+        .inline-list li::before {
+            content: '◇';
+            position: absolute;
+            left: 0;
+            color: #b8861e;
+            font-size: 10px;
+            top: 4px;
+        }
+
+        /* 分组小标题 + 定义式条目（用于分配规则等较复杂板块） */
+        .rule-sub {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 18px 0 6px;
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #8b5a2b;
+            letter-spacing: 0.05em;
+        }
+
+        .rule-sub:first-child {
+            margin-top: 0;
+        }
+
+        .rule-sub::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            border-radius: 2px;
+            background: linear-gradient(to bottom, #d4a843, #b8861e);
+        }
+
+        .rule-item {
+            display: grid;
+            grid-template-columns: 5.8em 1fr;
+            column-gap: 14px;
+            padding: 7px 0;
+            border-bottom: 1px dotted rgba(180, 140, 80, 0.2);
+            font-size: 0.92rem;
+            line-height: 1.7;
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .rule-key {
+            color: #8b5a2b;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .rule-desc {
+            min-width: 0;
+        }
+
+        .rule-detail {
+            display: block;
+            margin: 7px 0 0;
+            padding: 6px 0 6px 12px;
+            border-left: 2px solid rgba(184, 134, 30, 0.35);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+
+        .rule-detail + .rule-detail {
+            margin-top: 10px;
+        }
+
+        .rule-detail-key {
+            margin-right: 4px;
+            color: #8b5a2b;
+            font-weight: 700;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f5efe0;
+            color: #8b5a2b;
+            padding: 2px 12px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            margin: 0 2px;
+            border: 1px solid #e5d5b5;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 0.78rem;
+            color: #b8a080;
+            letter-spacing: 0.05em;
+        }
+
+        .button-area {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+            font-family: inherit;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-screenshot {
+            background: #8b5a2b;
+            color: #fff;
+        }
+
+        .btn-screenshot:hover {
+            background: #a0522d;
+            box-shadow: 0 4px 16px rgba(139, 90, 43, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-copy {
+            background: #fff;
+            color: #5e3a1c;
+            border: 1.5px solid #d4a843;
+        }
+
+        .btn-copy:hover {
+            background: #fef9e7;
+            border-color: #b8861e;
+            box-shadow: 0 4px 14px rgba(180, 120, 40, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #4a3b2f;
+            color: #fdf8f0;
+            padding: 12px 26px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            border: 1px solid #b8861e;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: #2e7d32;
+            background: #2e4a2e;
+            color: #e0f0e0;
+        }
+
+        @media (max-width: 600px) {
+            #screenshot-area {
+                padding: 24px 16px 20px;
+            }
+
+            .rule-body {
+                padding-left: 28px;
+                font-size: 0.85rem;
+            }
+
+            .main-title {
+                font-size: 1.6rem;
+            }
+
+            .voice-panel.active {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .voice-tab {
+                font-size: 0.78rem;
+                padding: 4px 11px;
+            }
+
+            .rule-item {
+                grid-template-columns: 1fr;
+                row-gap: 2px;
+            }
+
+            .rule-key {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="main-wrapper">
+        <div id="screenshot-area">
+            <div class="clan-header">
+                <div class="clan-badge">
+                    <span class="icon-shield">🛡️</span> WingsMS新手保护联盟 <span class="icon-shield">🛡️</span>
+                </div>
+                <h1 class="main-title">村内家族远征一条龙规则</h1>
+                <p class="sub-title">· 协 作 共 赢 · 远 征 指 南 ·</p>
+                <div class="description-box">
+                    📌 远征一条龙包含：<strong>扎昆 ×2</strong> ｜ <strong>JJB（进阶巴洛克） ×1 或 PB（普通巴洛克） ×2</strong>
+                </div>
+            </div>
+            <div class="divider-simple"></div>
+
+            <div class="rules-container">
+
+
+                <!-- 误捡补偿与违规处罚 -->
+                <div class="rule-card rule-alert">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">⚖️</span>
+                        <span class="rule-title">误捡补偿与违规处罚</span>
+                    </div>
+                    <div class="rule-body">
+                        <p class="rule-callout">
+                            <strong>⚠️ 立此规则的本意：</strong>除了防止毛道具，更是为了让大家重视<span class="stress">下绿包</span>！若<span class="stress">拒不交罚款</span>，将直接<span class="stress">拉黑、踢出QQ群、踢出家族</span>，并在<span class="stress">KOOK挂名公示</span>。
+                        </p>
+                        <p><span class="highlight">绿包扫地或毛道具补偿标准：</span></p>
+                        <ul class="inline-list">
+                            <li>头、卡、杯：赔偿 <span class="warning">3个火眼</span></li>（其中赔偿被毛的人2个，团长1个）
+                            <li>技能母本：赔偿 <span class="warning">6个火眼</span></li>（其中赔偿被毛母本的人3个，团长3个）
+                        </ul>
+                        <p style="margin-top:8px;"><span
+                                class="highlight">违规累积处罚：</span>发生任意毛道具、绿包扫地等违规情况：第1次按上述标准罚款；<span
+                                class="warning">一个月内第2次</span>发生，追加禁止参与家族远征三天；<span class="warning">一个月内</span>累计发生<span
+                                class="warning">3次</span>者，将被踢出家族。</p>
+                        <p class="note">※ 捡错惩罚非常高，大家注意每把下绿包 </p>
+                    </div>
+                </div>
+
+                <!-- KOOK语音 -->
+                <div class="rule-card rule-voice">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🎙️</span>
+                        <span class="rule-title">KOOK语音</span>
+                    </div>
+                    <div class="rule-body">
+                        <p class="rule-callout">
+                            <strong>🎧 语音是参团硬性要求：</strong>所有参团人员<span class="stress">必须进入联盟KOOK语音</span>；副本内成员若<span class="stress">不在语音中，无权Roll道具或扫地</span>，擅自捡取<span class="stress">按误捡标准处罚</span>。
+                        </p>
+
+                        <!-- 语音频道切换（点击上方按钮） -->
+                        <div class="voice-tabs" id="voice-tabs">
+                            <button type="button" class="voice-tab active" data-voice="0">服务器</button>
+                            <button type="button" class="voice-tab" data-voice="1">一条扎JJB队</button>
+                            <button type="button" class="voice-tab" data-voice="2">一条扎PB队</button>
+                            <button type="button" class="voice-tab" data-voice="3">一条扎凌晨队</button>
+                        </div>
+
+                        <div class="voice-panels" id="voice-panels">
+                            <div class="voice-panel active" data-voice="0">
+                                <figure class="voice-qr">
+                                    <img src="data:image/png;base64,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" alt="服务器二维码">
+                                    <figcaption>服务器二维码</figcaption>
+                                </figure>
+                                <div class="voice-info">
+                                    <p><span class="voice-label">联盟KOOK地址</span><br>
+                                        <span class="voice-value">https://kook.vip/gDnx1j</span>
+                                    </p>
+                                    <p><span class="voice-label">联盟KOOK ID</span><br>
+                                        <span class="voice-id">47625960</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="voice-panel" data-voice="1">
+                                <figure class="voice-qr">
+                                    <img src="data:image/png;base64,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" alt="一条扎JJB队二维码">
+                                    <figcaption>一条扎JJB队二维码</figcaption>
+                                </figure>
+                                <div class="voice-info">
+                                    <p><span class="voice-label">KOOK语音地址</span><br>
+                                        <span class="voice-value">https://kook.vip/nsmS5h</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="voice-panel" data-voice="2">
+                                <figure class="voice-qr">
+                                    <img src="data:image/png;base64,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" alt="一条扎PB队二维码">
+                                    <figcaption>一条扎PB队二维码</figcaption>
+                                </figure>
+                                <div class="voice-info">
+                                    <p><span class="voice-label">KOOK语音地址</span><br>
+                                        <span class="voice-value">https://kook.vip/LsAZQg</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="voice-panel" data-voice="3">
+                                <figure class="voice-qr">
+                                    <img src="data:image/png;base64,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" alt="一条扎凌晨队二维码">
+                                    <figcaption>一条扎凌晨队二维码</figcaption>
+                                </figure>
+                                <div class="voice-info">
+                                    <p><span class="voice-label">KOOK语音地址</span><br>
+                                        <span class="voice-value">https://kook.vip/cYfXTB</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分配规则 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">💰</span>
+                        <span class="rule-title">分配规则</span>
+                    </div>
+                    <div class="rule-body">
+                        <div class="rule-sub">扫地与奶补</div>
+                        <div class="rule-item">
+                            <span class="rule-key">2队以内</span>
+                            <span class="rule-desc">由<span class="highlight">2位奶妈</span>轮流丢眼扫地。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">3队及以上</span>
+                            <span class="rule-desc">由<span class="highlight">团长</span>丢眼并扫地，扫地所得按下述方式处理：
+                                <span class="rule-detail"><span
+                                        class="rule-detail-key">扫地收益</span>武器装备（含扎昆树枝）卖商店，收入先扣除<span
+                                        class="warning">当天火眼市场价</span>，剩余部分作为「<span
+                                        class="warning">奶补资金池</span>」由全体主力奶妈平分；其余扫地物品归团长。</span>
+                                <span class="rule-detail"><span
+                                        class="rule-detail-key">放弃奶补</span>奶妈扫过地或中途跳车，即视为放弃奶补。</span>
+                            </span>
+                        </div>
+
+                        <div class="rule-sub">装备与分钱</div>
+                        <div class="rule-item">
+                            <span class="rule-key">一般装备</span>
+                            <span class="rule-desc">直接卖商店。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">值钱装备</span>
+                            <span class="rule-desc">团长可<span class="warning">卖出后再分</span>，或按<span
+                                    class="warning">市场价8折</span>折算后直接分。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">高价值物品</span>
+                            <span class="rule-desc"><span class="warning">褐手</span>由团长开店出售，主力队平均分钱。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">记录与分配</span>
+                            <span class="rule-desc">所有装备与奶补记录在<span class="warning">当天报名表</span>；团长先分给<span
+                                    class="warning">各队队长</span>，再由队长分给<span
+                                    class="warning">各自队员</span>（只有奶补可由团长直接分给奶妈）。</span>
+                        </div>
+
+                        <div class="rule-sub">掉落归属</div>
+                        <div class="rule-item">
+                            <span class="rule-key">扎昆卡</span>
+                            <span class="rule-desc">进本后，主力队听团长口号 roll 点。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">JJB/PB卡</span>
+                            <span class="rule-desc">打完后，主力队听团长口号 roll 点。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">扎头</span>
+                            <span class="rule-desc">由报名表填了需求的单挂成员 roll 点，并支付<span
+                                    class="warning">火眼市场价一半</span>计入家族资金；单挂无人需求时，主力成员可免费直接捡。</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-key">扎杯 / 母本</span>
+                            <span class="rule-desc">主力成员可免费直接捡；主力无人需求时，单挂成员 roll 点购买，价格同样为<span
+                                    class="warning">火眼市场价一半</span>。</span>
+                        </div>
+
+                        <div class="rule-sub">roll 点纪律</div>
+                        <div class="rule-item">
+                            <span class="rule-key">唯一原则</span>
+                            <span class="rule-desc">只能为自己 roll 点，roll 完只能自己捡，<span
+                                    class="warning">不允许代 roll、出售、转让</span>。</span>
+                        </div>
+                        <p class="note">※ 单挂在一场远征中同时需求扎头、扎杯、母本时，无需重复付费，只需支付一次「火眼市场价一半」。</p>
+                    </div>
+                </div>
+
+                <!-- 报名与开团标准 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">📋</span>
+                        <span class="rule-title">报名与开团</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>每日一条龙结束后，由<span class="highlight">当日团长</span>发布公告，随即开始次日主力队报名。开团前团长会优化名单配置，尽量保证每队<span
+                                class="highlight">火、眼、拳</span>齐全。</p>
+                        <p><span class="highlight">已报名者</span>若无法参加，需至少提前<span
+                                class="highlight">1小时</span>说明，以便安排替补；未说明且未到者视为爽约。</p>
+                        <p>主力队成员在<span class="highlight">无人替补</span>的情况下，必须完整打完<span
+                                class="highlight">2次</span>扎与<span class="highlight">所有</span>巴洛克，中途退出视为爽约。</p>
+                        <p class="note">※ 中途找人非常费时，报名后请尽量打满。</p>
+                    </div>
+                </div>
+
+                <!-- 开团时间 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🕖</span>
+                        <span class="rule-title">开团时间</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>按<span class="highlight">报名时的集合时间</span>在<span
+                                class="highlight">23线雪域</span>集合（或听团长安排）。奶妈与队长（火或眼）<span
+                                class="highlight">必须准时</span>到位，负责接引各队成员进线抢线。</p>
+                        <p>到达集合时间后<span class="highlight">报名表即锁定</span>，成员<span
+                                class="highlight">优先按填表确定</span>；超过集合时间<span
+                                class="highlight">10分钟</span>仍未到位的主力队成员视为迟到，自动放弃资格，由团长从单挂/替补席递补。</p>
+                        <p><span class="highlight">迟到</span>或<span class="highlight">爽约</span>将记入<span
+                                class="highlight">家族远征未守约黑名单</span>：一周内累计<span class="highlight">2次迟到</span>或<span
+                                class="highlight">1次爽约</span>，禁止参与家族远征<span class="highlight">3天</span>。</p>
+                        <p class="note">※ 单挂人员迟到不等；主力人齐且登记确认后立即开团。</p>
+                    </div>
+                </div>
+
+
+
+
+                <!-- 登记与Roll卡 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">📝</span>
+                        <span class="rule-title">登记与Roll卡</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>默认<span class="highlight">火职业</span>担任队长，无火则由<span
+                                class="highlight">眼职业</span>担任。进副本前队长检查登记情况，单挂成员互相检查；主力登记齐全后开始 roll 卡。单挂成员务必自行确认登记，<span
+                                class="highlight">未登记者后果自负</span>。</p>
+                        <p>领队<span class="highlight">喊 roll 卡后</span>开始 roll 点。<span
+                                class="tag">仅主力队成员</span>可参与 roll 卡，单挂成员 roll 卡无效。</p>
+                    </div>
+                </div>
+
+                <!-- 战斗救援与单挂要求 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">⚔️</span>
+                        <span class="rule-title">战斗救援与单挂要求</span>
+                    </div>
+                    <div class="rule-body">
+                        <p><span class="highlight">跨队救人：</span>队内保命能力强的刀或拳职业优先退队自保，奶妈注意补血，队长组人进队复活。被救者复活后<span
+                                class="highlight">立即退组返回原队</span>。</p>
+                        <p><span class="highlight">单挂自保：</span>JJB伤害约5500，请把保护拉满至<span
+                                class="highlight">90%以上</span>，吃一瓶药即可满血。单挂请自保；若有单挂奶或远征结束后可请奶妈救助。</p>
+                        <p class="note">※ 单挂人员通常死了不救，迟到不等。</p>
+                    </div>
+                </div>
+
+
+
+
+
+
+                <!-- 职业门槛与要求 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">🏅</span>
+                        <span class="rule-title">职业门槛与要求</span>
+                    </div>
+                    <div class="rule-body">
+                        <ul class="inline-list">
+                            <li><span class="highlight">主力奶妈：</span>需拥有圣灵20，无火状态下血量不低于4500。</li>
+                            <li><span class="highlight">输出职业：</span>最低126级，血量不低于6000。</li>
+                            <li><span class="highlight">职业要求：</span>圣骑士必须完成四转；冲锋队长「极速领域」技能点到11点；黑骑士队长须四转。</li>
+                        </ul>
+                    </div>
+
+
+                </div>
+
+                <!-- 团长裁定 -->
+                <div class="rule-card">
+                    <div class="rule-card-header">
+                        <span class="rule-icon">📜</span>
+                        <span class="rule-title">其他突发状况</span>
+                    </div>
+                    <div class="rule-body">
+                        <p>为覆盖规则外的一切突发状况，任何其他情况由<span class="highlight">团长当场决定</span>，全员需服从安排。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-note">
+                ◆ WingsMS新手保护联盟 · 远征一条龙共守 ◆
+            </div>
+        </div>
+
+        <div class="button-area" id="button-area">
+            <button class="btn btn-screenshot" onclick="copyScreenshot()">
+                <span>📋</span> 复制截图
+            </button>
+            <button class="btn btn-copy" onclick="copyText()">
+                <span>📄</span> 复制规则文本
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type + ' show';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        async function copyScreenshot() {
+            const area = document.getElementById('screenshot-area');
+            const btns = document.getElementById('button-area');
+            const origDisplay = btns.style.display;
+            btns.style.display = 'none';
+
+            let blob = null;
+            try {
+                if (typeof html2canvas !== 'function') {
+                    throw new Error('html2canvas 未加载');
+                }
+
+                const canvas = await html2canvas(area, {
+                    backgroundColor: '#fffcf5',
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                });
+
+                blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (!blob) throw new Error('生成图片失败');
+
+                if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+                    throw new Error('浏览器不支持剪贴板图片写入');
+                }
+
+                await Promise.race([
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('剪贴板写入超时')), 4000))
+                ]);
+                showToast('✅ 截图已复制，可直接粘贴！', 'success');
+            } catch (err) {
+                console.error(err);
+                if (typeof html2canvas !== 'function') {
+                    showToast('❌ 截图组件未加载，请检查网络后刷新');
+                } else if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
+                    showToast('❌ 当前浏览器不支持复制图片，请用 Chrome / Edge 打开');
+                } else if (blob) {
+                    downloadImage(blob);
+                    showToast('⚠️ 复制失败，已改为下载图片');
+                } else {
+                    showToast('❌ 截图生成失败，请重试');
+                }
+            } finally {
+                btns.style.display = origDisplay;
+            }
+        }
+
+        function downloadImage(blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            link.download = `WingsMS远征一条龙规则_${ts}.png`;
+            link.href = url;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function copyText() {
+            const text = `WingsMS新手保护联盟 · 家族远征一条龙规则
+（远征一条龙包含：扎昆×2 ｜ JJB（进阶巴洛克）×1 或 PB（普通巴洛克）×2）
+
+误捡补偿与违规处罚
+误捡补偿标准：误捡头、卡、杯赔偿3个火眼（其中赔偿被毛的人2个，团长1个）；误捡技能母本赔偿6个火眼（其中赔偿被毛母本的人3个，团长3个）。
+违规累积处罚：发生任意毛道具、绿包扫地等违规情况：第1次按上述标准罚款；一个月内第2次发生，追加禁止参与家族远征三天；一个月内累计发生3次者，将被踢出家族。
+重要提示：此规则除了防止毛道具，更是为了让大家重视下绿包！若拒不交罚款，将直接拉黑、踢出QQ群、踢出家族，并在KOOK挂名公示。
+
+KOOK语音
+所有参团人员必须进入联盟KOOK语音；副本内成员若不在语音中，无权Roll道具或扫地，擅自捡取按误捡标准处罚。
+联盟KOOK服务器地址：https://kook.vip/gDnx1j（ID：47625960）
+一条扎JJB队语音地址：https://kook.vip/nsmS5h
+一条扎PB队语音地址：https://kook.vip/LsAZQg
+一条扎凌晨队语音地址：https://kook.vip/cYfXTB
+
+分配规则
+扫地与奶补：2队以内由奶妈丢眼并扫地。3队以上由团长丢眼并扫地，此时扫地所得武器装备（含扎昆树枝）卖商店，收入先扣除当天火眼市场价，剩余作为「奶补资金池」由全体主力奶妈平分，其余扫地物品归团长；奶妈扫过地或中途跳车即视为放弃奶补。
+装备与分钱：一般装备直接卖商店；值钱装备可卖出后再分，或按市场价8折折算后直接分；褐手由团长开店出售，主力队平均分钱。所有装备与奶补记录在当天报名表，团长先分给各队队长，再由队长分给各自队员（只有奶补可由团长直接分给奶妈）。
+掉落归属：扎昆卡进本后主力队听团长口号roll点；JJB/PB卡打完后主力队听团长口号roll点；扎头由报名表填了需求的单挂成员roll点，并支付火眼市场价一半计入家族资金，单挂无人需求则主力成员可免费直接捡；扎杯/母本技能书主力成员可免费直接捡，主力无人需求则单挂roll点购买，价格同为火眼市场价一半。
+roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代roll、出售、转让。
+备注：单挂一场远征中同时需求扎头、扎杯、母本时，无需重复付费，只需支付一次「火眼市场价一半」。
+
+报名与开团
+每日一条龙结束后，由当日团长发布公告，随即开始次日主力队报名。开团前团长会优化名单配置，尽量保证每队火、眼、拳齐全。
+已报名者若无法参加，需至少提前1小时说明，以便安排替补；未说明且未到者视为爽约。
+主力队成员在无人替补的情况下，必须完整打完2次扎与所有巴洛克，中途退出视为爽约。
+
+登记与Roll卡
+默认火职业担任队长，无火则由眼职业担任。进副本前队长检查登记情况，单挂成员互相检查；主力登记齐全后开始roll卡。单挂成员务必自行确认登记，未登记者后果自负。
+领队喊roll卡后开始roll点，仅主力队成员可参与roll卡，单挂成员roll卡无效。
+
+战斗救援与单挂要求
+跨队救人：队内保命能力强的刀或拳职业优先退队自保，奶妈注意补血，队长组人进队复活。被救者复活后立即退组返回原队。
+单挂自保：JJB伤害约5500，请把保护拉满至90%以上，吃一瓶药即可满血。单挂请自保；若有单挂奶或远征结束后可请奶妈救助。
+
+开团时间
+按报名时的集合时间在23线雪域集合（或听团长安排）。奶妈与队长（火或眼）必须准时到位，负责接引各队成员进线抢线。
+到达集合时间后报名表即锁定，成员优先按填表确定；超过集合时间10分钟仍未到位的主力队成员视为迟到，自动放弃资格，由团长从单挂/替补席递补。
+迟到或爽约将记入家族远征未守约黑名单：一周内累计2次迟到或1次爽约，禁止参与家族远征3天。
+
+职业门槛与要求
+主力奶妈：需拥有圣灵20，无火状态下血量不低于4500。输出职业：最低126级，血量不低于6000。职业要求：圣骑士必须完成四转；冲锋队长「极速领域」技能点到11点；黑骑士队长须四转。
+
+其他突发状况
+为覆盖规则外的一切突发状况，任何其他情况由团长当场决定，全员需服从安排。`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('✅ 规则文本已复制！', 'success');
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ 规则文本已复制！', 'success');
+            } catch (e) { showToast('❌ 复制失败，请手动选择'); }
+            document.body.removeChild(ta);
+        }
+
+        // 语音频道切换
+        function initVoiceTabs() {
+            const tabs = document.querySelectorAll('.voice-tab');
+            const panels = document.querySelectorAll('.voice-panel');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const key = tab.dataset.voice;
+                    tabs.forEach(t => t.classList.toggle('active', t === tab));
+                    panels.forEach(p => p.classList.toggle('active', p.dataset.voice === key));
+                });
+            });
+        }
+
+        initVoiceTabs();
+    </script>
+
+<!-- ===== 资源导航：返回首页（由首页统一挂载） ===== -->
+<style>
+  .xsbhxh-home {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .93);
+    color: #075c45;
+    font: 700 13px/1 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    text-decoration: none;
+    letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+    border: 1px solid rgba(7, 131, 95, .24);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, transform .18s ease;
+  }
+  .xsbhxh-home:hover { background: #fff; transform: translateY(-1px); }
+  .xsbhxh-home:focus-visible { outline: 3px solid rgba(7, 131, 95, .45); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .xsbhxh-home { left: 10px; bottom: 10px; padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+<a class="xsbhxh-home" href="../index.html" aria-label="返回首页导航">
+  <span aria-hidden="true">&#8962;</span> 首页
+</a>
+<!-- ===== 资源导航结束 ===== -->
+</body>
+
+</html>

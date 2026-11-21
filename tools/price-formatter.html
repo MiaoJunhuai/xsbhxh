@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字格式化 · 千分位 + 中文单位</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #ecfeff 100%);
+    color: #0f172a;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 620px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 24px 60px -24px rgba(15, 23, 42, .28),
+                0 2px 8px rgba(15, 23, 42, .04);
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    letter-spacing: .5px;
+  }
+
+  .sub {
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  /* ---------- 模式切换 ---------- */
+  .mode-switch {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: #f1f5f9;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+  }
+
+  .mode-btn:hover { color: #334155; }
+
+  .mode-btn.active {
+    background: #fff;
+    color: #4f46e5;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+  }
+
+  /* ---------- 第一排：左中文 / 右千分位 ---------- */
+  .results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .result-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-height: 18px;
+  }
+
+  .tag-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    color: transparent;
+    white-space: nowrap;
+    transition: color .18s ease, border-color .18s ease;
+  }
+
+  .value {
+    line-height: 1.35;
+    word-break: break-all;
+    transition: color .18s ease;
+    margin-top: auto;
+  }
+
+  /* 千分位：等宽无衬线，粗体 */
+  .value-mono {
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: clamp(17px, 4vw, 26px);
+    font-weight: 700;
+    letter-spacing: .5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 中文单位：黑体 + 极粗（字重 + 描边增强） */
+  .value-cn {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC",
+                 "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC",
+                 -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: clamp(17px, 4vw, 26px);
+    font-weight: 900;
+    letter-spacing: .8px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-stroke: 0.45px currentColor;
+    paint-order: stroke fill;
+  }
+
+  .value.error {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    -webkit-text-stroke: 0;
+  }
+
+  /* ---------- 底部：输入区 ---------- */
+  .field {
+    margin-top: 4px;
+  }
+
+  .hint {
+    font-weight: 400;
+    color: #94a3b8;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .input-group.main { flex: 1; }
+  .input-group.tail { flex: 0 0 138px; }
+
+  .input-group[hidden] { display: none !important; }
+
+  .mini-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mini-label .hint {
+    font-weight: 400;
+    color: #94a3b8;
+  }
+
+  #numInput,
+  #tailInput {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    color: #0f172a;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    background: #f8fafc;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+
+  #numInput { font-size: 19px; }
+  #tailInput { font-size: 17px; padding: 0 12px; }
+
+  #numInput:focus,
+  #tailInput:focus {
+    background: #fff;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, .15);
+  }
+
+  #numInput::placeholder,
+  #tailInput::placeholder { color: #cbd5e1; }
+
+  /* 超限但输入保持原样，只做轻微提示色 */
+  #numInput.over-limit,
+  #tailInput.over-limit {
+    border-color: #fbbf24;
+    background: #fffbeb;
+  }
+
+  #numInput.over-limit:focus,
+  #tailInput.over-limit:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, .18);
+  }
+
+  #copyBtn {
+    flex: none;
+    min-width: 92px;
+    height: 52px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 12px;
+    background: #6366f1;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .18s, opacity .18s, transform .1s;
+  }
+
+  #copyBtn:hover:not(:disabled) { background: #4f46e5; }
+  #copyBtn:active:not(:disabled) { transform: scale(.97); }
+  #copyBtn:disabled { opacity: .4; cursor: not-allowed; }
+  #copyBtn.copied { background: #22c55e; }
+
+  /* ---------- 超限提醒 ---------- */
+  .limit-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #b45309;
+    font-size: 12.5px;
+    line-height: 1.5;
+    animation: warnIn .16s ease;
+  }
+
+  .limit-warning[hidden] { display: none; }
+
+  .limit-warning .warn-icon {
+    flex: none;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  @keyframes warnIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 520px) {
+    body { padding: 14px; }
+    .app { padding: 20px; }
+    .result-card { padding: 12px; }
+    .results { gap: 8px; }
+    .input-row { flex-wrap: wrap; }
+    .input-group.tail { flex: 1 1 100%; }
+    #copyBtn { flex: 1 1 100%; height: 48px; min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <h1>数字格式化</h1>
+  <p class="sub">输入后自动刷新 · 千分位显示 + 中文单位</p>
+
+  <!-- 模式切换 -->
+  <div class="mode-switch" role="group" aria-label="输入模式">
+    <button type="button" class="mode-btn active" data-mode="direct" aria-pressed="true">直接数值</button>
+    <button type="button" class="mode-btn" data-mode="wan" aria-pressed="false">万输入</button>
+  </div>
+
+  <!-- 第一排：左中文单位，右千分位 -->
+  <div class="results">
+    <section class="result-card">
+      <div class="row-head">
+        <span class="tag-label">B · 中文单位</span>
+      </div>
+      <div id="outputB" class="value value-cn">—</div>
+    </section>
+
+    <section class="result-card">
+      <div class="row-head">
+        <span class="tag-label">A · 千分位</span>
+        <span id="tierTag" class="tag"></span>
+      </div>
+      <div id="outputA" class="value value-mono">—</div>
+    </section>
+  </div>
+
+  <!-- 最下面：输入区 -->
+  <div class="field">
+    <div class="input-row">
+      <div class="input-group main">
+        <label class="mini-label" for="numInput">
+          输入数值<span id="modeHint" class="hint"></span>
+        </label>
+        <input id="numInput" type="text" inputmode="decimal"
+               placeholder="例如：123456789" autocomplete="off"
+               spellcheck="false" autofocus>
+      </div>
+
+      <div class="input-group tail" id="tailGroup" hidden>
+        <label class="mini-label" for="tailInput">万之后的零头</label>
+        <input id="tailInput" type="text" inputmode="decimal"
+               placeholder="9888" autocomplete="off" spellcheck="false">
+      </div>
+
+      <button id="copyBtn" type="button" disabled>复制</button>
+    </div>
+
+    <!-- 仅提示，不改输入、不中断计算 -->
+    <div id="limitWarning" class="limit-warning" role="status" hidden>
+      <span class="warn-icon">⚠</span>
+      <span>数值已超过 2,147,483,647（32 位有符号整数上限）。输入与结果均未被修改，此提醒仅供参考。</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const MAX = 2147483647;
+  const WAN = 10000;
+
+  const input        = document.getElementById('numInput');
+  const tailInput    = document.getElementById('tailInput');
+  const tailGroup    = document.getElementById('tailGroup');
+  const modeHint     = document.getElementById('modeHint');
+  const modeButtons  = Array.from(document.querySelectorAll('.mode-btn'));
+  const outA         = document.getElementById('outputA');
+  const outB         = document.getElementById('outputB');
+  const tierTag      = document.getElementById('tierTag');
+  const copyBtn      = document.getElementById('copyBtn');
+  const limitWarning = document.getElementById('limitWarning');
+
+  let currentMode = 'direct';
+
+  /* ---------- 颜色档位（按绝对值，从大到小匹配） ---------- */
+  const TIERS = [
+    { min: 1e8, color: '#8b5cf6', label: '紫色' },  // 一亿及以上
+    { min: 1e7, color: '#f97316', label: '橙色' },  // 千万 ~ 一亿
+    { min: 1e6, color: '#22c55e', label: '绿色' },  // 百万 ~ 千万
+    { min: 1e5, color: '#06b6d4', label: '青色' },  // 十万 ~ 百万
+    { min: 0,   color: '#3b82f6', label: '蓝色' }   // 十万以下
+  ];
+
+  function tierOf(n) {
+    const abs = Math.abs(n);
+    for (const t of TIERS) {
+      if (abs >= t.min) return t;
+    }
+    return TIERS[TIERS.length - 1];
+  }
+
+  /* ---------- 解析输入 ---------- */
+  function parseNumber(raw) {
+    const s = raw.replace(/[,\s，]/g, '');
+    if (s === '' || s === '-' || s === '+' || s === '.') return null;
+    if (!/^[-+]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  /* ---------- A：千分位 ---------- */
+  function formatThousands(n) {
+    const neg = n < 0;
+    const [intPart, decPart] = Math.abs(n).toString().split('.');
+    const withComma = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + withComma + (decPart ? '.' + decPart : '');
+  }
+
+  /* ---------- B：中文单位 xxxx亿xxxx万xxxx ---------- */
+  function toChineseUnits(n) {
+    if (n === 0) return '0';
+
+    const neg = n < 0;
+    const [intStr, decStr] = Math.abs(n).toString().split('.');
+    const intNum = parseInt(intStr, 10);
+
+    const yi   = Math.floor(intNum / 1e8);          // 亿
+    const wan  = Math.floor((intNum % 1e8) / 1e4);  // 万
+    const rest = intNum % 1e4;                      // 个级
+
+    let s = '';
+
+    if (yi > 0) s += yi + '亿';
+
+    if (wan > 0) {
+      if (yi > 0 && wan < 1000) s += '零';  // 1亿 0001万 → 1亿零1万
+      s += wan + '万';
+    }
+
+    if (rest > 0) {
+      if (wan > 0 && rest < 1000) {
+        s += '零';                          // 1亿0001万0001 → 1亿零1万零1
+      } else if (wan === 0 && yi > 0) {
+        s += '零';                          // 1亿 0000 2000 → 1亿零2000
+      }
+      s += rest;
+    }
+
+    if (s === '') s = '0';
+    if (decStr) s += '.' + decStr;
+
+    return (neg ? '-' : '') + s;
+  }
+
+  /* ---------- 计算当前实际数值 ---------- */
+  function computeValue() {
+    const mainRaw = input.value.trim();
+
+    if (currentMode === 'direct') {
+      if (mainRaw === '') return { state: 'empty' };
+      const n = parseNumber(mainRaw);
+      if (n === null) return { state: 'error' };
+      return { state: 'ok', value: n };
+    }
+
+    /* 万输入模式：主输入 × 10000 + 零头 */
+    const tailRaw = tailInput.value.trim();
+    if (mainRaw === '' && tailRaw === '') return { state: 'empty' };
+
+    let mainVal = 0;
+    if (mainRaw !== '') {
+      const m = parseNumber(mainRaw);
+      if (m === null) return { state: 'error' };
+      mainVal = m;
+    }
+
+    let tailVal = 0;
+    if (tailRaw !== '') {
+      const t = parseNumber(tailRaw);
+      if (t === null) return { state: 'error' };
+      tailVal = t;
+    }
+
+    let value = mainVal * WAN + tailVal;
+    /* 消除浮点误差（如 0.1 万 → 1000.0000000000001） */
+    if (!Number.isInteger(value)) {
+      value = Math.round(value * 1e6) / 1e6;
+    }
+
+    return { state: 'ok', value: value };
+  }
+
+  /* ---------- 超限提示显隐 ---------- */
+  function setLimitWarning(show) {
+    if (show) {
+      limitWarning.removeAttribute('hidden');
+      input.classList.add('over-limit');
+      tailInput.classList.add('over-limit');
+    } else {
+      limitWarning.setAttribute('hidden', '');
+      input.classList.remove('over-limit');
+      tailInput.classList.remove('over-limit');
+    }
+  }
+
+  /* ---------- 清空 / 错误状态 ---------- */
+  function showEmpty() {
+    setLimitWarning(false);
+    outA.textContent = '—';
+    outA.style.color = '';
+    outA.classList.remove('error');
+    outB.textContent = '—';
+    outB.style.color = '';
+    outB.classList.remove('error');
+    tierTag.textContent = '';
+    tierTag.style.color = 'transparent';
+    tierTag.style.borderColor = 'transparent';
+  }
+
+  function showError() {
+    setLimitWarning(false);
+    outA.textContent = '请输入有效数字';
+    outA.style.color = '#ef4444';
+    outA.classList.add('error');
+    outB.textContent = '—';
+    outB.style.color = '';
+    outB.classList.remove('error');
+    tierTag.textContent = '';
+    tierTag.style.color = 'transparent';
+    tierTag.style.borderColor = 'transparent';
+  }
+
+  /* ---------- 渲染 ---------- */
+  function render() {
+    const res = computeValue();
+    copyBtn.disabled = res.state !== 'ok';
+
+    if (res.state === 'empty') { showEmpty(); return; }
+    if (res.state === 'error') { showError(); return; }
+
+    const n = res.value;
+    const tier = tierOf(n);
+
+    /* 千分位 */
+    outA.classList.remove('error');
+    outA.textContent = formatThousands(n);
+    outA.style.color = tier.color;
+
+    /* 档位小标签 */
+    tierTag.textContent = tier.label;
+    tierTag.style.color = tier.color;
+    tierTag.style.borderColor = tier.color;
+
+    /* 中文单位 */
+    outB.classList.remove('error');
+    outB.textContent = toChineseUnits(n);
+    outB.style.color = tier.color;
+
+    /* 超过上限：仅文字提醒，输入值和结果都不动 */
+    setLimitWarning(n > MAX);
+  }
+
+  /* 输入即刷新 */
+  input.addEventListener('input', render);
+  input.addEventListener('change', render);
+  tailInput.addEventListener('input', render);
+  tailInput.addEventListener('change', render);
+
+  /* ---------- 模式切换 ---------- */
+  function setMode(mode) {
+    currentMode = mode;
+
+    modeButtons.forEach(btn => {
+      const active = btn.dataset.mode === mode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    const isWan = mode === 'wan';
+    tailGroup.hidden = !isWan;
+    modeHint.textContent = isWan ? '（单位：万）' : '';
+    input.placeholder = isWan ? '例如：20' : '例如：123456789';
+
+    render();
+  }
+
+  modeButtons.forEach(btn => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+
+  /* ---------- 一键复制当前实际数值 ---------- */
+  let copyTimer = null;
+
+  function flashCopied() {
+    copyBtn.textContent = '已复制 ✓';
+    copyBtn.classList.add('copied');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copyBtn.textContent = '复制';
+      copyBtn.classList.remove('copied');
+    }, 1500);
+  }
+
+  function flashFailed() {
+    copyBtn.textContent = '复制失败';
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copyBtn.textContent = '复制';
+    }, 1500);
+  }
+
+  copyBtn.addEventListener('click', async () => {
+    const res = computeValue();
+    if (res.state !== 'ok') return;
+
+    /* 万模式下复制计算后的实际数值，如 209888 */
+    const text = String(res.value);
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        flashCopied();
+        return;
+      }
+      throw new Error('fallback');
+    } catch (e) {
+      /* 兼容旧浏览器 / 非安全上下文 */
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+      if (ok) flashCopied();
+      else flashFailed();
+    }
+  });
+
+  /* 初始化 */
+  render();
+})();
+</script>
+
+
+<!-- ===== 资源导航：返回首页（由首页统一挂载） ===== -->
+<style>
+  .xsbhxh-home {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 900;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .93);
+    color: #075c45;
+    font: 700 13px/1 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    text-decoration: none;
+    letter-spacing: .5px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+    border: 1px solid rgba(7, 131, 95, .24);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background .18s ease, transform .18s ease;
+  }
+  .xsbhxh-home:hover { background: #fff; transform: translateY(-1px); }
+  .xsbhxh-home:focus-visible { outline: 3px solid rgba(7, 131, 95, .45); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .xsbhxh-home { left: 10px; bottom: 10px; padding: 8px 12px; font-size: 12px; }
+  }
+</style>
+<a class="xsbhxh-home" href="../index.html" aria-label="返回首页导航">
+  <span aria-hidden="true">&#8962;</span> 首页
+</a>
+<!-- ===== 资源导航结束 ===== -->
+</body>
+</html>
