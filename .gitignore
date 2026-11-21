@@ -1,0 +1,8 @@
+# Windows 系统自动生成的垃圾文件（自动同步时不上传这些）
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# 临时文件
+*.tmp
+~$*
