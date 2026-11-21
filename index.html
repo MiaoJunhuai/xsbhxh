@@ -937,11 +937,31 @@
     var img = box.querySelector('img');
     var closeBtn = box.querySelector('.lightbox-close');
     var lastFocus = null;
+    var loadToken = 0;
 
     function open(link) {
+      var token = ++loadToken;
       var thumb = link.querySelector('img');
-      img.src = link.getAttribute('href');
+      var fullSrc = link.getAttribute('href');
+      var placeholder = thumb ? (thumb.currentSrc || thumb.src) : '';
+
       img.alt = thumb ? thumb.alt : '';
+
+      // 先用页面里已缓存的小图占位，避免新大图加载期间显示上一张
+      if (placeholder) {
+        img.src = placeholder;
+      } else {
+        img.removeAttribute('src');
+      }
+
+      // 预加载大图，完成后替换（丢弃过期请求，防止快速切换时串图）
+      var full = new Image();
+      full.onload = function () {
+        if (token !== loadToken) return;
+        if (full.src !== img.src) img.src = full.src;
+      };
+      full.src = fullSrc;
+
       box.classList.add('is-open');
       document.body.style.overflow = 'hidden';
       lastFocus = link;
@@ -949,6 +969,7 @@
     }
 
     function close() {
+      loadToken++;
       box.classList.remove('is-open');
       document.body.style.overflow = '';
       if (lastFocus) lastFocus.focus();
