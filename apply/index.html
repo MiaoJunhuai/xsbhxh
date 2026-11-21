@@ -593,7 +593,7 @@
 <header class="xsb-nav" id="xsbNav">
   <div class="xsb-nav-inner">
     <a class="xsb-brand" href="../index.html" aria-label="返回官网首页">
-      <span class="xsb-badge" aria-hidden="true">&#128737;&#65039;</span>
+      <span class="xsb-badge" aria-hidden="true"><img src="../assets/family-icon.png" alt="" width="60" height="60" /></span>
       <span class="xsb-word">新手保护联盟</span>
     </a>
     <nav class="xsb-links" aria-label="官网导航">
@@ -658,6 +658,14 @@
     border: 1px solid rgba(47, 125, 79, .22);
     font-size: 16px;
     box-shadow: inset 0 1px 0 #fff;
+    overflow: hidden;
+  }
+
+  .xsb-badge img {
+    display: block;
+    width: 28px;
+    height: 28px;
+    image-rendering: pixelated;
   }
 
   .xsb-links { display: flex; align-items: center; gap: 4px; }
@@ -681,6 +689,7 @@
     .xsb-nav-inner { height: 56px; }
     .xsb-brand { font-size: 14px; gap: 7px; }
     .xsb-badge { width: 28px; height: 28px; font-size: 15px; border-radius: 9px; }
+    .xsb-badge img { width: 26px; height: 26px; }
     .xsb-links a { padding: 7px 10px; font-size: 13.5px; }
     .xsb-only-pc { display: none; }
   }

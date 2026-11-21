@@ -15,6 +15,7 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `rules/one-dragon.html` | 远征一条龙规则 | 含 KOOK 语音频道与车队二维码 |
 | `rules/tayza.html` | 泰扎副本规则 | 报名、门槛、分红、罚款 |
 | `assets/banner.webp` / `banner.jpg` | 首页横幅 | 原图压缩版（1600 宽） |
+| `assets/family-icon.png` | 家族图标 | 导航栏左侧图标（60 宽，像素风） |
 | `assets/activity-1.webp` / `.jpg` | 第一届活动合影 | 压缩版（1200 宽） |
 | `assets/activity-2.webp` / `.jpg` | 第二届活动合影 | 压缩版（1200 宽） |
 
