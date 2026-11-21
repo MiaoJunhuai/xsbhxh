@@ -216,11 +216,13 @@
     display: grid;
     place-items: center;
     border-radius: 15px;
-    font-size: 22px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
+    background: var(--accent-soft, #eef4ea);
+    border: 1px solid rgba(120, 98, 64, .12);
+    color: var(--accent, var(--green));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 10px 20px -18px rgba(90, 66, 30, .6);
   }
+
+  .group-icon svg { width: 22px; height: 22px; display: block; }
 
   .group-head h2 {
     margin: 0;
@@ -239,78 +241,87 @@
   .cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    gap: 20px;
   }
 
   .card {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 22px 22px 18px;
-    border-radius: var(--radius);
-    background: var(--card);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
+    gap: 12px;
+    padding: 22px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #fffefb 0%, #fdf8ef 100%);
+    border: 1px solid rgba(120, 98, 64, .13);
+    box-shadow: 0 16px 34px -28px rgba(90, 66, 30, .6), inset 0 1px 0 rgba(255, 255, 255, .9);
     text-decoration: none;
     color: inherit;
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-    overflow: hidden;
-  }
-
-  .card::after {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 4px;
-    background: var(--accent, var(--green));
-    opacity: .85;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
   }
 
   .card:hover {
     transform: translateY(-4px);
     border-color: var(--accent, var(--green));
-    box-shadow: 0 26px 48px -26px rgba(90, 66, 30, .55);
+    box-shadow: 0 28px 46px -30px rgba(90, 66, 30, .66), inset 0 1px 0 rgba(255, 255, 255, .9);
   }
 
   .card:focus-visible {
     outline: 3px solid var(--accent, var(--green));
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
   .card-top {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
   }
 
-  .card-emoji {
-    font-size: 26px;
-    line-height: 1;
+  .card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft, #eef4ea);
+    border: 1px solid rgba(120, 98, 64, .1);
+    color: var(--accent, var(--green));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
+  }
+
+  .card-icon svg { width: 24px; height: 24px; display: block; }
+
+  .card:hover .card-icon {
+    background: var(--accent, var(--green));
+    border-color: var(--accent, var(--green));
+    color: #fff;
   }
 
   .card-tag {
-    font-size: 11.5px;
-    font-weight: 800;
-    letter-spacing: .6px;
-    padding: 3px 10px;
+    flex: none;
+    margin-top: 2px;
+    padding: 4px 10px;
     border-radius: 999px;
-    color: var(--accent, var(--green));
-    background: rgba(120, 98, 64, .08);
+    background: var(--accent-soft, #eef4ea);
     border: 1px solid rgba(120, 98, 64, .1);
+    color: var(--accent, var(--green));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .5px;
     white-space: nowrap;
+    transition: background .22s ease;
   }
 
   .card h3 {
-    margin: 3px 0 0;
-    font-size: 18.5px;
-    letter-spacing: .4px;
+    margin: 2px 0 0;
+    font-size: 19px;
+    letter-spacing: .3px;
     color: var(--ink);
   }
 
   .card p {
-    margin: 0;
+    margin: -4px 0 0;
     font-size: 14px;
     color: var(--ink-2);
     line-height: 1.75;
@@ -322,59 +333,101 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-top: 8px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(120, 98, 64, .1);
-    font-size: 12.5px;
+    margin-top: 4px;
+  }
+
+  .card-meta {
+    font-size: 12px;
     font-weight: 700;
-    color: var(--ink-3);
     letter-spacing: .3px;
+    color: var(--ink-3);
   }
 
-  .card-foot .go {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+  .card-arrow {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft, #eef4ea);
     color: var(--accent, var(--green));
-    transition: gap .18s ease;
+    transition: background .22s ease, color .22s ease, transform .22s ease;
   }
 
-  .card:hover .go { gap: 9px; }
+  .card-arrow svg { width: 16px; height: 16px; display: block; }
+
+  .card:hover .card-arrow {
+    background: var(--accent, var(--green));
+    color: #fff;
+    transform: translateX(2px);
+  }
 
   /* 重点卡片：申请入会 */
   .card-feature {
     grid-column: 1 / -1;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon title go"
+      "icon body go";
     align-items: center;
-    gap: 20px;
+    column-gap: 20px;
+    row-gap: 6px;
     padding: 24px 26px;
     background:
-      radial-gradient(circle at 92% 0%, rgba(47, 125, 79, .10), transparent 42%),
-      var(--card);
+      radial-gradient(120% 150% at 96% 0%, rgba(47, 125, 79, .10) 0%, transparent 58%),
+      linear-gradient(180deg, #fffefb 0%, #fbf7ec 100%);
   }
 
   .feature-icon {
-    flex: none;
-    width: 64px;
-    height: 64px;
+    grid-area: icon;
+    align-self: center;
+    width: 66px;
+    height: 66px;
+    border-radius: 20px;
     display: grid;
     place-items: center;
-    border-radius: 20px;
-    font-size: 31px;
-    background: linear-gradient(150deg, #eef8e9, #d9ecd3);
-    border: 1px solid rgba(47, 125, 79, .2);
+    background: linear-gradient(150deg, #eaf6e4, #d6ecd2);
+    border: 1px solid rgba(47, 125, 79, .22);
+    color: var(--green-d);
     box-shadow: inset 0 1px 0 #fff;
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
   }
 
-  .feature-body { flex: 1; min-width: 0; }
-  .feature-body h3 { margin-top: 0; font-size: 21px; }
-  .feature-body p { margin-top: 4px; }
+  .feature-icon svg { width: 30px; height: 30px; display: block; }
+
+  .card-feature:hover .feature-icon {
+    background: var(--green-d);
+    border-color: var(--green-d);
+    color: #fff;
+  }
+
+  .feature-title {
+    grid-area: title;
+    align-self: end;
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: .3px;
+    color: var(--ink);
+  }
+
+  .feature-body {
+    grid-area: body;
+    align-self: start;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feature-body p { margin: 0; flex: none; }
 
   .feature-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 2px;
   }
 
   .chip {
@@ -389,22 +442,26 @@
   }
 
   .feature-go {
-    flex: none;
+    grid-area: go;
+    align-self: center;
+    justify-self: end;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 11px 20px;
+    gap: 8px;
+    padding: 12px 22px;
     border-radius: 999px;
-    background: var(--green);
+    background: linear-gradient(135deg, #2f7d4f, #256b42);
     color: #fff;
     font-size: 14px;
     font-weight: 800;
     letter-spacing: .5px;
-    box-shadow: 0 10px 22px -12px rgba(47, 125, 79, .9);
-    transition: gap .18s ease, background .18s ease;
+    box-shadow: 0 12px 24px -14px rgba(47, 125, 79, .95), inset 0 1px 0 rgba(255, 255, 255, .25);
+    transition: gap .2s ease, filter .2s ease;
   }
 
-  .card-feature:hover .feature-go { gap: 11px; background: var(--green-d); }
+  .feature-go svg { width: 16px; height: 16px; display: block; }
+
+  .card-feature:hover .feature-go { gap: 12px; filter: brightness(1.06); }
 
   /* ================= 页脚 ================= */
   footer {
@@ -447,13 +504,21 @@
     .group { padding-top: 34px; scroll-margin-top: 70px; }
     .group-head h2 { font-size: 20px; }
     .cards { grid-template-columns: 1fr; gap: 14px; }
+    .card { padding: 20px; }
     .card-feature {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 14px;
+      grid-template-columns: 56px minmax(0, 1fr);
+      grid-template-areas:
+        "icon title"
+        "body body"
+        "go go";
+      column-gap: 14px;
+      row-gap: 12px;
       padding: 22px;
     }
-    .feature-go { width: 100%; justify-content: center; }
+    .feature-icon { width: 56px; height: 56px; border-radius: 17px; }
+    .feature-icon svg { width: 26px; height: 26px; }
+    .feature-title { font-size: 20px; align-self: center; }
+    .feature-go { width: 100%; justify-content: center; justify-self: stretch; }
   }
 
   @media (max-width: 420px) {
@@ -509,7 +574,7 @@
   <!-- ==================== 申请入会 ==================== -->
   <section class="group" id="apply">
     <div class="group-head">
-      <div class="group-icon" aria-hidden="true">📝</div>
+      <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></div>
       <div>
         <h2>申请入会</h2>
         <p>想成为联盟的一员？先完成入会申请面试。</p>
@@ -517,10 +582,10 @@
     </div>
 
     <div class="cards">
-      <a class="card card-feature" href="apply/index.html" style="--accent:#2f7d4f">
-        <span class="feature-icon" aria-hidden="true">🎯</span>
+      <a class="card card-feature" href="apply/index.html" style="--accent:#2f7d4f;--accent-soft:#e7f4e1">
+        <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span>
+        <h3 class="feature-title">入会申请面试</h3>
         <div class="feature-body">
-          <h3>入会申请面试</h3>
           <p>填写游戏昵称后开始答题，每次随机抽取 20 道题，题目与选项顺序都会打乱。满分 100 分，80 分及以上合格，提交后自动评分，并可保存结果截图。</p>
           <div class="feature-meta">
             <span class="chip">v1.0.25</span>
@@ -528,7 +593,7 @@
             <span class="chip">题库更新 2026-11-17</span>
           </div>
         </div>
-        <span class="feature-go">开始面试 <span aria-hidden="true">→</span></span>
+        <span class="feature-go">开始面试 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
       </a>
     </div>
   </section>
@@ -536,7 +601,7 @@
   <!-- ==================== 工具 ==================== -->
   <section class="group" id="tools">
     <div class="group-head">
-      <div class="group-icon" aria-hidden="true">🧰</div>
+      <div class="group-icon" aria-hidden="true" style="--accent:#3e8fc1;--accent-soft:#e9f3fb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></div>
       <div>
         <h2>工具</h2>
         <p>联盟内部工具，带队和报价时都能用上。</p>
@@ -544,29 +609,29 @@
     </div>
 
     <div class="cards">
-      <a class="card" href="tools/leader-checklist.html" style="--accent:#3e8fc1">
+      <a class="card" href="tools/leader-checklist.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
-          <span class="card-emoji" aria-hidden="true">✅</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>
           <span class="card-tag">v1.0.3</span>
         </div>
         <h3>实习团长检查清单</h3>
         <p>一条龙、扎昆、PB、JJB 全流程检查表，从集合前到道具分配共 9 个阶段、31 项检查点，支持逐项打勾与一键截图保存。</p>
         <div class="card-foot">
-          <span>9 个阶段 · 31 项检查点</span>
-          <span class="go">进入 <span aria-hidden="true">→</span></span>
+          <span class="card-meta">9 个阶段 · 31 项检查点</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
 
-      <a class="card" href="tools/price-formatter.html" style="--accent:#3e8fc1">
+      <a class="card" href="tools/price-formatter.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
-          <span class="card-emoji" aria-hidden="true">🔢</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg></span>
           <span class="card-tag">v1.0.1</span>
         </div>
         <h3>商店价格规范器</h3>
         <p>输入数值即时刷新千分位显示与「万」等中文单位，标价、报价时快速核对，支持一键复制结果。</p>
         <div class="card-foot">
-          <span>千分位 · 中文单位</span>
-          <span class="go">进入 <span aria-hidden="true">→</span></span>
+          <span class="card-meta">千分位 · 中文单位</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
     </div>
@@ -575,7 +640,7 @@
   <!-- ==================== 远征规则 ==================== -->
   <section class="group" id="rules">
     <div class="group-head">
-      <div class="group-icon" aria-hidden="true">🚩</div>
+      <div class="group-icon" aria-hidden="true" style="--accent:#b8861e;--accent-soft:#fbf2dd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></div>
       <div>
         <h2>远征规则</h2>
         <p>出发前先看规则，少踩坑、少罚款。</p>
@@ -583,29 +648,29 @@
     </div>
 
     <div class="cards">
-      <a class="card" href="rules/one-dragon.html" style="--accent:#b8861e">
+      <a class="card" href="rules/one-dragon.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
         <div class="card-top">
-          <span class="card-emoji" aria-hidden="true">🐉</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span>
           <span class="card-tag">远征</span>
         </div>
         <h3>远征一条龙规则</h3>
         <p>扎昆、JJB / PB 一条龙的 KOOK 语音要求、车队二维码、掉落分配、奶补与误捡罚款标准，全部整理在一页。</p>
         <div class="card-foot">
-          <span>含 KOOK 语音频道与车队二维码</span>
-          <span class="go">查看 <span aria-hidden="true">→</span></span>
+          <span class="card-meta">含 KOOK 语音频道与车队二维码</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
 
-      <a class="card" href="rules/tayza.html" style="--accent:#b8861e">
+      <a class="card" href="rules/tayza.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
         <div class="card-top">
-          <span class="card-emoji" aria-hidden="true">🏯</span>
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>
           <span class="card-tag">副本</span>
         </div>
         <h3>泰扎副本规则</h3>
         <p>泰扎报名与开团时间、KOOK 语音、主力队门槛与职业要求、分红和误捡罚款规则，开团前建议通读一遍。</p>
         <div class="card-foot">
-          <span>报名 · 门槛 · 分红 · 罚款</span>
-          <span class="go">查看 <span aria-hidden="true">→</span></span>
+          <span class="card-meta">报名 · 门槛 · 分红 · 罚款</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
     </div>
