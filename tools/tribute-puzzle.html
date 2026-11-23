@@ -354,7 +354,13 @@
       font-weight: 700;
       letter-spacing: 0.08rem;
       color: #6b5a3a;
-      margin-bottom: 0.45rem;
+      margin-bottom: 0.2rem;
+    }
+    .auto-input-sub {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #8a7a5f;
+      margin-bottom: 0.5rem;
     }
 
     .type-pick {
@@ -801,7 +807,8 @@
     <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
 
     <div class="auto-input">
-      <div class="auto-input-title">左右滑动或点格子（1~4，再点一次归零）</div>
+      <div class="auto-input-title">左右滑动或点格子（1~4）</div>
+      <div class="auto-input-sub">第 1 格左半边是 0 · 再点同一格归零</div>
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
@@ -1294,15 +1301,22 @@
       renderInput();
     }
 
-    // 每格 25% 对应 1~4；拖到最左（或拖出按钮）为 0；单击已选中的格子则归零
+    // 点击：格 1~4 各自对应 1~4；拖动：格 1 左半边算 0，方便拖到最左清空
     typeBtns.forEach(function (btn) {
       const type = btn.getAttribute('data-type');
       let rect = null;
 
-      function valueFromX(clientX) {
+      function cellFromX(clientX) {
         if (!rect || !rect.width) return 0;
         const pct = (clientX - rect.left) / rect.width;
         if (pct <= 0) return 0;
+        return Math.min(4, Math.ceil(pct * 4));
+      }
+
+      function dragValueFromX(clientX) {
+        if (!rect || !rect.width) return 0;
+        const pct = (clientX - rect.left) / rect.width;
+        if (pct <= 0.125) return 0;
         return Math.min(4, Math.ceil(pct * 4));
       }
 
@@ -1311,21 +1325,22 @@
         e.preventDefault();
         try { btn.setPointerCapture(e.pointerId); } catch (err) {}
         rect = btn.getBoundingClientRect();
+        const target = cellFromX(e.clientX);
         dragState = {
           type: type,
           startX: e.clientX,
           moved: false,
           valueBefore: autoState.input[type],
-          target: valueFromX(e.clientX)
+          target: target
         };
         btn.classList.add('is-dragging');
-        setInputValue(type, dragState.target);
+        setInputValue(type, target);
       });
 
       btn.addEventListener('pointermove', function (e) {
         if (!dragState || dragState.type !== type) return;
         if (Math.abs(e.clientX - dragState.startX) > 4) dragState.moved = true;
-        setInputValue(type, valueFromX(e.clientX));
+        setInputValue(type, dragValueFromX(e.clientX));
       });
 
       btn.addEventListener('pointerup', function () {
