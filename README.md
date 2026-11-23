@@ -8,10 +8,11 @@ WingsMS 服务器新手保护联盟的家族官网。
 
 | 路径 | 页面 | 说明 |
 |---|---|---|
-| `index.html` | 官网首页 | 横幅、关于我们（活动合影）+ 导航栏（申请入会 / 工具 / 远征规则） |
+| `index.html` | 官网首页 | 横幅、关于我们（活动合影）+ 导航栏（申请入会 / 工具 / 远征规则 / 关于我们） |
 | `apply/index.html` | 入会申请面试 | v1.0.25，随机 20 题，80 分合格 |
 | `tools/leader-checklist.html` | 实习团长检查清单 | v1.0.3，9 个阶段 31 项检查点 |
 | `tools/price-formatter.html` | 商店价格规范器 | v1.0.1，千分位 + 中文单位 |
+| `tools/tribute-puzzle.html` | 贤者贡品 · 四象祭坛 | v1.0.1，家务贡品关卡试玩练习，7 次机会猜 4 位贡品 |
 | `rules/one-dragon.html` | 远征一条龙规则 | 含 KOOK 语音频道与车队二维码 |
 | `rules/tayza.html` | 泰扎副本规则 | 报名、门槛、分红、罚款 |
 | `assets/banner.webp` / `banner.jpg` | 首页横幅 | 原图压缩版（1600 宽） |
@@ -19,7 +20,7 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `assets/activity-1.webp` / `.jpg` | 第一届活动合影 | 压缩版（1200 宽） |
 | `assets/activity-2.webp` / `.jpg` | 第二届活动合影 | 压缩版（1200 宽） |
 
-首页导航栏的三项对应首页里的三个分区，点击后滚动到该分区，再从卡片进入具体页面。
+首页导航栏的四项对应首页里的四个分区，点击后滚动到该分区，再从卡片进入具体页面。
 每个子页面顶部都有同一套官网导航栏：PC 端常驻，移动端向下滚动时收起、向上滚动时重新出现，
 点击导航即可回到首页对应分类。
 
@@ -30,6 +31,7 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `apply/index.html` | `新手保护协会_入会面试_v1.0.25.html` |
 | `tools/leader-checklist.html` | `实习团长检查清单1.0.3.html` |
 | `tools/price-formatter.html` | `自用商店价格规范器1.0.1.html` |
+| `tools/tribute-puzzle.html` | `家务贡品关卡试玩练习1.0.1.html` |
 | `rules/one-dragon.html` | `村内一条家族规则.html` |
 | `rules/tayza.html` | `村内泰扎家族规则.html` |
 | `assets/banner.webp` | `新手保护联盟横幅.png`（压缩后） |

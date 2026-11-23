@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
+  <title>贤者贡品 · 四象祭坛</title>
+  <meta name="description" content="新手保护联盟工具：贤者贡品（家务贡品关卡）试玩练习，为四位贤者摆放贡品，用四次提示在 7 次机会内找出正确组合。" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(145deg, #2d2a1e 0%, #3e3928 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Noto Serif SC', '楷体', 'KaiTi', serif;
+      padding: 1.5rem;
+      margin: 0;
+    }
+    .game-container {
+      background: #fbf3e0;
+      background-image: radial-gradient(circle at 20% 20%, rgba(255,240,210,0.7) 0%, rgba(235,215,170,0.5) 100%);
+      border: 8px double #8b7a5c;
+      border-radius: 3rem 1.5rem 3rem 1.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 2px 8px rgba(255,255,200,0.8);
+      padding: 2rem 2.2rem;
+      max-width: 650px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: #4e3e2b;
+      letter-spacing: 0.2rem;
+      margin-bottom: 0.2rem;
+      text-shadow: 1px 1px 0 #e6d5a8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+    .producer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b5a3a;
+      margin-bottom: 0.8rem;
+      font-style: italic;
+      letter-spacing: 0.05rem;
+      text-shadow: 1px 1px 0 #e6d5a8;
+      opacity: 0.9;
+    }
+    .statues-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin: 0.8rem 0 1.5rem;
+    }
+    .statue {
+      font-size: 2.8rem;
+      background: linear-gradient(180deg, #e5d7b3 0%, #b7a483 100%);
+      border: 2px solid #6e5e3e;
+      border-radius: 40% 40% 20% 20%;
+      width: 65px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.5), inset 0 -4px 4px rgba(0,0,0,0.3);
+      color: #30271a;
+    }
+    .input-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin: 0.5rem 0 1.2rem;
+    }
+    .items-grid {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .item-btn {
+      background: radial-gradient(circle at 30% 30%, #fff8e7, #c9a87b);
+      border: 3px solid #5e4a32;
+      border-radius: 1.2rem;
+      width: 65px;
+      height: 65px;
+      font-size: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+      transition: 0.1s ease;
+      user-select: none;
+      color: #2d2412;
+    }
+    .item-btn:active {
+      transform: scale(0.92);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .selected-slot {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      margin: 0.5rem 0;
+    }
+    .slot {
+      width: 65px;
+      height: 65px;
+      border: 3px dashed #6b5d46;
+      border-radius: 1rem;
+      background: #f3e3c9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.3rem;
+      box-shadow: inset 0 0 0 2px #b7a16b;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .actions {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: linear-gradient(180deg, #f3d78c 0%, #b68b40 100%);
+      border: none;
+      color: #2f2a1b;
+      font-weight: bold;
+      font-size: 1rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 2.5rem;
+      letter-spacing: 0.1rem;
+      box-shadow: 0 5px 0 #6b4f28, 0 6px 12px black;
+      cursor: pointer;
+      transition: 0.08s;
+      border: 1px solid #e7c284;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #5e4020, 0 4px 8px black;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #5e4020;
+      cursor: not-allowed;
+    }
+    .clear-btn { background: linear-gradient(180deg, #d9c89e 0%, #9b8a5a 100%); }
+    .reset-btn { background: linear-gradient(180deg, #c6ad7a 0%, #7a623b 100%); color: #fbf3da; }
+    .feedback-box {
+      background: #fff7e6;
+      border: 2px solid #977c51;
+      border-radius: 2rem 1rem 2rem 1rem;
+      padding: 1rem 1.5rem;
+      margin: 1.2rem 0 1rem;
+      font-size: 1.2rem;
+      color: #3b2e1a;
+      text-align: center;
+      min-height: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 12px rgba(160,120,50,0.5);
+      font-weight: 500;
+    }
+    .feedback-line {
+      margin: 0.15rem 0;
+    }
+    .attempt-badge {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #403826;
+      color: #f7e8c4;
+      border-radius: 2rem;
+      padding: 0.5rem 1.2rem;
+      font-weight: bold;
+      margin: 0.8rem 0;
+    }
+    .history {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 0.8rem;
+      background: rgba(245,235,210,0.8);
+      border-radius: 1rem;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      border: 1px solid #b39764;
+    }
+    .history-item {
+      display: flex;
+      flex-direction: column;
+      padding: 0.4rem 0.8rem;
+      border-bottom: 1px dashed #c3a775;
+    }
+    .history-guess {
+      font-weight: bold;
+      margin-bottom: 0.1rem;
+    }
+    .history-hint {
+      font-size: 0.85rem;
+      color: #4e3b21;
+    }
+
+    h1 { flex-wrap: wrap; }
+
+    /* ---------- 移动端适配 ---------- */
+    @media (max-width: 560px) {
+      body { padding: 12px; }
+      .game-container {
+        padding: 1.25rem 1rem;
+        border-width: 6px;
+        border-radius: 2rem 1rem 2rem 1rem;
+      }
+      h1 { font-size: 1.5rem; letter-spacing: 0.12rem; gap: 0.2rem; }
+      .producer { font-size: 0.8rem; }
+      .statues-row { gap: 0.5rem; margin: 0.7rem 0 1.1rem; }
+      .statue { width: 52px; height: 64px; font-size: 2.2rem; }
+      .items-grid, .selected-slot { gap: 0.5rem; }
+      .item-btn, .slot { width: 56px; height: 56px; font-size: 1.9rem; }
+      .item-btn { border-width: 2px; border-radius: 1rem; }
+      .slot { border-width: 2px; border-radius: 0.9rem; }
+      .actions { gap: 0.5rem; }
+      .btn { font-size: 0.9rem; padding: 0.6rem 1rem; letter-spacing: 0.06rem; }
+      .attempt-badge { font-size: 0.9rem; padding: 0.45rem 1rem; }
+      .feedback-box { font-size: 1rem; padding: 0.8rem 1rem; min-height: 3.5rem; border-radius: 1.5rem 0.8rem 1.5rem 0.8rem; }
+      .history { font-size: 0.85rem; }
+    }
+
+    @media (max-width: 380px) {
+      h1 { font-size: 1.25rem; }
+      h1 .h1-emoji { display: none; }
+      .statues-row, .items-grid, .selected-slot { gap: 0.4rem; }
+      .statue { width: 44px; height: 54px; font-size: 1.8rem; }
+      .item-btn, .slot { width: 48px; height: 48px; font-size: 1.6rem; }
+      .btn { font-size: 0.85rem; padding: 0.55rem 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+<!-- ===== 官网导航（子页面统一） ===== -->
+<header class="xsb-nav" id="xsbNav">
+  <div class="xsb-nav-inner">
+    <a class="xsb-brand" href="../index.html" aria-label="返回官网首页">
+      <span class="xsb-badge" aria-hidden="true"><img src="../assets/family-icon.png" alt="" width="60" height="60" /></span>
+      <span class="xsb-word">新手保护联盟</span>
+    </a>
+    <nav class="xsb-links" aria-label="官网导航">
+      <a href="../index.html#apply">申请入会</a>
+      <a href="../index.html#tools" class="is-active">工具</a>
+      <a href="../index.html#rules">远征规则</a>
+      <a href="../index.html#about" class="xsb-only-pc">关于我们</a>
+    </nav>
+  </div>
+</header>
+<style>
+  html { overflow-x: hidden !important; }
+  body { padding-top: 60px !important; overflow-x: hidden !important; }
+
+  .xsb-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: rgba(255, 255, 255, .42);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    backdrop-filter: blur(24px) saturate(1.8);
+    border-bottom: 1px solid rgba(120, 98, 64, .1);
+    transition: transform .28s ease;
+    will-change: transform;
+  }
+
+  .xsb-nav.is-hidden { transform: translateY(-100%); }
+
+  .xsb-nav-inner {
+    width: min(1120px, calc(100% - 32px));
+    height: 48px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+
+  .xsb-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: #1f5a3a;
+    font-weight: 700;
+    font-size: 13.5px;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+
+  .xsb-badge {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #eaf6e4, #d6ecd2);
+    border: 1px solid rgba(47, 125, 79, .22);
+    box-shadow: inset 0 1px 0 #fff;
+    overflow: hidden;
+  }
+
+  .xsb-badge img {
+    display: block;
+    width: 22px;
+    height: 22px;
+    image-rendering: pixelated;
+  }
+
+  .xsb-links { display: flex; align-items: center; gap: 2px; }
+
+  .xsb-links a {
+    padding: 5px 11px;
+    border-radius: 999px;
+    color: #6f6353;
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    transition: color .18s ease, background .18s ease;
+  }
+
+  .xsb-links a:hover { color: #1f5a3a; background: rgba(47, 125, 79, .08); }
+  .xsb-links a.is-active { color: #1f5a3a; background: rgba(47, 125, 79, .12); }
+
+  @media (max-width: 760px) {
+    body { padding-top: 56px !important; overflow-x: hidden !important; }
+    .xsb-nav-inner { height: 44px; }
+    .xsb-brand { font-size: 12.5px; gap: 6px; }
+    .xsb-badge { width: 22px; height: 22px; border-radius: 7px; }
+    .xsb-badge img { width: 20px; height: 20px; }
+    .xsb-links a { padding: 4px 8px; font-size: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    .xsb-brand { font-size: 12px; gap: 5px; }
+    .xsb-badge { width: 20px; height: 20px; border-radius: 6px; }
+    .xsb-badge img { width: 18px; height: 18px; }
+    .xsb-links a { padding: 4px 5px; font-size: 11.5px; }
+  }
+
+  @media (max-width: 360px) {
+    .xsb-badge { display: none; }
+    .xsb-links a { padding: 4px 4px; font-size: 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xsb-nav { transition: none; }
+  }
+</style>
+<script>
+  (function () {
+    var nav = document.getElementById('xsbNav');
+    if (!nav) return;
+
+    var lastY = window.pageYOffset || 0;
+    var ticking = false;
+    var mq = window.matchMedia('(max-width: 760px)');
+
+    function update() {
+      ticking = false;
+      var y = window.pageYOffset || 0;
+
+      if (!mq.matches) {
+        nav.classList.remove('is-hidden');
+        lastY = y;
+        return;
+      }
+
+      var delta = y - lastY;
+      if (delta > 6 && y > 72) {
+        nav.classList.add('is-hidden');
+      } else if (delta < -6) {
+        nav.classList.remove('is-hidden');
+      }
+      lastY = y;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', function () {
+      if (!mq.matches) nav.classList.remove('is-hidden');
+    });
+  })();
+</script>
+<!-- ===== 官网导航结束 ===== -->
+
+<div class="game-container">
+  <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
+  <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
+  <div class="statues-row">
+    <div class="statue">🗿</div>
+    <div class="statue">🗿</div>
+    <div class="statue">🗿</div>
+    <div class="statue">🗿</div>
+  </div>
+
+  <div class="input-area">
+    <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(A/P/S/O)放入物品</div>
+    <div class="items-grid">
+      <div class="item-btn" data-item="A" title="苹果(Apple)">🍎</div>
+      <div class="item-btn" data-item="P" title="梨(Pear)">🍐</div>
+      <div class="item-btn" data-item="S" title="石头(Stone)">🧱</div>
+      <div class="item-btn" data-item="O" title="勺子(Spoon)">🥄</div>
+    </div>
+    <div class="selected-slot" id="slotContainer">
+      <div class="slot" data-index="0"></div>
+      <div class="slot" data-index="1"></div>
+      <div class="slot" data-index="2"></div>
+      <div class="slot" data-index="3"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="submitBtn">🔮 询问贤者</button>
+      <button class="btn clear-btn" id="clearBtn">🧹 清空祭坛</button>
+      <button class="btn reset-btn" id="resetBtn">🔄 重置答案</button>
+    </div>
+  </div>
+
+  <div class="attempt-badge">
+    <span>🏺 剩余尝试</span>
+    <span id="attemptLeft">7 / 7</span>
+  </div>
+
+  <div class="feedback-box" id="feedbackMessage">
+    <div class="feedback-line">⚡ 摆放供品，询问贤者...</div>
+  </div>
+
+  <div class="history">
+    <div style="text-align:center; color:#6b5a3a;">📜 贡品记录</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const CODE_LENGTH = 4;
+    const MAX_ATTEMPTS = 7;
+    const ITEMS = ['A', 'P', 'S', 'O'];
+    const ITEM_EMOJI = {
+      'A': '🍎',
+      'P': '🍐',
+      'S': '🧱',
+      'O': '🥄'
+    };
+
+    const HINT_PRIORITY = {
+      'satisfied': 1,
+      'dissatisfied': 2,
+      'unrecognized': 3
+    };
+
+    let secret = [];
+    let attemptsLeft = MAX_ATTEMPTS;
+    let gameOver = false;
+    let currentGuess = ['', '', '', ''];
+
+    const slots = document.querySelectorAll('.slot');
+    const itemBtns = document.querySelectorAll('.item-btn');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const attemptSpan = document.getElementById('attemptLeft');
+    const feedbackDiv = document.getElementById('feedbackMessage');
+    const historyList = document.getElementById('historyList');
+
+    function generateSecret() {
+      return Array.from({ length: CODE_LENGTH }, () => ITEMS[Math.floor(Math.random() * ITEMS.length)]);
+    }
+
+    function resetGame() {
+      secret = generateSecret();
+      attemptsLeft = MAX_ATTEMPTS;
+      gameOver = false;
+      currentGuess = ['', '', '', ''];
+      updateSlotDisplay();
+      attemptSpan.textContent = `${attemptsLeft} / ${MAX_ATTEMPTS}`;
+      feedbackDiv.innerHTML = '<div class="feedback-line">⚡ 摆放供品，询问贤者...</div>';
+      historyList.innerHTML = '';
+      enableControls(true);
+      console.log('答案(调试):', secret.join(''));
+    }
+
+    function enableControls(enable) {
+      itemBtns.forEach(btn => btn.style.pointerEvents = enable ? 'auto' : 'none');
+      submitBtn.disabled = !enable;
+      clearBtn.disabled = !enable;
+      resetBtn.disabled = false;
+      if (!enable) {
+        itemBtns.forEach(btn => btn.style.opacity = '0.6');
+        submitBtn.style.opacity = '0.7';
+        clearBtn.style.opacity = '0.7';
+      } else {
+        itemBtns.forEach(btn => btn.style.opacity = '1');
+        submitBtn.style.opacity = '1';
+        clearBtn.style.opacity = '1';
+      }
+    }
+
+    function updateSlotDisplay() {
+      slots.forEach((slot, index) => {
+        const item = currentGuess[index];
+        slot.textContent = item ? ITEM_EMOJI[item] : '';
+      });
+    }
+
+    function clearSlots() {
+      if (gameOver) { 
+        feedbackDiv.innerHTML = '<div class="feedback-line">⛔ 游戏已经结束，请重置答案。</div>'; 
+        return; 
+      }
+      currentGuess = ['', '', '', ''];
+      updateSlotDisplay();
+      feedbackDiv.innerHTML = '<div class="feedback-line">🧹 祭坛已清空，请重新摆放贡品。</div>';
+    }
+
+    function handleItemSelect(item) {
+      if (gameOver) { 
+        feedbackDiv.innerHTML = '<div class="feedback-line">⛔ 游戏已经结束，请重置答案。</div>'; 
+        return; 
+      }
+      for (let i = 0; i < CODE_LENGTH; i++) {
+        if (currentGuess[i] === '') {
+          currentGuess[i] = item;
+          updateSlotDisplay();
+          return;
+        }
+      }
+      for (let j = 0; j < CODE_LENGTH - 1; j++) {
+        currentGuess[j] = currentGuess[j + 1];
+      }
+      currentGuess[CODE_LENGTH - 1] = item;
+      updateSlotDisplay();
+      feedbackDiv.innerHTML = '<div class="feedback-line">🔄 位置已满，最早放入的贡品被替换。</div>';
+    }
+
+    itemBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const item = e.currentTarget.getAttribute('data-item');
+        handleItemSelect(item);
+      });
+    });
+
+    slots.forEach((slot, index) => {
+      slot.addEventListener('click', () => {
+        if (gameOver) { 
+          feedbackDiv.innerHTML = '<div class="feedback-line">⛔ 游戏已结束，请重置答案。</div>'; 
+          return; 
+        }
+        if (currentGuess[index] !== '') {
+          currentGuess[index] = '';
+          updateSlotDisplay();
+          feedbackDiv.innerHTML = '<div class="feedback-line">🗑️ 已清除该位置贡品。</div>';
+        } else {
+          feedbackDiv.innerHTML = '<div class="feedback-line">这个位置已经是空的。</div>';
+        }
+      });
+    });
+
+    clearBtn.addEventListener('click', clearSlots);
+
+    function calculateBullsAndCows(guessArr, secretArr) {
+      let bulls = 0;
+      const guessCopy = [...guessArr];
+      const secretCopy = [...secretArr];
+      for (let i = 0; i < CODE_LENGTH; i++) {
+        if (guessCopy[i] === secretCopy[i]) {
+          bulls++;
+          guessCopy[i] = null;
+          secretCopy[i] = null;
+        }
+      }
+      const countGuess = {};
+      const countSecret = {};
+      for (let i = 0; i < CODE_LENGTH; i++) {
+        if (guessCopy[i] !== null) {
+          countGuess[guessCopy[i]] = (countGuess[guessCopy[i]] || 0) + 1;
+        }
+        if (secretCopy[i] !== null) {
+          countSecret[secretCopy[i]] = (countSecret[secretCopy[i]] || 0) + 1;
+        }
+      }
+      let cows = 0;
+      for (let item of ITEMS) {
+        cows += Math.min(countGuess[item] || 0, countSecret[item] || 0);
+      }
+      return { bulls, cows };
+    }
+
+    function submitGuess() {
+      if (gameOver) {
+        feedbackDiv.innerHTML = '<div class="feedback-line">🏁 本轮已结束，请重置答案继续挑战。</div>';
+        return;
+      }
+      if (currentGuess.includes('')) {
+        feedbackDiv.innerHTML = '<div class="feedback-line">⚠️ 请为四位贤者都摆放贡品（不可留空）。</div>';
+        return;
+      }
+
+      const guessArr = [...currentGuess];
+      const { bulls, cows } = calculateBullsAndCows(guessArr, secret);
+      const wrong = CODE_LENGTH - bulls - cows;
+
+      const allCandidates = [];
+      if (bulls > 0) allCandidates.push({ type: 'satisfied', text: `✨ ${bulls}数量贤者满意他的贡品（材料正确，位置正确）` });
+      if (cows > 0) allCandidates.push({ type: 'dissatisfied', text: `🤔 ${cows}数量贤者不满意他的贡品（材料正确，位置不正确）` });
+      if (wrong > 0) allCandidates.push({ type: 'unrecognized', text: `❓ ${wrong}数量贤者完全认不出他的贡品（材料不正确，位置不正确）` });
+
+      allCandidates.sort((a, b) => HINT_PRIORITY[a.type] - HINT_PRIORITY[b.type]);
+
+      const chosenHints = allCandidates;
+      const hintLines = chosenHints.map(h => `<div class="feedback-line">${h.text}</div>`).join('');
+      
+      const guessStr = guessArr.map(i => ITEM_EMOJI[i]).join('');
+      const historyEntry = document.createElement('div');
+      historyEntry.className = 'history-item';
+      historyEntry.innerHTML = `<div class="history-guess">${guessStr}</div>
+                                <div class="history-hint">${chosenHints.map(h => h.text).join('；')}</div>`;
+      historyList.prepend(historyEntry);
+
+      if (bulls === CODE_LENGTH) {
+        feedbackDiv.innerHTML = `<div class="feedback-line">🎉 奇迹降临！所有贤者满意！</div>
+                                 <div class="feedback-line">正确答案正是「${guessStr}」。</div>
+                                 <div class="feedback-line">请重置答案再次挑战。</div>`;
+        gameOver = true;
+        enableControls(false);
+        attemptSpan.textContent = `胜利`;
+        return;
+      }
+
+      attemptsLeft--;
+      attemptSpan.textContent = `${attemptsLeft} / ${MAX_ATTEMPTS}`;
+
+      if (attemptsLeft <= 0) {
+        const correctStr = secret.map(i => ITEM_EMOJI[i]).join('');
+        feedbackDiv.innerHTML = `<div class="feedback-line">💀 七次错误，邪恶降临...</div>
+                                 <div class="feedback-line">正确答案是「${correctStr}」。</div>
+                                 <div class="feedback-line">点击下方“重置答案”重新开始。</div>`;
+        gameOver = true;
+        enableControls(false);
+        return;
+      }
+
+      feedbackDiv.innerHTML = hintLines;
+    }
+
+    submitBtn.addEventListener('click', submitGuess);
+    resetBtn.addEventListener('click', resetGame);
+
+    window.addEventListener('keydown', (e) => {
+      if (gameOver) return;
+      const key = e.key.toLowerCase();
+      if (key === 'a' || key === 'p' || key === 's' || key === 'o') {
+        e.preventDefault();
+        handleItemSelect(key.toUpperCase());
+      } else if (key === 'backspace' || key === 'delete') {
+        e.preventDefault();
+        for (let i = CODE_LENGTH - 1; i >= 0; i--) {
+          if (currentGuess[i] !== '') {
+            currentGuess[i] = '';
+            updateSlotDisplay();
+            feedbackDiv.innerHTML = '<div class="feedback-line">🗑️ 清除了最后一个贡品。</div>';
+            return;
+          }
+        }
+        feedbackDiv.innerHTML = '<div class="feedback-line">所有位置已空。</div>';
+      } else if (key === 'enter') {
+        e.preventDefault();
+        submitGuess();
+      }
+    });
+
+    resetGame();
+  })();
+</script>
+</body>
+</html>
