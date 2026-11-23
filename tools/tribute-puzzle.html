@@ -424,12 +424,12 @@
   </div>
 
   <div class="input-area">
-    <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(A/P/S/O)放入物品</div>
+    <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(S/M/W/D)放入物品</div>
     <div class="items-grid">
-      <div class="item-btn" data-item="A" title="苹果(Apple)">🍎</div>
-      <div class="item-btn" data-item="P" title="梨(Pear)">🍐</div>
-      <div class="item-btn" data-item="S" title="石头(Stone)">🧱</div>
-      <div class="item-btn" data-item="O" title="勺子(Spoon)">🥄</div>
+      <div class="item-btn" data-item="S" title="卷轴(Scroll)">📜</div>
+      <div class="item-btn" data-item="M" title="勋章(Medal)">🎖️</div>
+      <div class="item-btn" data-item="W" title="酒(Wine)">🍷</div>
+      <div class="item-btn" data-item="D" title="一盘菜(Dish)">🍲</div>
     </div>
     <div class="selected-slot" id="slotContainer">
       <div class="slot" data-index="0"></div>
@@ -463,12 +463,12 @@
   (function() {
     const CODE_LENGTH = 4;
     const MAX_ATTEMPTS = 7;
-    const ITEMS = ['A', 'P', 'S', 'O'];
+    const ITEMS = ['S', 'M', 'W', 'D'];
     const ITEM_EMOJI = {
-      'A': '🍎',
-      'P': '🍐',
-      'S': '🧱',
-      'O': '🥄'
+      'S': '📜',
+      'M': '🎖️',
+      'W': '🍷',
+      'D': '🍲'
     };
 
     const HINT_PRIORITY = {
@@ -676,8 +676,9 @@
 
     window.addEventListener('keydown', (e) => {
       if (gameOver) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const key = e.key.toLowerCase();
-      if (key === 'a' || key === 'p' || key === 's' || key === 'o') {
+      if (key === 's' || key === 'm' || key === 'w' || key === 'd') {
         e.preventDefault();
         handleItemSelect(key.toUpperCase());
       } else if (key === 'backspace' || key === 'delete') {
