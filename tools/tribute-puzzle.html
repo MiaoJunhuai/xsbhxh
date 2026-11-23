@@ -374,7 +374,7 @@
       border: 2px solid rgba(110, 94, 62, 0.35);
       background: rgba(255, 253, 246, 0.7);
       border-radius: 0.9rem;
-      padding: 0.5rem 0.95rem;
+      padding: 0.42rem 0.95rem 1rem;
       font-family: inherit;
       color: #5c4c34;
       line-height: 1.25;
@@ -395,6 +395,7 @@
       top: 0;
       bottom: 0;
       width: 0;
+      z-index: 0;
       pointer-events: none;
       transition: width 0.12s ease;
     }
@@ -402,9 +403,35 @@
     .type-btn[data-type="cows"] .type-fill { background: rgba(176, 112, 24, 0.2); }
     .type-btn[data-type="wrong"] .type-fill { background: rgba(176, 58, 46, 0.2); }
 
+    /* 四格分档提示：每格对应 1~4 */
+    .type-cells {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .type-cells i {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 3px;
+      font-style: normal;
+      font-size: 0.56rem;
+      font-weight: 700;
+      line-height: 1;
+      color: rgba(110, 94, 62, 0.46);
+      border-right: 1px dashed rgba(110, 94, 62, 0.38);
+    }
+    .type-cells i:last-child { border-right: none; }
+    .type-btn.has-value .type-cells i { color: rgba(90, 74, 48, 0.55); }
+
+    .type-btn.is-hovered { box-shadow: 0 0 0 3px rgba(184, 134, 30, 0.32); }
+
     .type-label {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 0.05rem;
@@ -414,7 +441,7 @@
     .type-note { font-size: 0.66rem; font-weight: 600; color: #8a7a5f; }
     .type-num {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       flex: none;
       min-width: 1.2rem;
       text-align: right;
@@ -534,7 +561,7 @@
       .auto-status { font-size: 0.84rem; padding: 0.38rem 0.42rem 0.38rem 0.95rem; gap: 0.45rem; }
       .auto-status b { font-size: 0.98rem; }
       .auto-reset { font-size: 0.7rem; padding: 0.28rem 0.62rem; }
-      .type-btn { padding: 0.45rem 0.8rem; }
+      .type-btn { padding: 0.42rem 0.8rem 1rem; }
       .type-num { font-size: 1.35rem; }
     }
 
@@ -774,11 +801,12 @@
     <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
 
     <div class="auto-input">
-      <div class="auto-input-title">按住左右滑动，滑到哪就是几</div>
+      <div class="auto-input-title">左右滑动，或直接点对应格（四格 = 1~4）</div>
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
           <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">满意</span>
             <span class="type-note">材料对 · 位置对</span>
@@ -787,6 +815,7 @@
         </button>
         <button type="button" class="type-btn" data-type="cows">
           <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">不满意</span>
             <span class="type-note">材料对 · 位置错</span>
@@ -795,6 +824,7 @@
         </button>
         <button type="button" class="type-btn" data-type="wrong">
           <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">认不出</span>
             <span class="type-note">材料错 · 位置错</span>
@@ -1246,6 +1276,7 @@
     }
 
     let dragState = null;
+    let hoveredType = null;
 
     function buzz() {
       if (navigator.vibrate) {
@@ -1298,6 +1329,16 @@
 
       btn.addEventListener('pointerup', finishDrag);
       btn.addEventListener('pointercancel', finishDrag);
+
+      // 鼠标悬停时可以用键盘直接输 0~4
+      btn.addEventListener('mouseenter', function () {
+        hoveredType = type;
+        btn.classList.add('is-hovered');
+      });
+      btn.addEventListener('mouseleave', function () {
+        if (hoveredType === type) hoveredType = null;
+        btn.classList.remove('is-hovered');
+      });
     });
 
     function settleRound() {
@@ -1380,7 +1421,15 @@
     });
 
     window.addEventListener('keydown', (e) => {
-      if (currentMode !== 'play') return;
+      if (currentMode === 'auto') {
+        if (!hoveredType || !autoState || autoState.done) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (/^[0-4]$/.test(e.key)) {
+          e.preventDefault();
+          setInputValue(hoveredType, Number(e.key));
+        }
+        return;
+      }
       if (gameOver) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const key = e.key.toLowerCase();
