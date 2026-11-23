@@ -700,6 +700,20 @@
   @media (prefers-reduced-motion: reduce) {
     .xsb-nav { transition: none; }
   }
+
+  /* ---------- 本页专属配色：导航改成和祭坛一致的木色 / 米色 ---------- */
+  .xsb-nav {
+    background: rgba(250, 242, 224, 0.6);
+    border-bottom-color: rgba(110, 94, 62, 0.32);
+  }
+  .xsb-brand { color: #4e3e2b; }
+  .xsb-badge {
+    background: linear-gradient(145deg, #f8ecd4, #e3cfa3);
+    border-color: rgba(139, 122, 92, 0.5);
+  }
+  .xsb-links a { color: #7b6a50; }
+  .xsb-links a:hover { color: #4e3e2b; background: rgba(120, 98, 64, 0.14); }
+  .xsb-links a.is-active { color: #4e3e2b; background: rgba(184, 134, 30, 0.26); }
 </style>
 <script>
   (function () {
