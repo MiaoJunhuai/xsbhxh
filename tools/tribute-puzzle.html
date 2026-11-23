@@ -192,29 +192,61 @@
       margin: 0.8rem 0;
     }
     .history {
-      max-height: 200px;
-      overflow-y: auto;
-      margin-top: 0.8rem;
-      background: rgba(245,235,210,0.8);
-      border-radius: 1rem;
-      padding: 0.5rem;
+      margin-top: 1.1rem;
+    }
+    .history-title {
+      text-align: center;
+      color: #6b5a3a;
       font-size: 0.9rem;
-      border: 1px solid #b39764;
+      font-weight: 700;
+      letter-spacing: 0.12rem;
+      margin-bottom: 0.4rem;
     }
     .history-item {
       display: flex;
-      flex-direction: column;
-      padding: 0.4rem 0.8rem;
+      align-items: flex-start;
+      gap: 0.9rem;
+      padding: 0.55rem 0.3rem;
       border-bottom: 1px dashed #c3a775;
     }
+    .history-item:last-child { border-bottom: none; }
     .history-guess {
-      font-weight: bold;
-      margin-bottom: 0.1rem;
+      flex: none;
+      font-size: 1.4rem;
+      line-height: 1.3;
+      letter-spacing: 0.08rem;
+      white-space: nowrap;
     }
-    .history-hint {
+    .history-hints {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .hint-line {
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
       font-size: 0.85rem;
+      line-height: 1.55;
       color: #4e3b21;
     }
+    .hint-num {
+      flex: none;
+      min-width: 0.8rem;
+      text-align: right;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .hint-text b { font-weight: 800; }
+    .hint-note { opacity: .72; font-size: .94em; }
+    .hint-satisfied { color: #1f6b3f; }
+    .hint-satisfied .hint-num { color: #1f6b3f; }
+    .hint-dissatisfied { color: #9a5a0c; }
+    .hint-dissatisfied .hint-num { color: #9a5a0c; }
+    .hint-unrecognized { color: #9c3a2c; }
+    .hint-unrecognized .hint-num { color: #9c3a2c; }
 
     h1 { flex-wrap: wrap; }
 
@@ -239,6 +271,9 @@
       .attempt-badge { font-size: 0.9rem; padding: 0.45rem 1rem; }
       .feedback-box { font-size: 1rem; padding: 0.8rem 1rem; min-height: 3.5rem; border-radius: 1.5rem 0.8rem 1.5rem 0.8rem; }
       .history { font-size: 0.85rem; }
+      .history-item { flex-direction: column; gap: 0.25rem; padding: 0.6rem 0.15rem; }
+      .history-guess { font-size: 1.3rem; }
+      .hint-line { font-size: 0.9rem; }
     }
 
     @media (max-width: 380px) {
@@ -454,7 +489,7 @@
   </div>
 
   <div class="history">
-    <div style="text-align:center; color:#6b5a3a;">📜 贡品记录</div>
+    <div class="history-title">贡品记录</div>
     <div id="historyList"></div>
   </div>
 </div>
@@ -629,20 +664,47 @@
       const wrong = CODE_LENGTH - bulls - cows;
 
       const allCandidates = [];
-      if (bulls > 0) allCandidates.push({ type: 'satisfied', text: `✨ ${bulls}数量贤者满意他的贡品（材料正确，位置正确）` });
-      if (cows > 0) allCandidates.push({ type: 'dissatisfied', text: `🤔 ${cows}数量贤者不满意他的贡品（材料正确，位置不正确）` });
-      if (wrong > 0) allCandidates.push({ type: 'unrecognized', text: `❓ ${wrong}数量贤者完全认不出他的贡品（材料不正确，位置不正确）` });
+      if (bulls > 0) allCandidates.push({
+        type: 'satisfied',
+        count: bulls,
+        label: '满意',
+        note: '材料对、位置对',
+        text: `✨ ${bulls}数量贤者满意他的贡品（材料正确，位置正确）`
+      });
+      if (cows > 0) allCandidates.push({
+        type: 'dissatisfied',
+        count: cows,
+        label: '不满意',
+        note: '材料对、位置错',
+        text: `🤔 ${cows}数量贤者不满意他的贡品（材料正确，位置不正确）`
+      });
+      if (wrong > 0) allCandidates.push({
+        type: 'unrecognized',
+        count: wrong,
+        label: '认不出',
+        note: '材料错、位置错',
+        text: `❓ ${wrong}数量贤者完全认不出他的贡品（材料不正确，位置不正确）`
+      });
 
       allCandidates.sort((a, b) => HINT_PRIORITY[a.type] - HINT_PRIORITY[b.type]);
 
       const chosenHints = allCandidates;
       const hintLines = chosenHints.map(h => `<div class="feedback-line">${h.text}</div>`).join('');
-      
+
       const guessStr = guessArr.map(i => ITEM_EMOJI[i]).join('');
+
+      // 贡品记录：只用物品图标，其余用文字 + 分色加粗，不再放额外图标
+      const hintRows = chosenHints.map(h =>
+        `<div class="hint-line hint-${h.type}">` +
+          `<span class="hint-num">${h.count}</span>` +
+          `<span class="hint-text">位贤者<b>${h.label}</b><span class="hint-note">（${h.note}）</span></span>` +
+        `</div>`
+      ).join('');
+
       const historyEntry = document.createElement('div');
       historyEntry.className = 'history-item';
-      historyEntry.innerHTML = `<div class="history-guess">${guessStr}</div>
-                                <div class="history-hint">${chosenHints.map(h => h.text).join('；')}</div>`;
+      historyEntry.innerHTML = `<div class="history-guess">${guessStr}</div>` +
+                               `<div class="history-hints">${hintRows}</div>`;
       historyList.prepend(historyEntry);
 
       if (bulls === CODE_LENGTH) {
