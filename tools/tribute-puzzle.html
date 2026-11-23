@@ -403,12 +403,12 @@
     .type-btn[data-type="cows"] .type-fill { background: rgba(176, 112, 24, 0.2); }
     .type-btn[data-type="wrong"] .type-fill { background: rgba(176, 58, 46, 0.2); }
 
-    /* 四格分档提示：每格对应 1~4 */
+    /* 五格分档：每格对应 0~4，进入格子即切换 */
     .type-cells {
       position: absolute;
       inset: 0;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       z-index: 1;
       pointer-events: none;
     }
@@ -801,12 +801,12 @@
     <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
 
     <div class="auto-input">
-      <div class="auto-input-title">左右滑动，或直接点对应格（四格 = 1~4）</div>
+      <div class="auto-input-title">左右滑动，或直接点对应格（五格 = 0~4）</div>
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">满意</span>
             <span class="type-note">材料对 · 位置对</span>
@@ -815,7 +815,7 @@
         </button>
         <button type="button" class="type-btn" data-type="cows">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">不满意</span>
             <span class="type-note">材料对 · 位置错</span>
@@ -824,7 +824,7 @@
         </button>
         <button type="button" class="type-btn" data-type="wrong">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">认不出</span>
             <span class="type-note">材料错 · 位置错</span>
@@ -1302,7 +1302,8 @@
       function applyPointer(clientX) {
         if (!rect || !rect.width) return;
         const pct = (clientX - rect.left) / rect.width;
-        setInputValue(type, Math.round(Math.max(0, Math.min(1, pct)) * 4));
+        // 每格 20%，进入哪一格就是哪个数（0~4），分界落在格子边界
+        setInputValue(type, Math.floor(Math.max(0, Math.min(0.9999, pct)) * 5));
       }
 
       btn.addEventListener('pointerdown', function (e) {
