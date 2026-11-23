@@ -248,6 +248,274 @@
     .hint-unrecognized { color: #9c3a2c; }
     .hint-unrecognized .hint-num { color: #9c3a2c; }
 
+    /* ---------- 模式切换 ---------- */
+    .mode-switch {
+      display: flex;
+      gap: 5px;
+      width: fit-content;
+      margin: 0.2rem auto 1.1rem;
+      padding: 4px;
+      background: rgba(139, 122, 92, 0.18);
+      border-radius: 999px;
+      border: 1px solid rgba(110, 94, 62, 0.28);
+      box-shadow: inset 0 1px 3px rgba(90, 70, 40, 0.2);
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: #6b5a3a;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.05rem;
+      padding: 0.42rem 1.15rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+    .mode-btn:hover { color: #4e3e2b; }
+    .mode-btn.active {
+      background: linear-gradient(180deg, #f3d78c, #d9b05c);
+      color: #4e3e2b;
+      box-shadow: 0 2px 0 #a98a4b, 0 3px 8px rgba(0, 0, 0, 0.22);
+    }
+
+    body.mode-auto .play-only { display: none !important; }
+    .auto-only { display: none; }
+    body.mode-auto .auto-only { display: block; }
+
+    /* ---------- 自动驾驶 ---------- */
+    .auto-panel { margin-top: 0.2rem; }
+
+    .auto-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      background: #403826;
+      color: #f7e8c4;
+      border-radius: 2rem;
+      padding: 0.5rem 1.2rem;
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 1.1rem;
+    }
+    .auto-status b { color: #ffe6a8; font-size: 1.05rem; }
+
+    .auto-guess-label {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08rem;
+      color: #6b5a3a;
+      margin-bottom: 0.5rem;
+    }
+    .auto-guess { display: flex; gap: 0.7rem; justify-content: center; }
+    .auto-guess-tip {
+      text-align: center;
+      font-size: 0.74rem;
+      color: #8a7a5f;
+      margin-top: 0.45rem;
+    }
+    .auto-slot {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.1rem;
+      background: linear-gradient(180deg, #fff8e7, #e8d5ae);
+      border: 3px solid #6e5e3e;
+      border-radius: 1.1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.26), inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    .auto-input { margin-top: 1.1rem; }
+    .auto-input-title {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.08rem;
+      color: #6b5a3a;
+      margin-bottom: 0.45rem;
+    }
+
+    .type-pick {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-bottom: 0.6rem;
+    }
+    .type-btn {
+      border: 2px solid rgba(110, 94, 62, 0.35);
+      background: rgba(255, 253, 246, 0.7);
+      border-radius: 0.9rem;
+      padding: 0.45rem 0.2rem;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #5c4c34;
+      line-height: 1.3;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .type-btn em {
+      display: block;
+      font-style: normal;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #8a7a5f;
+      margin-top: 0.1rem;
+    }
+    .type-btn.active[data-type="bulls"] {
+      background: #e3f2e6; border-color: #1f6b3f; color: #1f6b3f;
+    }
+    .type-btn.active[data-type="cows"] {
+      background: #fbecd4; border-color: #9a5a0c; color: #9a5a0c;
+    }
+    .type-btn.active[data-type="wrong"] {
+      background: #fbe3df; border-color: #9c3a2c; color: #9c3a2c;
+    }
+
+    .add-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .added-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      min-height: 1.9rem;
+      margin-top: 0.6rem;
+    }
+    .added-empty { font-size: 0.78rem; color: #8a7a5f; }
+    .added-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.3rem 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: rgba(139, 122, 92, 0.16);
+      border: 1px solid rgba(110, 94, 62, 0.3);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #4e3e2b;
+    }
+    .added-del {
+      width: 20px;
+      height: 20px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(110, 94, 62, 0.22);
+      color: #4e3e2b;
+      font-family: inherit;
+      font-size: 0.85rem;
+      line-height: 1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .added-del:hover { background: rgba(176, 58, 46, 0.3); color: #8d2f22; }
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(139, 122, 92, 0.14);
+      border-radius: 0.85rem;
+      padding: 3px;
+    }
+    .step-btn {
+      width: 34px;
+      height: 32px;
+      border: none;
+      border-radius: 0.6rem;
+      background: linear-gradient(180deg, #f3d78c, #d9b05c);
+      color: #4e3e2b;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 1px 0 #a98a4b;
+      transition: transform 0.08s;
+    }
+    .step-btn:active { transform: scale(0.93); }
+    .step-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step-val {
+      min-width: 30px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #3b2e1a;
+    }
+
+    .pick-sum {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #6b5a3a;
+      margin: 0.55rem 0 0.2rem;
+    }
+    .pick-sum b { font-size: 1rem; }
+    .pick-sum.bad { color: #b03a2e; font-weight: 800; }
+
+    .auto-actions {
+      display: flex;
+      gap: 0.55rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 0.7rem;
+    }
+
+    .auto-result:empty { display: none; }
+    .auto-result {
+      margin-top: 1.1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 1.4rem 0.8rem 1.4rem 0.8rem;
+      background: rgba(255, 247, 230, 0.9);
+      border: 2px solid #977c51;
+      box-shadow: inset 0 0 12px rgba(160, 120, 50, 0.4);
+      text-align: center;
+      font-weight: 700;
+      color: #3b2e1a;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .auto-result .auto-answer {
+      display: block;
+      font-size: 2rem;
+      letter-spacing: 0.1rem;
+      margin: 0.2rem 0;
+    }
+    .auto-result.is-warn { border-color: #b03a2e; color: #8d2f22; }
+
+    .auto-history { margin-top: 1.2rem; }
+    .auto-item {
+      padding: 0.5rem 0.2rem;
+      border-bottom: 1px dashed #c3a775;
+    }
+    .auto-item:last-child { border-bottom: none; }
+    .auto-item-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #4e3e2b;
+    }
+    .auto-item-icons { font-size: 1.25rem; letter-spacing: 0.06rem; }
+    .auto-item-hints {
+      margin-top: 0.1rem;
+      font-size: 0.82rem;
+      color: #6b5a3a;
+    }
+    .auto-item-hints b { color: #3b2e1a; }
+    .auto-item-left { font-size: 0.74rem; color: #8a7a5f; }
+
     h1 { flex-wrap: wrap; }
 
     /* ---------- 移动端适配 ---------- */
@@ -451,14 +719,20 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="statues-row">
+
+  <div class="mode-switch" role="tablist" aria-label="模式切换">
+    <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
+    <button type="button" class="mode-btn" data-mode="auto" role="tab" aria-selected="false">自动驾驶</button>
+  </div>
+
+  <div class="statues-row play-only">
     <div class="statue">🗿</div>
     <div class="statue">🗿</div>
     <div class="statue">🗿</div>
     <div class="statue">🗿</div>
   </div>
 
-  <div class="input-area">
+  <div class="input-area play-only">
     <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(Q/W/E/R)放入物品</div>
     <div class="items-grid">
       <div class="item-btn" data-item="Q" title="卷轴(Scroll)">📜</div>
@@ -479,19 +753,65 @@
     </div>
   </div>
 
-  <div class="attempt-badge">
+  <div class="attempt-badge play-only">
     <span>🏺 剩余尝试</span>
     <span id="attemptLeft">7 / 7</span>
   </div>
 
-  <div class="feedback-box" id="feedbackMessage">
+  <div class="feedback-box play-only" id="feedbackMessage">
     <div class="feedback-line">⚡ 摆放供品，询问贤者...</div>
   </div>
 
-  <div class="history">
+  <div class="history play-only">
     <div class="history-title">贡品记录</div>
     <div id="historyList"></div>
   </div>
+
+  <!-- ==================== 自动驾驶 ==================== -->
+  <section class="auto-panel auto-only" aria-label="自动驾驶">
+    <div class="auto-status">
+      <span>第 <b id="autoRound">1</b> 轮</span>
+      <span>剩余候选 <b id="autoLeft">256</b> 种</span>
+    </div>
+
+    <div class="auto-guess-label">本轮推荐摆放</div>
+    <div class="auto-guess" id="autoGuess"></div>
+    <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
+
+    <div class="auto-input">
+      <div class="auto-input-title">添加贤者的回答（一行一项）</div>
+
+      <div class="type-pick" id="typePick">
+        <button type="button" class="type-btn active" data-type="bulls">满意<em>材料对·位置对</em></button>
+        <button type="button" class="type-btn" data-type="cows">不满意<em>材料对·位置错</em></button>
+        <button type="button" class="type-btn" data-type="wrong">认不出<em>材料错·位置错</em></button>
+      </div>
+
+      <div class="add-row">
+        <div class="stepper">
+          <button type="button" class="step-btn" data-step="-1" id="qtyMinus" aria-label="数量减一">−</button>
+          <span class="step-val" id="qtyVal">1</span>
+          <button type="button" class="step-btn" data-step="1" id="qtyPlus" aria-label="数量加一">+</button>
+        </div>
+        <button class="btn" id="autoAddBtn">添加这一项</button>
+      </div>
+
+      <div class="added-list" id="addedList"></div>
+      <div class="pick-sum" id="pickSum">本轮合计 <b>0</b> / 4</div>
+
+      <div class="auto-actions">
+        <button class="btn clear-btn" id="autoUndoBtn" disabled>撤销上一轮</button>
+        <button class="btn reset-btn" id="autoResetBtn">重新开始</button>
+      </div>
+    </div>
+
+    <div class="auto-result" id="autoResult"></div>
+
+    <div class="auto-history">
+      <div class="history-title">推理记录</div>
+      <div id="autoHistoryList"></div>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -736,7 +1056,326 @@
     submitBtn.addEventListener('click', submitGuess);
     resetBtn.addEventListener('click', resetGame);
 
+    /* ==================== 自动驾驶 ==================== */
+    const ITEM_LIST = ITEMS.map(k => ITEM_EMOJI[k]);
+
+    // 全部 256 种可能的答案，每位用 0..3 表示
+    const ALL_COMBOS = [];
+    for (let a = 0; a < 4; a++) {
+      for (let b = 0; b < 4; b++) {
+        for (let c = 0; c < 4; c++) {
+          for (let d = 0; d < 4; d++) ALL_COMBOS.push([a, b, c, d]);
+        }
+      }
+    }
+
+    // 反馈编码：bulls * 5 + cows
+    function feedbackKey(guess, answer) {
+      let bulls = 0;
+      const gc = [0, 0, 0, 0];
+      const sc = [0, 0, 0, 0];
+      for (let i = 0; i < 4; i++) {
+        if (guess[i] === answer[i]) {
+          bulls++;
+        } else {
+          gc[guess[i]]++;
+          sc[answer[i]]++;
+        }
+      }
+      let cows = 0;
+      for (let i = 0; i < 4; i++) cows += Math.min(gc[i], sc[i]);
+      return bulls * 5 + cows;
+    }
+
+    function comboCode(c) {
+      return ((c[0] * 4 + c[1]) * 4 + c[2]) * 4 + c[3];
+    }
+
+    // minimax：选让「最坏情况剩余候选」最少的猜测；并列时优先猜候选集内的组合
+    function pickBestGuess(cands) {
+      const inSet = new Set(cands.map(comboCode));
+      let best = cands[0] || ALL_COMBOS[0];
+      let bestWorst = Infinity;
+      let bestIn = false;
+      let bestAvg = Infinity;
+      const bucket = new Int32Array(25);
+
+      for (let gi = 0; gi < ALL_COMBOS.length; gi++) {
+        const g = ALL_COMBOS[gi];
+        bucket.fill(0);
+        let worst = 0;
+        for (let ci = 0; ci < cands.length; ci++) {
+          const k = feedbackKey(g, cands[ci]);
+          bucket[k]++;
+          if (bucket[k] > worst) worst = bucket[k];
+        }
+        if (worst > bestWorst) continue;
+
+        let squares = 0;
+        for (let k = 0; k < 25; k++) squares += bucket[k] * bucket[k];
+        const avg = squares / cands.length;
+        const isIn = inSet.has(gi);
+
+        const better =
+          worst < bestWorst ||
+          (worst === bestWorst && isIn && !bestIn) ||
+          (worst === bestWorst && isIn === bestIn && avg < bestAvg - 1e-9);
+
+        if (better) {
+          best = g;
+          bestWorst = worst;
+          bestIn = isIn;
+          bestAvg = avg;
+        }
+      }
+      return best;
+    }
+
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const autoRoundEl = document.getElementById('autoRound');
+    const autoLeftEl = document.getElementById('autoLeft');
+    const autoGuessEl = document.getElementById('autoGuess');
+    const autoResultEl = document.getElementById('autoResult');
+    const autoHistoryEl = document.getElementById('autoHistoryList');
+    const autoAddBtn = document.getElementById('autoAddBtn');
+    const autoUndoBtn = document.getElementById('autoUndoBtn');
+    const autoResetBtn = document.getElementById('autoResetBtn');
+    const pickSumEl = document.getElementById('pickSum');
+    const addedListEl = document.getElementById('addedList');
+    const qtyValEl = document.getElementById('qtyVal');
+    const qtyMinus = document.getElementById('qtyMinus');
+    const qtyPlus = document.getElementById('qtyPlus');
+    const typeBtns = document.querySelectorAll('.type-btn');
+
+    const TYPE_LABEL = { bulls: '满意', cows: '不满意', wrong: '认不出' };
+
+    let currentMode = 'play';
+    let autoState = null;
+
+    function newAutoState() {
+      const cands = ALL_COMBOS.slice();
+      return {
+        cands: cands,
+        round: 1,
+        guess: pickBestGuess(cands),
+        pending: [],
+        pickType: 'bulls',
+        pickQty: 1,
+        history: [],
+        done: false,
+        stack: []
+      };
+    }
+
+    function sumPending() {
+      const total = { bulls: 0, cows: 0, wrong: 0 };
+      if (autoState) {
+        autoState.pending.forEach(function (p) { total[p.type] += p.qty; });
+      }
+      return total;
+    }
+
+    function renderPending() {
+      const s = autoState;
+      if (!s) return;
+      const total = sumPending();
+      const used = total.bulls + total.cows + total.wrong;
+
+      qtyValEl.textContent = s.pickQty;
+      qtyMinus.disabled = s.pickQty <= 1;
+      qtyPlus.disabled = s.done || s.pickQty >= 4 - used;
+      autoAddBtn.disabled = s.done || used + s.pickQty > 4;
+
+      typeBtns.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-type') === s.pickType);
+      });
+
+      addedListEl.innerHTML = s.pending.length
+        ? s.pending.map(function (p, i) {
+            return '<span class="added-item">' + TYPE_LABEL[p.type] + ' × ' + p.qty +
+                   '<button type="button" class="added-del" data-index="' + i +
+                   '" aria-label="删除这一项">×</button></span>';
+          }).join('')
+        : '<span class="added-empty">还没有添加，每行选择一种回答</span>';
+
+      pickSumEl.innerHTML = '本轮合计 <b>' + used + '</b> / 4';
+      pickSumEl.classList.toggle('bad', used > 4);
+      autoUndoBtn.disabled = s.stack.length === 0;
+    }
+
+    function renderAutoHistory() {
+      const s = autoState;
+      if (!s) return;
+      if (!s.history.length) {
+        autoHistoryEl.innerHTML = '<div class="auto-item-left">还没有记录，先把贤者的回答加进来。</div>';
+        return;
+      }
+      autoHistoryEl.innerHTML = s.history.map(function (h) {
+        return '<div class="auto-item">' +
+          '<div class="auto-item-head"><span>第 ' + h.round + ' 轮</span>' +
+            '<span class="auto-item-icons">' + h.guess.map(function (i) { return ITEM_LIST[i]; }).join('') + '</span></div>' +
+          '<div class="auto-item-hints">满意 <b>' + h.bulls + '</b> · 不满意 <b>' + h.cows + '</b> · 认不出 <b>' + h.wrong + '</b></div>' +
+          '<div class="auto-item-left">该回答之后只剩 ' + h.left + ' 种可能</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderAutoResult() {
+      const s = autoState;
+      if (!s) { autoResultEl.innerHTML = ''; return; }
+      if (s.done) {
+        autoResultEl.classList.remove('is-warn');
+        autoResultEl.innerHTML = '已经锁定唯一答案' +
+          '<span class="auto-answer">' + s.guess.map(function (i) { return ITEM_LIST[i]; }).join('') + '</span>' +
+          '共用了 ' + s.history.length + ' 轮';
+      } else if (s.cands.length === 0) {
+        autoResultEl.classList.add('is-warn');
+        autoResultEl.innerHTML = '这些回答和前面的推理对不上，点「撤销上一轮」检查一下输入。';
+      } else {
+        autoResultEl.classList.remove('is-warn');
+        autoResultEl.innerHTML = '';
+      }
+    }
+
+    function renderAuto() {
+      if (!autoState) return;
+      autoRoundEl.textContent = autoState.round;
+      autoLeftEl.textContent = autoState.cands.length;
+      autoGuessEl.innerHTML = autoState.guess.map(function (i) {
+        return '<span class="auto-slot">' + ITEM_LIST[i] + '</span>';
+      }).join('');
+      renderPending();
+      renderAutoHistory();
+      renderAutoResult();
+    }
+
+    typeBtns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (!autoState || autoState.done) return;
+        autoState.pickType = b.getAttribute('data-type');
+        renderPending();
+      });
+    });
+
+    qtyMinus.addEventListener('click', function () {
+      if (!autoState || autoState.pickQty <= 1) return;
+      autoState.pickQty--;
+      renderPending();
+    });
+
+    qtyPlus.addEventListener('click', function () {
+      if (!autoState) return;
+      const total = sumPending();
+      const used = total.bulls + total.cows + total.wrong;
+      if (autoState.pickQty >= 4 - used) return;
+      autoState.pickQty++;
+      renderPending();
+    });
+
+    addedListEl.addEventListener('click', function (e) {
+      const btn = e.target.closest('.added-del');
+      if (!btn || !autoState || autoState.done) return;
+      autoState.pending.splice(Number(btn.getAttribute('data-index')), 1);
+      renderPending();
+    });
+
+    function settleRound() {
+      const s = autoState;
+      const total = sumPending();
+      const target = total.bulls * 5 + total.cows;
+      const next = s.cands.filter(function (c) { return feedbackKey(s.guess, c) === target; });
+
+      s.history.push({
+        round: s.round,
+        guess: s.guess,
+        bulls: total.bulls,
+        cows: total.cows,
+        wrong: total.wrong,
+        left: next.length
+      });
+      s.cands = next;
+      s.pending = [];
+      s.pickType = 'bulls';
+      s.pickQty = 1;
+
+      if (next.length === 1) {
+        s.done = true;
+        s.guess = next[0];
+      } else if (next.length > 1) {
+        s.round++;
+        s.guess = pickBestGuess(next);
+      }
+    }
+
+    autoAddBtn.addEventListener('click', function () {
+      const s = autoState;
+      if (!s || s.done) return;
+      const total = sumPending();
+      const used = total.bulls + total.cows + total.wrong;
+      const qty = s.pickQty;
+      if (used + qty > 4) return;
+
+      // 一个轮次开始时留一份快照，撤销时回到这一轮开头
+      if (s.pending.length === 0) {
+        s.stack.push({
+          cands: s.cands,
+          round: s.round,
+          guess: s.guess,
+          pending: [],
+          pickType: s.pickType,
+          pickQty: s.pickQty,
+          history: s.history.slice(),
+          done: s.done
+        });
+      }
+
+      s.pending.push({ type: s.pickType, qty: qty });
+      s.pickQty = 1;
+
+      if (used + qty === 4) settleRound();
+      renderAuto();
+    });
+
+    autoUndoBtn.addEventListener('click', function () {
+      const s = autoState;
+      if (!s || !s.stack.length) return;
+      const prev = s.stack.pop();
+      s.cands = prev.cands;
+      s.round = prev.round;
+      s.guess = prev.guess;
+      s.pending = prev.pending;
+      s.pickType = prev.pickType;
+      s.pickQty = prev.pickQty;
+      s.history = prev.history;
+      s.done = prev.done;
+      renderAuto();
+    });
+
+    autoResetBtn.addEventListener('click', function () {
+      autoState = newAutoState();
+      renderAuto();
+    });
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.body.classList.toggle('mode-auto', mode === 'auto');
+      modeBtns.forEach(function (b) {
+        const on = b.getAttribute('data-mode') === mode;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      if (mode === 'auto') {
+        if (!autoState) autoState = newAutoState();
+        renderAuto();
+      }
+    }
+
+    modeBtns.forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+    });
+
     window.addEventListener('keydown', (e) => {
+      if (currentMode !== 'play') return;
       if (gameOver) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const key = e.key.toLowerCase();
