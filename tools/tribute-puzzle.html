@@ -403,12 +403,12 @@
     .type-btn[data-type="cows"] .type-fill { background: rgba(176, 112, 24, 0.2); }
     .type-btn[data-type="wrong"] .type-fill { background: rgba(176, 58, 46, 0.2); }
 
-    /* 五格分档：每格对应 0~4，进入格子即切换 */
+    /* 四格分档：每格对应 1~4，填充条与格线对齐 */
     .type-cells {
       position: absolute;
       inset: 0;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       z-index: 1;
       pointer-events: none;
     }
@@ -801,12 +801,12 @@
     <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
 
     <div class="auto-input">
-      <div class="auto-input-title">左右滑动，或直接点对应格（五格 = 0~4）</div>
+      <div class="auto-input-title">左右滑动或点格子（1~4，再点一次归零）</div>
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">满意</span>
             <span class="type-note">材料对 · 位置对</span>
@@ -815,7 +815,7 @@
         </button>
         <button type="button" class="type-btn" data-type="cows">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">不满意</span>
             <span class="type-note">材料对 · 位置错</span>
@@ -824,7 +824,7 @@
         </button>
         <button type="button" class="type-btn" data-type="wrong">
           <span class="type-fill" aria-hidden="true"></span>
-          <span class="type-cells" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i></span>
+          <span class="type-cells" aria-hidden="true"><i>1</i><i>2</i><i>3</i><i>4</i></span>
           <span class="type-label">
             <span class="type-name">认不出</span>
             <span class="type-note">材料错 · 位置错</span>
@@ -1294,16 +1294,16 @@
       renderInput();
     }
 
-    // 位置即数值：指针在按钮内的水平位置直接映射 0~4，填充条同步跟随
+    // 每格 25% 对应 1~4；拖到最左（或拖出按钮）为 0；单击已选中的格子则归零
     typeBtns.forEach(function (btn) {
       const type = btn.getAttribute('data-type');
       let rect = null;
 
-      function applyPointer(clientX) {
-        if (!rect || !rect.width) return;
+      function valueFromX(clientX) {
+        if (!rect || !rect.width) return 0;
         const pct = (clientX - rect.left) / rect.width;
-        // 每格 20%，进入哪一格就是哪个数（0~4），分界落在格子边界
-        setInputValue(type, Math.floor(Math.max(0, Math.min(0.9999, pct)) * 5));
+        if (pct <= 0) return 0;
+        return Math.min(4, Math.ceil(pct * 4));
       }
 
       btn.addEventListener('pointerdown', function (e) {
@@ -1311,25 +1311,42 @@
         e.preventDefault();
         try { btn.setPointerCapture(e.pointerId); } catch (err) {}
         rect = btn.getBoundingClientRect();
-        dragState = { type: type };
+        dragState = {
+          type: type,
+          startX: e.clientX,
+          moved: false,
+          valueBefore: autoState.input[type],
+          target: valueFromX(e.clientX)
+        };
         btn.classList.add('is-dragging');
-        applyPointer(e.clientX);
+        setInputValue(type, dragState.target);
       });
 
       btn.addEventListener('pointermove', function (e) {
         if (!dragState || dragState.type !== type) return;
-        applyPointer(e.clientX);
+        if (Math.abs(e.clientX - dragState.startX) > 4) dragState.moved = true;
+        setInputValue(type, valueFromX(e.clientX));
       });
 
-      function finishDrag() {
+      btn.addEventListener('pointerup', function () {
+        if (!dragState || dragState.type !== type) return;
+        const state = dragState;
+        dragState = null;
+        rect = null;
+        btn.classList.remove('is-dragging');
+
+        // 只是点了一下：点已选中的格子归零，否则取该格对应的数字
+        if (!state.moved) {
+          setInputValue(type, state.valueBefore === state.target ? 0 : state.target);
+        }
+      });
+
+      btn.addEventListener('pointercancel', function () {
         if (!dragState || dragState.type !== type) return;
         dragState = null;
         rect = null;
         btn.classList.remove('is-dragging');
-      }
-
-      btn.addEventListener('pointerup', finishDrag);
-      btn.addEventListener('pointercancel', finishDrag);
+      });
 
       // 鼠标悬停时可以用键盘直接输 0~4
       btn.addEventListener('mouseenter', function () {
