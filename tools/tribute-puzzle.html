@@ -774,7 +774,7 @@
     <div class="auto-guess-tip">按顺序摆给四位贤者，再把贤者的回答填到下面</div>
 
     <div class="auto-input">
-      <div class="auto-input-title">按住按钮左右滑动设置数量（单击加一）</div>
+      <div class="auto-input-title">按住左右滑动，滑到哪就是几</div>
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
@@ -1245,7 +1245,6 @@
       renderAutoResult();
     }
 
-    // 按住左右滑动设置数量：位移每 24px 记一格；没拖动就单击时加一（4 → 0 循环）
     let dragState = null;
 
     function buzz() {
@@ -1264,38 +1263,37 @@
       renderInput();
     }
 
+    // 位置即数值：指针在按钮内的水平位置直接映射 0~4，填充条同步跟随
     typeBtns.forEach(function (btn) {
       const type = btn.getAttribute('data-type');
-      const DRAG_STEP = 24;
+      let rect = null;
+
+      function applyPointer(clientX) {
+        if (!rect || !rect.width) return;
+        const pct = (clientX - rect.left) / rect.width;
+        setInputValue(type, Math.round(Math.max(0, Math.min(1, pct)) * 4));
+      }
 
       btn.addEventListener('pointerdown', function (e) {
         if (!autoState || autoState.done) return;
         e.preventDefault();
         try { btn.setPointerCapture(e.pointerId); } catch (err) {}
-        dragState = {
-          type: type,
-          startX: e.clientX,
-          startValue: autoState.input[type],
-          moved: false
-        };
+        rect = btn.getBoundingClientRect();
+        dragState = { type: type };
         btn.classList.add('is-dragging');
+        applyPointer(e.clientX);
       });
 
       btn.addEventListener('pointermove', function (e) {
         if (!dragState || dragState.type !== type) return;
-        const dx = e.clientX - dragState.startX;
-        if (Math.abs(dx) > 4) dragState.moved = true;
-        setInputValue(type, dragState.startValue + Math.round(dx / DRAG_STEP));
+        applyPointer(e.clientX);
       });
 
       function finishDrag() {
         if (!dragState || dragState.type !== type) return;
-        const moved = dragState.moved;
         dragState = null;
+        rect = null;
         btn.classList.remove('is-dragging');
-        if (!moved && autoState) {
-          setInputValue(type, (autoState.input[type] + 1) % 5);
-        }
       }
 
       btn.addEventListener('pointerup', finishDrag);
