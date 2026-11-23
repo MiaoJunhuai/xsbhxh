@@ -289,18 +289,35 @@
 
     .auto-status {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: 0.6rem;
       background: #403826;
       color: #f7e8c4;
       border-radius: 2rem;
-      padding: 0.5rem 1.2rem;
+      padding: 0.42rem 0.5rem 0.42rem 1.2rem;
       font-weight: 700;
       font-size: 0.92rem;
       margin-bottom: 1.1rem;
     }
     .auto-status b { color: #ffe6a8; font-size: 1.05rem; }
+    .auto-status > span:nth-child(2) { margin-left: auto; }
+
+    .auto-reset {
+      flex: none;
+      border: 1px solid rgba(255, 220, 214, 0.35);
+      background: rgba(176, 58, 46, 0.85);
+      color: #ffe9e4;
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.03rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.08s;
+    }
+    .auto-reset:hover { background: #c34436; }
+    .auto-reset:active { transform: scale(0.95); }
 
     .auto-guess-label {
       text-align: center;
@@ -341,23 +358,27 @@
     }
 
     .type-pick {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
       margin-bottom: 0.5rem;
     }
     .type-btn {
+      position: relative;
+      overflow: hidden;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 0.05rem;
+      justify-content: space-between;
+      gap: 0.7rem;
+      width: 100%;
       border: 2px solid rgba(110, 94, 62, 0.35);
       background: rgba(255, 253, 246, 0.7);
       border-radius: 0.9rem;
-      padding: 0.5rem 0.2rem 0.35rem;
+      padding: 0.5rem 0.95rem;
       font-family: inherit;
       color: #5c4c34;
       line-height: 1.25;
+      text-align: left;
       cursor: grab;
       touch-action: none;
       user-select: none;
@@ -366,28 +387,57 @@
       transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.08s;
     }
     .type-btn:active { cursor: grabbing; }
-    .type-name { font-size: 0.88rem; font-weight: 800; }
-    .type-note { font-size: 0.62rem; font-weight: 600; color: #8a7a5f; }
+    .type-btn:disabled { opacity: 0.65; cursor: default; }
+
+    .type-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      pointer-events: none;
+      transition: width 0.12s ease;
+    }
+    .type-btn[data-type="bulls"] .type-fill { background: rgba(47, 125, 79, 0.2); }
+    .type-btn[data-type="cows"] .type-fill { background: rgba(176, 112, 24, 0.2); }
+    .type-btn[data-type="wrong"] .type-fill { background: rgba(176, 58, 46, 0.2); }
+
+    .type-label {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+      min-width: 0;
+    }
+    .type-name { font-size: 0.92rem; font-weight: 800; }
+    .type-note { font-size: 0.66rem; font-weight: 600; color: #8a7a5f; }
     .type-num {
-      font-size: 1.55rem;
+      position: relative;
+      z-index: 1;
+      flex: none;
+      min-width: 1.2rem;
+      text-align: right;
+      font-size: 1.5rem;
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1;
       color: #a4967d;
       transition: color 0.15s, transform 0.1s;
     }
-    .type-btn.is-dragging { transform: scale(0.97); }
-    .type-btn.is-dragging .type-num { transform: scale(1.12); }
+    .type-btn.is-dragging { transform: scale(0.985); }
+    .type-btn.is-dragging .type-num { transform: scale(1.15); }
+    .type-btn.is-dragging .type-fill { transition: none; }
 
     .type-btn.has-value[data-type="bulls"] {
-      background: #e3f2e6; border-color: #1f6b3f; color: #1f6b3f;
+      background: #e7f4e9; border-color: #1f6b3f; color: #1f6b3f;
     }
     .type-btn.has-value[data-type="bulls"] .type-num { color: #1f6b3f; }
     .type-btn.has-value[data-type="cows"] {
-      background: #fbecd4; border-color: #9a5a0c; color: #9a5a0c;
+      background: #fcf0dc; border-color: #9a5a0c; color: #9a5a0c;
     }
     .type-btn.has-value[data-type="cows"] .type-num { color: #9a5a0c; }
     .type-btn.has-value[data-type="wrong"] {
-      background: #fbe3df; border-color: #9c3a2c; color: #9c3a2c;
+      background: #fce9e6; border-color: #9c3a2c; color: #9c3a2c;
     }
     .type-btn.has-value[data-type="wrong"] .type-num { color: #9c3a2c; }
     .type-btn.has-value .type-note { color: inherit; opacity: 0.8; }
@@ -711,6 +761,7 @@
     <div class="auto-status">
       <span>第 <b id="autoRound">1</b> 轮</span>
       <span>剩余候选 <b id="autoLeft">256</b> 种</span>
+      <button type="button" class="auto-reset" id="autoResetBtn">重新开始</button>
     </div>
 
     <div class="auto-guess-label">本轮推荐摆放</div>
@@ -722,18 +773,27 @@
 
       <div class="type-pick" id="typePick">
         <button type="button" class="type-btn" data-type="bulls">
-          <span class="type-name">满意</span>
-          <span class="type-note">材料对·位置对</span>
+          <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-label">
+            <span class="type-name">满意</span>
+            <span class="type-note">材料对 · 位置对</span>
+          </span>
           <span class="type-num" id="numBulls">0</span>
         </button>
         <button type="button" class="type-btn" data-type="cows">
-          <span class="type-name">不满意</span>
-          <span class="type-note">材料对·位置错</span>
+          <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-label">
+            <span class="type-name">不满意</span>
+            <span class="type-note">材料对 · 位置错</span>
+          </span>
           <span class="type-num" id="numCows">0</span>
         </button>
         <button type="button" class="type-btn" data-type="wrong">
-          <span class="type-name">认不出</span>
-          <span class="type-note">材料错·位置错</span>
+          <span class="type-fill" aria-hidden="true"></span>
+          <span class="type-label">
+            <span class="type-name">认不出</span>
+            <span class="type-note">材料错 · 位置错</span>
+          </span>
           <span class="type-num" id="numWrong">0</span>
         </button>
       </div>
@@ -743,7 +803,6 @@
       <div class="auto-actions">
         <button class="btn" id="autoConfirmBtn" disabled>确定输入</button>
         <button class="btn clear-btn" id="autoUndoBtn" disabled>撤销上一轮</button>
-        <button class="btn reset-btn" id="autoResetBtn">重新开始</button>
       </div>
     </div>
 
@@ -1121,8 +1180,11 @@
 
       typeBtns.forEach(function (b) {
         const type = b.getAttribute('data-type');
-        b.classList.toggle('has-value', s.input[type] > 0);
+        const value = s.input[type];
+        b.classList.toggle('has-value', value > 0);
         b.disabled = s.done;
+        const fill = b.querySelector('.type-fill');
+        if (fill) fill.style.width = (value / 4 * 100) + '%';
       });
 
       pickSumEl.innerHTML = '本轮合计 <b>' + sum + '</b> / 4';
@@ -1181,12 +1243,19 @@
     // 按住左右滑动设置数量：位移每 24px 记一格；没拖动就单击时加一（4 → 0 循环）
     let dragState = null;
 
+    function buzz() {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(8); } catch (err) {}
+      }
+    }
+
     function setInputValue(type, value) {
       const s = autoState;
       if (!s || s.done) return;
       const clamped = Math.max(0, Math.min(4, value));
       if (s.input[type] === clamped) return;
       s.input[type] = clamped;
+      buzz();
       renderInput();
     }
 
