@@ -16,7 +16,7 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `rules/one-dragon.html` | 远征一条龙规则 | 含 KOOK 语音频道与车队二维码 |
 | `rules/tayza.html` | 泰扎副本规则 | 报名、门槛、分红、罚款 |
 | `assets/banner.webp` / `banner.jpg` | 首页横幅 | 原图压缩版（1600 宽） |
-| `assets/family-icon.png` | 家族图标 | 导航栏左侧图标（60 宽，像素风） |
+| `assets/family-icon.png` | 家族图标 | 导航栏左侧图标（像素风，按原图直接显示，不加底色和圆角） |
 | `assets/favicon.ico` | 网页图标（多尺寸） | 16 / 32 / 48 三帧 ICO，浏览器标签页优先取用 |
 | `assets/favicon-32.png` / `favicon-16.png` | 网页图标（单尺寸） | 补充给按指定尺寸取图标的浏览器 |
 | `assets/apple-touch-icon.png` | iOS 主屏图标 | 180×180，iPhone / iPad「添加到主屏」时使用 |
