@@ -811,24 +811,57 @@
       padding: .06rem .45rem;
       font-size: .68rem;
       font-weight: 800;
-      letter-spacing: .08rem;
+      letter-spacing: 0;
       color: #fff7e6;
       background: linear-gradient(135deg, #c8402a, #e0803a);
       border-radius: .4rem;
       box-shadow: 0 2px 7px rgba(200, 64, 42, .38);
       vertical-align: middle;
-      animation: record-pop .95s cubic-bezier(.34, 1.56, .64, 1) both;
+      white-space: nowrap;
     }
-    @keyframes record-pop {
-      0%   { transform: scale(.55) translateY(5px); opacity: 0; }
-      22%  { transform: scale(1.2) translateY(-6px); opacity: 1; }
-      44%  { transform: scale(.95) translateY(1px); }
-      64%  { transform: scale(1.09) translateY(-4px); }
-      84%  { transform: scale(.99) translateY(0); }
-      100% { transform: scale(1) translateY(0); }
+    /* 逐字从左到右弹跳，一直循环 */
+    .rank-badge span {
+      display: inline-block;
+      animation: char-bounce 1.6s ease-in-out infinite;
+      animation-delay: calc(var(--i, 0) * 0.13s);
+    }
+    @keyframes char-bounce {
+      0%, 45%, 100% { transform: translateY(0); }
+      12% { transform: translateY(-7px); }
+      24% { transform: translateY(0); }
+      33% { transform: translateY(-3px); }
+    }
+
+    /* ============ 破纪录图标雨 ============ */
+    .icon-rain {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 890;
+    }
+    .icon-rain[hidden] { display: none; }
+    .rain-icon {
+      position: absolute;
+      top: -14vh;
+      width: calc(30px * var(--sc, 1));
+      height: auto;
+      image-rendering: pixelated;
+      opacity: 0;
+      animation-name: icon-fall;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      will-change: transform, opacity;
+    }
+    @keyframes icon-fall {
+      0%   { transform: translateY(0) rotate(var(--rot, 0deg)); opacity: 0; }
+      8%   { opacity: .82; }
+      90%  { opacity: .78; }
+      100% { transform: translateY(128vh) rotate(calc(var(--rot, 0deg) + 200deg)); opacity: 0; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .rank-badge { animation: none; }
+      .rank-badge span { animation: none; }
+      .rain-icon { display: none; }
     }
     .rank-row.is-flash { animation: rank-flash 2s ease-out; }
     @keyframes rank-flash {
@@ -2101,6 +2134,46 @@
       }
     }
 
+    // 「破纪录！」四个字拆开，交给 CSS 做逐字波浪弹跳
+    function recordBadgeHtml() {
+      const chars = ['破', '纪', '录', '！'];
+      return '<span class="rank-badge" aria-label="破纪录">' +
+             chars.map(function (c, i) {
+               return '<span style="--i:' + i + '">' + c + '</span>';
+             }).join('') +
+             '</span>';
+    }
+
+    // 破纪录时从屏幕上方下一阵道具图标雨
+    let iconRainTimer = 0;
+    function iconRain() {
+      const layer = document.getElementById('iconRain');
+      if (!layer || !layer.hidden) return;  // 正在下就别叠加
+      const keys = ['Q', 'W', 'E', 'R'];
+      const count = window.innerWidth < 520 ? 22 : 34;
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < count; i++) {
+        const img = document.createElement('img');
+        img.className = 'rain-icon';
+        img.src = ITEM_IMG[keys[(Math.random() * keys.length) | 0]];
+        img.alt = '';
+        img.style.left = (Math.random() * 98).toFixed(1) + '%';
+        img.style.animationDuration = (1.9 + Math.random() * 1.5).toFixed(2) + 's';
+        img.style.animationDelay = (Math.random() * 1.1).toFixed(2) + 's';
+        img.style.setProperty('--sc', (0.75 + Math.random() * 0.85).toFixed(2));
+        img.style.setProperty('--rot', ((Math.random() * 70) - 35).toFixed(0) + 'deg');
+        frag.appendChild(img);
+      }
+      layer.innerHTML = '';
+      layer.appendChild(frag);
+      layer.hidden = false;
+      clearTimeout(iconRainTimer);
+      iconRainTimer = setTimeout(function () {
+        layer.hidden = true;
+        layer.innerHTML = '';
+      }, 4200);
+    }
+
     function showRankSubmit(rounds, duration) {
       const box = document.getElementById('rankSubmit');
       if (!box) return;
@@ -2117,10 +2190,11 @@
       }
       if (txt) {
         txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' +
-                        (brokeRecord ? '<span class="rank-badge">破纪录</span>' : '') +
+                        (brokeRecord ? recordBadgeHtml() : '') +
                         extra +
                         '<span class="rank-est" id="rankEst"></span>';
       }
+      if (brokeRecord) iconRain();
       fillRankEstimate(rounds, duration);
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
@@ -2194,5 +2268,7 @@
     resetGame();
   })();
 </script>
+  <!-- 破纪录时的图标雨，纯装饰，不挡点击 -->
+  <div id="iconRain" class="icon-rain" hidden aria-hidden="true"></div>
 </body>
 </html>
