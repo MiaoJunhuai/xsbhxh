@@ -606,19 +606,47 @@
     }
     .rank-head {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
-      gap: .5rem;
+      gap: .45rem;
       margin-bottom: .55rem;
     }
     .rank-title {
+      flex: none;
       color: #6b5a3a;
       font-size: .95rem;
       font-weight: 700;
       letter-spacing: .12rem;
     }
-    .rank-sub {
+    .rank-refresh {
       flex: none;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-left: .1rem;
+      color: #8a7752;
+      background: rgba(255, 250, 240, .72);
+      border: 1px solid rgba(139, 110, 60, .4);
+      border-radius: .42rem;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rank-refresh:hover {
+      color: #7a4b12;
+      border-color: #b8860b;
+      background: rgba(212, 175, 55, .18);
+    }
+    .rank-refresh svg { width: .9rem; height: .9rem; }
+    .rank-refresh.is-busy svg { animation: rank-spin .8s linear infinite; }
+    @keyframes rank-spin { to { transform: rotate(360deg); } }
+    .rank-sub {
+      flex: 1;
+      min-width: 0;
+      text-align: right;
       color: #9a8a6c;
       font-size: .72rem;
     }
@@ -951,6 +979,7 @@
   <div class="rank-panel play-only">
     <div class="rank-head">
       <span class="rank-title">排行榜</span>
+      <button type="button" class="rank-refresh" id="rankRefreshBtn" aria-label="刷新排行榜" title="刷新排行榜"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
       <span class="rank-sub">手动练习 · 轮数少者在前</span>
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
@@ -1042,6 +1071,8 @@
     const LB_TABLE = 'scores';
     const LB_VIEW = 'leaderboard';
     const LB_LIMIT = 20;
+    const LB_CACHE_KEY = 'xsbhxh_rank_cache_v1';
+    const LB_CACHE_TTL = 5 * 60 * 1000;
     const LB_NICK_KEY = 'xsbhxh_nickname';
     const LB_BEST_KEY = 'xsbhxh_best';
     const LB_PID_KEY = 'xsbhxh_player_id_v1';
@@ -1756,7 +1787,7 @@
         method: 'POST',
         headers: Object.assign({}, lbHeaders(), {
           'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Prefer': 'return=representation'
         }),
         body: JSON.stringify({
           player_id: getPlayerId(),
@@ -1770,6 +1801,10 @@
         try { detail = await res.text(); } catch (e) {}
         throw new Error('HTTP ' + res.status + (detail ? ' ' + detail : ''));
       }
+      // 数据库触发器是「每人只保留最好一局」：成绩没进步时这次插入会被丢弃，
+      // 返回空数组；真正写进库了才会返回一行。
+      const rows = await res.json();
+      return Array.isArray(rows) && rows.length > 0;
     }
 
     function renderRank(rows) {
@@ -1794,14 +1829,55 @@
       }).join('');
     }
 
-    async function loadRank() {
+    function readRankCache() {
+      try {
+        const raw = sessionStorage.getItem(LB_CACHE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !Array.isArray(obj.rows)) return null;
+        return obj;
+      } catch (e) { return null; }
+    }
+
+    function writeRankCache(rows) {
+      try {
+        sessionStorage.setItem(LB_CACHE_KEY, JSON.stringify({ at: Date.now(), rows: rows }));
+      } catch (e) {}
+    }
+
+    function clearRankCache() {
+      try { sessionStorage.removeItem(LB_CACHE_KEY); } catch (e) {}
+    }
+
+    async function loadRank(force) {
       const listEl = document.getElementById('rankList');
       if (!listEl) return;
+      const cached = readRankCache();
+
+      // 先用缓存立刻渲染，避免每次打开页面都发请求
+      if (cached && !force) renderRank(cached.rows);
+      if (cached && !force && Date.now() - cached.at < LB_CACHE_TTL) return;
+
       try {
-        renderRank(await fetchRank());
+        const rows = await fetchRank();
+        writeRankCache(rows);
+        renderRank(rows);
       } catch (e) {
-        listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响</div>';
+        if (!cached) {
+          listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响</div>';
+        }
       }
+    }
+
+    const rankRefreshBtn = document.getElementById('rankRefreshBtn');
+    if (rankRefreshBtn) {
+      rankRefreshBtn.addEventListener('click', async function () {
+        if (rankRefreshBtn.classList.contains('is-busy')) return;
+        rankRefreshBtn.classList.add('is-busy');
+        clearRankCache();
+        await loadRank(true);
+        rankRefreshBtn.classList.remove('is-busy');
+      });
     }
 
     function resetRankSubmit() {
@@ -1850,20 +1926,24 @@
         if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
         try {
-          await postScore(nick, pendingScore.rounds, pendingScore.duration);
+          const accepted = await postScore(nick, pendingScore.rounds, pendingScore.duration);
+          const submitted = { rounds: pendingScore.rounds, duration: pendingScore.duration };
           try {
             localStorage.setItem(LB_NICK_KEY, nick);
-            if (isBetter(pendingScore, readBest())) {
-              localStorage.setItem(LB_BEST_KEY, JSON.stringify({
-                rounds: pendingScore.rounds,
-                duration: pendingScore.duration
-              }));
+            if (accepted && isBetter(submitted, readBest())) {
+              localStorage.setItem(LB_BEST_KEY, JSON.stringify(submitted));
             }
           } catch (e) {}
-          if (msg) { msg.className = 'rank-msg is-ok'; msg.textContent = '已计入排行榜'; }
+          if (msg) {
+            msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
+            msg.textContent = accepted
+              ? '已计入排行榜'
+              : '本局没有超过你之前的最好成绩，榜上保留原记录';
+          }
           rankSubmitBtn.textContent = '已提交';
           pendingScore = null;
-          loadRank();
+          clearRankCache();
+          loadRank(true);
         } catch (e) {
           rankSubmitBtn.disabled = false;
           rankSubmitBtn.textContent = '重试';
