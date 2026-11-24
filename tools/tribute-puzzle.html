@@ -1433,6 +1433,9 @@
     const LB_NICK_KEY = 'xsbhxh_nickname';
     const LB_BEST_KEY = 'xsbhxh_best';
     const LB_PID_KEY = 'xsbhxh_player_id_v1';
+    // 提交冷却：服务端同一浏览器 ID 10 秒内只收一次，前端也给个明确提示
+    const LB_SUBMIT_KEY = 'xsbhxh_last_submit';
+    const LB_SUBMIT_GAP = 10;
 
     // 五种题型的答案空间：AAAA=4 / ABCD=24 / AABB=36 / AAAB=48 / AABC=144（合计 256）
     const PATTERN_NOTE = {
@@ -2639,7 +2642,7 @@
       if (!nick || nick === '无名贤者') return null;
       try {
         const q = 'scores?nickname=eq.' + encodeURIComponent(nick) +
-                  '&select=player_id,score&limit=5';
+                  '&superseded=eq.false&select=player_id,score&limit=5';
         const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
         if (!res.ok) return null;          // 查不到就放行，别挡住正常提交
         const rows = await res.json();
@@ -2657,7 +2660,7 @@
       if (!nickEl || nickEl.value.trim()) return;
       try {
         const q = 'scores?player_id=eq.' + encodeURIComponent(getPlayerId()) +
-                  '&select=nickname,score&order=score.desc&limit=5';
+                  '&superseded=eq.false&select=nickname,score&order=score.desc&limit=5';
         const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
         if (!res.ok) return;
         const rows = await res.json();
@@ -2677,6 +2680,19 @@
     async function doSubmit(nick) {
       if (!pendingScore) return;
       const msg = document.getElementById('rankMsg');
+
+      // 前端冷却提示：告诉用户还要等几秒，而不是看到他莫名其妙失败
+      let lastAt = 0;
+      try { lastAt = Number(localStorage.getItem(LB_SUBMIT_KEY) || 0); } catch (e) {}
+      const waitSec = LB_SUBMIT_GAP - (Date.now() - lastAt) / 1000;
+      if (lastAt && waitSec > 0) {
+        if (msg) {
+          msg.className = 'rank-msg is-err';
+          msg.textContent = '距上次提交不足 ' + LB_SUBMIT_GAP + ' 秒，请再等 ' + Math.ceil(waitSec) + ' 秒';
+        }
+        return;
+      }
+
       hideConflictConfirm();
       rankSubmitBtn.disabled = true;
       rankSubmitBtn.textContent = '提交中…';
@@ -2684,7 +2700,10 @@
 
       try {
         const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs);
-        try { localStorage.setItem(LB_NICK_KEY, nick); } catch (e) {}
+        try {
+          localStorage.setItem(LB_NICK_KEY, nick);
+          if (accepted) localStorage.setItem(LB_SUBMIT_KEY, String(Date.now()));
+        } catch (e) {}
         if (msg) {
           msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
           msg.textContent = accepted
