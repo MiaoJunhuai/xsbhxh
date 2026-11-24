@@ -17,6 +17,11 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `rules/tayza.html` | 泰扎副本规则 | 报名、门槛、分红、罚款 |
 | `assets/banner.webp` / `banner.jpg` | 首页横幅 | 原图压缩版（1600 宽） |
 | `assets/family-icon.png` | 家族图标 | 导航栏左侧图标（60 宽，像素风） |
+| `assets/favicon.ico` | 网页图标（多尺寸） | 16 / 32 / 48 三帧 ICO，浏览器标签页优先取用 |
+| `assets/favicon-32.png` / `favicon-16.png` | 网页图标（单尺寸） | 补充给按指定尺寸取图标的浏览器 |
+| `assets/apple-touch-icon.png` | iOS 主屏图标 | 180×180，iPhone / iPad「添加到主屏」时使用 |
+| `assets/icon-192.png` / `icon-512.png` | 安卓 / PWA 图标 | 由 `site.webmanifest` 引用 |
+| `site.webmanifest` | 站点清单 | 站点名称、主题色与主屏图标 |
 | `assets/activity-1.webp` / `.jpg` | 第一届活动合影 | 压缩版（1200 宽） |
 | `assets/activity-2.webp` / `.jpg` | 第二届活动合影 | 压缩版（1200 宽） |
 
@@ -37,6 +42,20 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `assets/banner.webp` | `新手保护联盟横幅.png`（压缩后） |
 | `assets/activity-1.webp` | `第一届活动合影.png`（压缩后） |
 | `assets/activity-2.webp` | `第二届活动合影.png`（压缩后） |
+
+### 网页图标
+
+整套 favicon 都由工作区「现有网页」里的 `家族图标.png` 生成，没有另画图：
+
+| 项目 | 做法 |
+|---|---|
+| 源图 | `现有网页\家族图标.png`，15×15 像素风 |
+| 放大方式 | 最近邻放大（NEAREST），保持像素方块锐利，不做平滑插值 |
+| 生成尺寸 | 16 / 32 / 48 / 180 / 192 / 512 |
+| 引用位置 | 首页与 6 个子页面的 `<head>`，子页面路径用 `../assets/` |
+| 生成脚本 | `_preview\make-favicon.py`（Pillow，可重跑） |
+
+换了家族图标后要重新生成：改 `make-favicon.py` 里的 `SRC` 再运行一次，然后覆盖 `assets` 下的同名文件即可。
 
 ## 以后更新页面
 
