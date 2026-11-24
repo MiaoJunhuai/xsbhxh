@@ -597,6 +597,137 @@
       .item-btn, .slot { width: 48px; height: 48px; font-size: 1.6rem; }
       .btn { font-size: 0.85rem; padding: 0.55rem 0.8rem; }
     }
+
+    /* ================= 群贤榜 ================= */
+    .rank-panel {
+      margin-top: 1.5rem;
+      padding-top: 1.1rem;
+      border-top: 2px dashed rgba(139, 110, 60, .4);
+    }
+    .rank-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .55rem;
+    }
+    .rank-title {
+      color: #6b5a3a;
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .12rem;
+    }
+    .rank-sub {
+      flex: none;
+      color: #9a8a6c;
+      font-size: .72rem;
+    }
+    .rank-list { display: flex; flex-direction: column; }
+    .rank-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .42rem .25rem;
+      border-bottom: 1px dashed rgba(195, 167, 117, .55);
+      font-size: .86rem;
+      color: #4e3b21;
+    }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-no {
+      flex: none;
+      width: 1.5rem;
+      text-align: center;
+      font-weight: 700;
+      color: #8a7752;
+      font-variant-numeric: tabular-nums;
+    }
+    .rank-row.is-top1 {
+      background: rgba(212, 175, 55, .14);
+      border-radius: .45rem;
+      border-bottom-color: transparent;
+    }
+    .rank-row.is-top1 .rank-no { color: #b8860b; }
+    .rank-row.is-top2 .rank-no { color: #8c8c8c; }
+    .rank-row.is-top3 .rank-no { color: #a9714b; }
+    .rank-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rank-row.is-me .rank-name { font-weight: 700; color: #7a4b12; }
+    .rank-meta {
+      flex: none;
+      color: #6b5a3a;
+      font-size: .78rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .rank-meta b { color: #8a5a12; }
+    .rank-empty, .rank-loading {
+      text-align: center;
+      color: #9a8a6c;
+      font-size: .8rem;
+      padding: .9rem 0;
+    }
+    .rank-submit {
+      margin-bottom: .9rem;
+      padding: .75rem .85rem;
+      background: rgba(212, 175, 55, .13);
+      border: 1px solid rgba(184, 134, 30, .4);
+      border-radius: .7rem;
+    }
+    .rank-submit[hidden] { display: none; }
+    .rank-result {
+      font-size: .85rem;
+      color: #4e3b21;
+      margin-bottom: .5rem;
+      line-height: 1.5;
+    }
+    .rank-result b { color: #b0361e; }
+    .rank-form { display: flex; gap: .5rem; }
+    .rank-nick {
+      flex: 1;
+      min-width: 0;
+      padding: .48rem .7rem;
+      font-size: .85rem;
+      font-family: inherit;
+      color: #4e3b21;
+      background: #fffaf0;
+      border: 1px solid rgba(139, 110, 60, .45);
+      border-radius: .5rem;
+      outline: none;
+    }
+    .rank-nick:focus {
+      border-color: #b8860b;
+      box-shadow: 0 0 0 3px rgba(184, 134, 30, .18);
+    }
+    .rank-btn {
+      flex: none;
+      padding: .48rem .9rem;
+      font-size: .85rem;
+      font-family: inherit;
+      font-weight: 700;
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border: none;
+      border-radius: .5rem;
+      cursor: pointer;
+    }
+    .rank-btn:disabled { opacity: .55; cursor: default; }
+    .rank-msg {
+      margin-top: .4rem;
+      font-size: .76rem;
+      color: #7b6a50;
+      min-height: 1.1em;
+    }
+    .rank-msg.is-err { color: #b0361e; }
+    .rank-msg.is-ok { color: #2f6b46; }
+    @media (max-width: 480px) {
+      .rank-meta { font-size: .72rem; }
+      .rank-form { flex-direction: column; }
+      .rank-btn { width: 100%; padding: .55rem .9rem; }
+    }
   </style>
 </head>
 <body>
@@ -817,6 +948,24 @@
     <div id="historyList"></div>
   </div>
 
+  <div class="rank-panel play-only">
+    <div class="rank-head">
+      <span class="rank-title">群贤榜</span>
+      <span class="rank-sub">手动练习 · 轮数少者在前</span>
+    </div>
+    <div class="rank-submit" id="rankSubmit" hidden>
+      <div class="rank-result" id="rankResult"></div>
+      <div class="rank-form">
+        <input type="text" id="rankNick" class="rank-nick" maxlength="12" placeholder="留空记为「无名贤者」" autocomplete="off" spellcheck="false">
+        <button type="button" id="rankSubmitBtn" class="rank-btn">计入排行榜</button>
+      </div>
+      <div class="rank-msg" id="rankMsg"></div>
+    </div>
+    <div class="rank-list" id="rankList">
+      <div class="rank-loading">正在载入…</div>
+    </div>
+  </div>
+
   <!-- ==================== 自动驾驶 ==================== -->
   <section class="auto-panel auto-only" aria-label="自动驾驶">
     <div class="auto-status">
@@ -884,6 +1033,21 @@
   (function() {
     const CODE_LENGTH = 4;
     const MAX_ATTEMPTS = 7;
+
+    // ===== 群贤榜（Supabase 免费层）=====
+    // 这里用的是 publishable key，公开是安全的：数据库只开了「读」和「新增」，
+    // 改不了删不了别人的成绩。千万别把 secret key 放到这里。
+    const LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
+    const LB_KEY = 'sb_publishable_uDRHXpUMaX9Wa2WJrqefrA_cK27Qqxl';
+    const LB_TABLE = 'scores';
+    const LB_VIEW = 'leaderboard';
+    const LB_LIMIT = 20;
+    const LB_NICK_KEY = 'xsbhxh_nickname';
+    const LB_BEST_KEY = 'xsbhxh_best';
+    const LB_PID_KEY = 'xsbhxh_player_id_v1';
+
+    let roundStartAt = 0;
+    let pendingScore = null;
     const ITEMS = ['Q', 'W', 'E', 'R'];
     const ITEM_EMOJI = {
       'Q': '📜',
@@ -921,6 +1085,9 @@
       attemptsLeft = MAX_ATTEMPTS;
       gameOver = false;
       currentGuess = ['', '', '', ''];
+      roundStartAt = 0;
+      pendingScore = null;
+      resetRankSubmit();
       updateSlotDisplay();
       attemptSpan.textContent = `${attemptsLeft} / ${MAX_ATTEMPTS}`;
       feedbackDiv.innerHTML = '<div class="feedback-line">⚡ 摆放供品，询问贤者...</div>';
@@ -967,6 +1134,8 @@
         feedbackDiv.innerHTML = '<div class="feedback-line">⛔ 游戏已经结束，请重置答案。</div>'; 
         return; 
       }
+      // 第一次摆放贡品时开始计时
+      if (!roundStartAt) roundStartAt = Date.now();
       for (let i = 0; i < CODE_LENGTH; i++) {
         if (currentGuess[i] === '') {
           currentGuess[i] = item;
@@ -1094,12 +1263,18 @@
       historyList.prepend(historyEntry);
 
       if (bulls === CODE_LENGTH) {
+        const usedRounds = MAX_ATTEMPTS - attemptsLeft + 1;
+        const usedSeconds = roundStartAt
+          ? Math.min(86400, Math.max(1, Math.round((Date.now() - roundStartAt) / 1000)))
+          : 1;
+
         feedbackDiv.innerHTML = `<div class="feedback-line">🎉 奇迹降临！所有贤者满意！</div>
                                  <div class="feedback-line">正确答案正是「${guessStr}」。</div>
-                                 <div class="feedback-line">请重置答案再次挑战。</div>`;
+                                 <div class="feedback-line">用了 ${usedRounds} 轮。请重置答案再次挑战。</div>`;
         gameOver = true;
         enableControls(false);
         attemptSpan.textContent = `胜利`;
+        showRankSubmit(usedRounds, usedSeconds);
         return;
       }
 
@@ -1508,6 +1683,208 @@
         submitGuess();
       }
     });
+
+    // ==================== 群贤榜 ====================
+    function lbHeaders() {
+      return { 'apikey': LB_KEY, 'Accept': 'application/json' };
+    }
+
+    function makeUuid() {
+      if (window.crypto && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      const b = new Uint8Array(16);
+      if (window.crypto && crypto.getRandomValues) {
+        crypto.getRandomValues(b);
+      } else {
+        for (let i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+      }
+      b[6] = (b[6] & 0x0f) | 0x40;
+      b[8] = (b[8] & 0x3f) | 0x80;
+      const h = Array.from(b, function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+      return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' +
+             h.slice(16, 20) + '-' + h.slice(20);
+    }
+
+    function getPlayerId() {
+      let id = '';
+      try { id = localStorage.getItem(LB_PID_KEY) || ''; } catch (e) { id = ''; }
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        id = makeUuid();
+        try { localStorage.setItem(LB_PID_KEY, id); } catch (e) {}
+      }
+      return id;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    function fmtDuration(sec) {
+      sec = Math.max(0, Math.round(sec));
+      if (sec < 60) return sec + ' 秒';
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      if (m < 60) return s ? m + ' 分 ' + s + ' 秒' : m + ' 分';
+      const h = Math.floor(m / 60);
+      return h + ' 小时 ' + (m % 60) + ' 分';
+    }
+
+    function readBest() {
+      try { return JSON.parse(localStorage.getItem(LB_BEST_KEY) || 'null'); } catch (e) { return null; }
+    }
+
+    function isBetter(a, b) {
+      if (!a) return false;
+      if (!b) return true;
+      if (a.rounds !== b.rounds) return a.rounds < b.rounds;
+      return a.duration < b.duration;
+    }
+
+    async function fetchRank() {
+      const q = LB_VIEW + '?select=nickname,rounds,duration,created_at' +
+                '&order=rounds.asc,duration.asc,created_at.asc&limit=' + LB_LIMIT;
+      const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    async function postScore(nickname, rounds, duration) {
+      const res = await fetch(LB_URL + '/rest/v1/' + LB_TABLE, {
+        method: 'POST',
+        headers: Object.assign({}, lbHeaders(), {
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        }),
+        body: JSON.stringify({
+          player_id: getPlayerId(),
+          nickname: nickname,
+          rounds: rounds,
+          duration: duration
+        })
+      });
+      if (!res.ok) {
+        let detail = '';
+        try { detail = await res.text(); } catch (e) {}
+        throw new Error('HTTP ' + res.status + (detail ? ' ' + detail : ''));
+      }
+    }
+
+    function renderRank(rows) {
+      const listEl = document.getElementById('rankList');
+      if (!listEl) return;
+      if (!rows || !rows.length) {
+        listEl.innerHTML = '<div class="rank-empty">还没有人上榜，你可以当第一个</div>';
+        return;
+      }
+      let myNick = '';
+      try { myNick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+      listEl.innerHTML = rows.map(function (r, i) {
+        const no = i + 1;
+        const cls = ['rank-row'];
+        if (no <= 3) cls.push('is-top' + no);
+        if (myNick && r.nickname === myNick) cls.push('is-me');
+        return '<div class="' + cls.join(' ') + '">' +
+                 '<span class="rank-no">' + no + '</span>' +
+                 '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
+                 '<span class="rank-meta"><b>' + r.rounds + '</b> 轮 · ' + fmtDuration(r.duration) + '</span>' +
+               '</div>';
+      }).join('');
+    }
+
+    async function loadRank() {
+      const listEl = document.getElementById('rankList');
+      if (!listEl) return;
+      try {
+        renderRank(await fetchRank());
+      } catch (e) {
+        listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响</div>';
+      }
+    }
+
+    function resetRankSubmit() {
+      const box = document.getElementById('rankSubmit');
+      const msg = document.getElementById('rankMsg');
+      const btn = document.getElementById('rankSubmitBtn');
+      if (box) box.hidden = true;
+      if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
+      if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
+    }
+
+    function showRankSubmit(rounds, duration) {
+      const box = document.getElementById('rankSubmit');
+      if (!box) return;
+      pendingScore = { rounds: rounds, duration: duration };
+      const txt = document.getElementById('rankResult');
+      const msg = document.getElementById('rankMsg');
+      const btn = document.getElementById('rankSubmitBtn');
+      const nick = document.getElementById('rankNick');
+      const best = readBest();
+      let extra = '';
+      if (best && !isBetter(pendingScore, best)) {
+        extra = '　（你的最好成绩：' + best.rounds + ' 轮 · ' + fmtDuration(best.duration) + '）';
+      }
+      if (txt) txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' + extra;
+      if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
+      if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
+      if (nick) { try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {} }
+      box.hidden = false;
+      try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+    }
+
+    const rankSubmitBtn = document.getElementById('rankSubmitBtn');
+    if (rankSubmitBtn) {
+      rankSubmitBtn.addEventListener('click', async function () {
+        if (!pendingScore) return;
+        const msg = document.getElementById('rankMsg');
+        const nickEl = document.getElementById('rankNick');
+        let nick = (nickEl && nickEl.value ? nickEl.value : '').trim().replace(/\s+/g, ' ');
+        const chars = Array.from(nick);
+        if (chars.length > 12) nick = chars.slice(0, 12).join('');
+        if (!nick) nick = '无名贤者';
+
+        rankSubmitBtn.disabled = true;
+        rankSubmitBtn.textContent = '提交中…';
+        if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
+
+        try {
+          await postScore(nick, pendingScore.rounds, pendingScore.duration);
+          try {
+            localStorage.setItem(LB_NICK_KEY, nick);
+            if (isBetter(pendingScore, readBest())) {
+              localStorage.setItem(LB_BEST_KEY, JSON.stringify({
+                rounds: pendingScore.rounds,
+                duration: pendingScore.duration
+              }));
+            }
+          } catch (e) {}
+          if (msg) { msg.className = 'rank-msg is-ok'; msg.textContent = '已计入排行榜'; }
+          rankSubmitBtn.textContent = '已提交';
+          pendingScore = null;
+          loadRank();
+        } catch (e) {
+          rankSubmitBtn.disabled = false;
+          rankSubmitBtn.textContent = '重试';
+          if (msg) { msg.className = 'rank-msg is-err'; msg.textContent = '提交失败，请稍后再试'; }
+        }
+      });
+    }
+
+    // 在昵称框里按回车直接提交，别让回车冒泡去触发「询问贤者」
+    const rankNickEl = document.getElementById('rankNick');
+    if (rankNickEl) {
+      rankNickEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (rankSubmitBtn && !rankSubmitBtn.disabled) rankSubmitBtn.click();
+        }
+      });
+    }
+
+    loadRank();
 
     // iOS Safari：让 :active 按下态立刻生效，不然要等手指抬起才有反馈
     document.addEventListener('touchstart', function () {}, { passive: true });
