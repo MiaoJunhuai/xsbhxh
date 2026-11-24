@@ -859,9 +859,27 @@
       90%  { opacity: .78; }
       100% { transform: translateY(128vh) rotate(calc(var(--rot, 0deg) + 200deg)); opacity: 0; }
     }
+    /* 礼花彩带：短的当纸屑，长的当飘带 */
+    .rain-ribbon {
+      position: absolute;
+      top: -10vh;
+      display: block;
+      opacity: 0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+      animation-name: ribbon-fall;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      will-change: transform, opacity;
+    }
+    @keyframes ribbon-fall {
+      0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      6%   { opacity: .96; }
+      85%  { opacity: .92; }
+      100% { transform: translate(var(--sway, 0px), 126vh) rotate(var(--spin, 360deg)); opacity: 0; }
+    }
     @media (prefers-reduced-motion: reduce) {
       .rank-badge span { animation: none; }
-      .rain-icon { display: none; }
+      .rain-icon, .rain-ribbon { display: none; }
     }
     .rank-row.is-flash { animation: rank-flash 2s ease-out; }
     @keyframes rank-flash {
@@ -2144,15 +2162,19 @@
              '</span>';
     }
 
-    // 破纪录时从屏幕上方下一阵道具图标雨
+    // 破纪录时从屏幕上方下一阵道具图标 + 礼花彩带
     let iconRainTimer = 0;
     function iconRain() {
       const layer = document.getElementById('iconRain');
       if (!layer || !layer.hidden) return;  // 正在下就别叠加
       const keys = ['Q', 'W', 'E', 'R'];
-      const count = window.innerWidth < 520 ? 22 : 34;
+      const wide = window.innerWidth >= 520;
+      const iconCount = wide ? 34 : 22;
+      const ribbonCount = wide ? 48 : 32;
+      const COLORS = ['#e8452c', '#f0913a', '#f2c94c', '#5fb87a', '#4a90d9', '#c05fb8', '#fff3d6'];
       const frag = document.createDocumentFragment();
-      for (let i = 0; i < count; i++) {
+
+      for (let i = 0; i < iconCount; i++) {
         const img = document.createElement('img');
         img.className = 'rain-icon';
         img.src = ITEM_IMG[keys[(Math.random() * keys.length) | 0]];
@@ -2164,6 +2186,23 @@
         img.style.setProperty('--rot', ((Math.random() * 70) - 35).toFixed(0) + 'deg');
         frag.appendChild(img);
       }
+
+      for (let j = 0; j < ribbonCount; j++) {
+        const el = document.createElement('i');
+        el.className = 'rain-ribbon';
+        const strip = Math.random() < 0.45;
+        el.style.left = (Math.random() * 99).toFixed(1) + '%';
+        el.style.background = COLORS[(Math.random() * COLORS.length) | 0];
+        el.style.width = (strip ? (5 + Math.random() * 4) : (5 + Math.random() * 5)).toFixed(0) + 'px';
+        el.style.height = (strip ? (20 + Math.random() * 18) : (7 + Math.random() * 6)).toFixed(0) + 'px';
+        el.style.borderRadius = strip ? '3px' : '2px';
+        el.style.animationDuration = (2.1 + Math.random() * 1.4).toFixed(2) + 's';
+        el.style.animationDelay = (Math.random() * 1.2).toFixed(2) + 's';
+        el.style.setProperty('--sway', ((Math.random() * 120) - 60).toFixed(0) + 'px');
+        el.style.setProperty('--spin', ((Math.random() * 900) - 450).toFixed(0) + 'deg');
+        frag.appendChild(el);
+      }
+
       layer.innerHTML = '';
       layer.appendChild(frag);
       layer.hidden = false;
@@ -2171,7 +2210,7 @@
       iconRainTimer = setTimeout(function () {
         layer.hidden = true;
         layer.innerHTML = '';
-      }, 4200);
+      }, 5000);
     }
 
     function showRankSubmit(rounds, duration) {
