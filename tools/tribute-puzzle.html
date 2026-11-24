@@ -640,6 +640,7 @@
       border-color: #b8860b;
       background: rgba(212, 175, 55, .18);
     }
+    .rank-refresh:disabled { opacity: .45; cursor: default; }
     .rank-refresh svg { width: .9rem; height: .9rem; }
     .rank-refresh.is-busy svg { animation: rank-spin .8s linear infinite; }
     @keyframes rank-spin { to { transform: rotate(360deg); } }
@@ -1073,6 +1074,7 @@
     const LB_LIMIT = 20;
     const LB_CACHE_KEY = 'xsbhxh_rank_cache_v1';
     const LB_CACHE_TTL = 5 * 60 * 1000;
+    const LB_REFRESH_GAP = 3000;
     const LB_NICK_KEY = 'xsbhxh_nickname';
     const LB_BEST_KEY = 'xsbhxh_best';
     const LB_PID_KEY = 'xsbhxh_player_id_v1';
@@ -1872,11 +1874,16 @@
     const rankRefreshBtn = document.getElementById('rankRefreshBtn');
     if (rankRefreshBtn) {
       rankRefreshBtn.addEventListener('click', async function () {
-        if (rankRefreshBtn.classList.contains('is-busy')) return;
+        if (rankRefreshBtn.disabled) return;
+        const startedAt = Date.now();
+        rankRefreshBtn.disabled = true;
         rankRefreshBtn.classList.add('is-busy');
         clearRankCache();
         await loadRank(true);
         rankRefreshBtn.classList.remove('is-busy');
+        // 最小间隔：防手滑连点（服务端没有限频，这一层只能靠前端自觉）
+        const remain = Math.max(0, LB_REFRESH_GAP - (Date.now() - startedAt));
+        setTimeout(function () { rankRefreshBtn.disabled = false; }, remain);
       });
     }
 
