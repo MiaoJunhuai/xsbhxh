@@ -164,7 +164,6 @@
       cursor: not-allowed;
     }
     .clear-btn { background: linear-gradient(180deg, #d9c89e 0%, #9b8a5a 100%); }
-    .reset-btn { background: linear-gradient(180deg, #c6ad7a 0%, #7a623b 100%); color: #fbf3da; }
     .feedback-box {
       background: #fff7e6;
       border: 2px solid #977c51;
@@ -192,10 +191,12 @@
       background: #403826;
       color: #f7e8c4;
       border-radius: 2rem;
-      padding: 0.5rem 1.2rem;
+      padding: 0.42rem 0.5rem 0.42rem 1.2rem;
       font-weight: bold;
       margin: 0.8rem 0;
     }
+    .attempt-badge > span:nth-child(2) { margin-left: auto; }
+    .attempt-badge .reset-pill { margin-left: 0.85rem; }
     .history {
       margin-top: 1.1rem;
     }
@@ -307,7 +308,8 @@
     .auto-status b { color: #ffe6a8; font-size: 1.05rem; }
     .auto-status > span:nth-child(2) { margin-left: auto; }
 
-    .auto-reset {
+    .auto-reset,
+    .reset-pill {
       flex: none;
       border: 1px solid rgba(255, 220, 214, 0.35);
       background: rgba(176, 58, 46, 0.85);
@@ -321,8 +323,10 @@
       cursor: pointer;
       transition: background 0.15s, transform 0.08s;
     }
-    .auto-reset:hover { background: #c34436; }
-    .auto-reset:active { transform: scale(0.95); }
+    .auto-reset:hover,
+    .reset-pill:hover { background: #c34436; }
+    .auto-reset:active,
+    .reset-pill:active { transform: scale(0.95); }
 
     .auto-guess-label {
       text-align: center;
@@ -786,13 +790,13 @@
     <div class="actions">
       <button class="btn" id="submitBtn">🔮 询问贤者</button>
       <button class="btn clear-btn" id="clearBtn">🧹 清空祭坛</button>
-      <button class="btn reset-btn" id="resetBtn">🔄 重置答案</button>
     </div>
   </div>
 
   <div class="attempt-badge play-only">
     <span>🏺 剩余尝试</span>
     <span id="attemptLeft">7 / 7</span>
+    <button type="button" class="reset-pill" id="resetBtn">重置答案</button>
   </div>
 
   <div class="feedback-box play-only" id="feedbackMessage">

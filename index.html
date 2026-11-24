@@ -118,7 +118,11 @@
     transition: color .18s ease, background .18s ease;
   }
 
-  .nav-links a:hover { color: var(--ink); background: rgba(59, 51, 39, .08); }
+  /* 只有支持 hover 的设备才启用悬停效果；触屏点击后浏览器会一直保持 :hover，
+     导致被点过的按钮和滚动高亮同时显示，出现两个“选中项”。 */
+  @media (hover: hover) {
+    .nav-links a:hover { color: var(--ink); background: rgba(59, 51, 39, .08); }
+  }
 
   .nav-links a.active {
     color: var(--ink);
@@ -828,7 +832,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.1.8</span>
+          <span class="card-tag">v1.1.9</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放卷轴、勋章、酒和食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。</p>
@@ -947,8 +951,11 @@
     function update() {
       ticking = false;
       var current = null;
+      // 判定线放在视口上部约 1/3：板块标题滚进这个位置就算当前，不必等它顶到最上面。
+      // 板块较矮（如「远征规则」387px）时也能稳定选中。
+      var line = Math.max(120, window.innerHeight * 0.35);
       sections.forEach(function (s) {
-        if (s.getBoundingClientRect().top <= 100) current = s;
+        if (s.getBoundingClientRect().top <= line) current = s;
       });
       var doc = document.documentElement;
       if (window.innerHeight + window.pageYOffset >= doc.scrollHeight - 4) {

@@ -12,7 +12,7 @@ WingsMS 服务器新手保护联盟的家族官网。
 | `apply/index.html` | 入会申请面试 | v1.0.25，随机 20 题，80 分合格 |
 | `tools/leader-checklist.html` | 实习团长检查清单 | v1.0.3，9 个阶段 31 项检查点 |
 | `tools/price-formatter.html` | 商店价格规范器 | v1.0.1，千分位 + 中文单位 |
-| `tools/tribute-puzzle.html` | 贤者贡品 · 四象祭坛 | v1.1.8，家务贡品关卡试玩，手动练习 + 自动驾驶（1~4 分格点选 / 滑动，格 1 左半为 0）；导航配色跟随页面木色 |
+| `tools/tribute-puzzle.html` | 贤者贡品 · 四象祭坛 | v1.1.9，家务贡品关卡试玩，手动练习 + 自动驾驶（1~4 分格点选 / 滑动，格 1 左半为 0）；导航配色跟随页面木色 |
 | `rules/one-dragon.html` | 远征一条龙规则 | 含 KOOK 语音频道与车队二维码 |
 | `rules/tayza.html` | 泰扎副本规则 | 报名、门槛、分红、罚款 |
 | `assets/banner.webp` / `banner.jpg` | 首页横幅 | 原图压缩版（1600 宽） |

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>新手保护联盟 · 家族官网</title>
+<meta name="description" content="WingsMS 服务器新手保护联盟家族官网：家族介绍、入会申请面试、带队工具与远征规则。" />
+<meta property="og:title" content="新手保护联盟 · 家族官网" />
+<meta property="og:description" content="守护每一位新手，一起走得更远。WingsMS 服务器新手家族官网。" />
+<meta property="og:image" content="https://miaojunhuai.github.io/xsbhxh/assets/banner.webp" />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#fbf4e3" />
+<link rel="icon" href="assets/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<style>
+  :root {
+    --paper: #fbf4e3;
+    --paper-2: #f6ead2;
+    --ink: #3b3327;
+    --ink-2: #746757;
+    --ink-3: #9b8d79;
+    --line: rgba(120, 98, 64, .16);
+    --card: #fffdf8;
+    --green: #2f7d4f;
+    --green-d: #1f5a3a;
+    --blue: #3e8fc1;
+    --amber: #b8861e;
+    --radius: 22px;
+    --shadow: 0 18px 40px -26px rgba(90, 66, 30, .45);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(216, 178, 90, .18) 0%, transparent 34%),
+      radial-gradient(circle at 88% 4%, rgba(120, 176, 120, .16) 0%, transparent 30%),
+      radial-gradient(circle at 76% 92%, rgba(214, 128, 92, .12) 0%, transparent 32%),
+      radial-gradient(circle at 8% 88%, rgba(96, 158, 200, .12) 0%, transparent 30%),
+      var(--paper);
+    background-attachment: fixed;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ================= 顶部导航 ================= */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, .42);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    backdrop-filter: blur(24px) saturate(1.8);
+    border-bottom: 1px solid rgba(120, 98, 64, .1);
+  }
+
+  .nav-inner {
+    width: min(1120px, calc(100% - 32px));
+    height: 48px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+
+  .brand-badge {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+  }
+
+  .brand-badge img {
+    display: block;
+    width: 26px;
+    height: 26px;
+    image-rendering: pixelated;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .nav-links a {
+    position: relative;
+    display: inline-block;
+    padding: 5px 11px;
+    border-radius: 999px;
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    transition: color .18s ease, background .18s ease;
+  }
+
+  /* 只有支持 hover 的设备才启用悬停效果；触屏点击后浏览器会一直保持 :hover，
+     导致被点过的按钮和滚动高亮同时显示，出现两个“选中项”。 */
+  @media (hover: hover) {
+    .nav-links a:hover { color: var(--ink); background: rgba(59, 51, 39, .08); }
+  }
+
+  .nav-links a.active {
+    color: var(--ink);
+    background: rgba(59, 51, 39, .11);
+  }
+
+  /* ================= 主体 ================= */
+  main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 10px; scroll-margin-top: 76px; }
+
+  /* ================= 横幅 ================= */
+  .hero-media {
+    border-radius: 26px;
+    overflow: hidden;
+    border: 1px solid rgba(160, 128, 70, .22);
+    box-shadow: 0 26px 60px -30px rgba(90, 66, 30, .55), inset 0 0 0 5px rgba(255, 253, 248, .6);
+    background: var(--paper-2);
+  }
+
+  .hero-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1600 / 678;
+    object-fit: cover;
+  }
+
+  .hero-copy {
+    text-align: center;
+    padding: 30px 12px 8px;
+    overflow: hidden;
+  }
+
+  .eyebrow {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  .hero-copy h1 {
+    margin: 0;
+    font-size: clamp(25px, 4.2vw, 38px);
+    line-height: 1.3;
+    letter-spacing: 1px;
+    color: var(--green-d);
+    text-shadow: 0 1px 0 #fff;
+  }
+
+  .hero-copy .lead {
+    max-width: 640px;
+    margin: 12px auto 0;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  .hero-copy .lead strong { color: var(--ink); }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .hero-badges .hero-badge {
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: rgba(255, 253, 248, .78);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+  }
+
+  .hero-badges .hero-badge:hover {
+    background: #fffdf8;
+    border-color: rgba(47, 125, 79, .38);
+    color: var(--green-d);
+  }
+
+  .hero-badges .hero-badge.is-copied {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+
+  /* ================= 分区 ================= */
+  .group {
+    padding: 46px 0 8px;
+    scroll-margin-top: 78px;
+  }
+
+  .group + .group { border-top: 1px dashed var(--line); margin-top: 26px; }
+
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .group-icon {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    background: var(--accent-soft, #eef4ea);
+    border: 1px solid rgba(120, 98, 64, .12);
+    color: var(--accent, var(--green));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 10px 20px -18px rgba(90, 66, 30, .6);
+  }
+
+  .group-icon svg { width: 22px; height: 22px; display: block; }
+
+  .group-head h2 {
+    margin: 0;
+    font-size: 23px;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+
+  .group-head p {
+    margin: 1px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+
+  /* ================= 卡片 ================= */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  /* 工具区卡片较多，自动按可用宽度分列 */
+  .cards-tools { grid-template-columns: repeat(auto-fit, minmax(288px, 1fr)); }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #fffefb 0%, #fdf8ef 100%);
+    border: 1px solid rgba(120, 98, 64, .13);
+    box-shadow: 0 16px 34px -28px rgba(90, 66, 30, .6), inset 0 1px 0 rgba(255, 255, 255, .9);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent, var(--green));
+    box-shadow: 0 28px 46px -30px rgba(90, 66, 30, .66), inset 0 1px 0 rgba(255, 255, 255, .9);
+  }
+
+  .card:focus-visible {
+    outline: 3px solid var(--accent, var(--green));
+    outline-offset: 3px;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft, #eef4ea);
+    border: 1px solid rgba(120, 98, 64, .1);
+    color: var(--accent, var(--green));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
+  }
+
+  .card-icon svg { width: 24px; height: 24px; display: block; }
+
+  .card:hover .card-icon {
+    background: var(--accent, var(--green));
+    border-color: var(--accent, var(--green));
+    color: #fff;
+  }
+
+  .card-tag {
+    flex: none;
+    margin-top: 2px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft, #eef4ea);
+    border: 1px solid rgba(120, 98, 64, .1);
+    color: var(--accent, var(--green));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    transition: background .22s ease;
+  }
+
+  .card h3 {
+    margin: 2px 0 0;
+    font-size: 19px;
+    letter-spacing: .3px;
+    color: var(--ink);
+  }
+
+  .card p {
+    margin: -4px 0 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.75;
+    flex: 1;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    color: var(--ink-3);
+  }
+
+  .card-arrow {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft, #eef4ea);
+    color: var(--accent, var(--green));
+    transition: background .22s ease, color .22s ease, transform .22s ease;
+  }
+
+  .card-arrow svg { width: 16px; height: 16px; display: block; }
+
+  .card:hover .card-arrow {
+    background: var(--accent, var(--green));
+    color: #fff;
+    transform: translateX(2px);
+  }
+
+  /* 重点卡片：申请入会 */
+  .card-feature {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon title go"
+      "icon body go";
+    align-items: center;
+    column-gap: 20px;
+    row-gap: 6px;
+    padding: 24px 26px;
+    background:
+      radial-gradient(120% 150% at 96% 0%, rgba(47, 125, 79, .10) 0%, transparent 58%),
+      linear-gradient(180deg, #fffefb 0%, #fbf7ec 100%);
+  }
+
+  .feature-icon {
+    grid-area: icon;
+    align-self: center;
+    width: 66px;
+    height: 66px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(150deg, #eaf6e4, #d6ecd2);
+    border: 1px solid rgba(47, 125, 79, .22);
+    color: var(--green-d);
+    box-shadow: inset 0 1px 0 #fff;
+    transition: background .22s ease, color .22s ease, border-color .22s ease;
+  }
+
+  .feature-icon svg { width: 30px; height: 30px; display: block; }
+
+  .card-feature:hover .feature-icon {
+    background: var(--green-d);
+    border-color: var(--green-d);
+    color: #fff;
+  }
+
+  .feature-title {
+    grid-area: title;
+    align-self: end;
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: .3px;
+    color: var(--ink);
+  }
+
+  .feature-body {
+    grid-area: body;
+    align-self: start;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .feature-body p { margin: 0; flex: none; }
+
+  .feature-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .chip {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: var(--ink-2);
+    background: rgba(120, 98, 64, .07);
+    border: 1px solid rgba(120, 98, 64, .1);
+  }
+
+  .feature-go {
+    grid-area: go;
+    align-self: center;
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2f7d4f, #256b42);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    box-shadow: 0 12px 24px -14px rgba(47, 125, 79, .95), inset 0 1px 0 rgba(255, 255, 255, .25);
+    transition: gap .2s ease, filter .2s ease;
+  }
+
+  .feature-go svg { width: 16px; height: 16px; display: block; }
+
+  .card-feature:hover .feature-go { gap: 12px; filter: brightness(1.06); }
+
+  /* ================= 关于我们 ================= */
+  .about-panel {
+    background: linear-gradient(180deg, #fffefb 0%, #fdf8ef 100%);
+    border: 1px solid rgba(120, 98, 64, .13);
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 16px 34px -28px rgba(90, 66, 30, .6), inset 0 1px 0 rgba(255, 255, 255, .9);
+  }
+
+  .about-copy {
+    margin: 0 0 20px;
+    max-width: 780px;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.95;
+  }
+
+  .about-photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .about-photos figure {
+    margin: 0;
+    padding: 10px;
+    background: #fffdf9;
+    border: 1px solid rgba(120, 98, 64, .14);
+    border-radius: 18px;
+    box-shadow: 0 14px 28px -24px rgba(90, 66, 30, .55);
+  }
+
+  .about-photos picture { display: block; }
+
+  .about-photos img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #f3ead9;
+  }
+
+  .about-photos figcaption {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: var(--ink-3);
+  }
+
+  .photo-link {
+    display: block;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+
+  .photo-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #f3ead9;
+    transition: transform .3s ease;
+  }
+
+  .photo-link::after {
+    content: "点击查看大图";
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(24, 18, 10, .62);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity .2s ease;
+    pointer-events: none;
+  }
+
+  .photo-link:hover::after,
+  .photo-link:focus-visible::after { opacity: 1; }
+
+  .photo-link:hover img { transform: scale(1.02); }
+
+  /* ================= 大图查看 ================= */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(24, 18, 10, .82);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .22s ease, visibility .22s;
+  }
+
+  .lightbox.is-open { opacity: 1; visibility: visible; }
+
+  .lightbox-stage {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox img {
+    display: block;
+    max-width: min(1200px, 100%);
+    max-height: 88vh;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .18s ease;
+  }
+
+  .lightbox-close:hover { background: rgba(255, 255, 255, .3); }
+
+  /* ================= 页脚 ================= */
+  footer {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 44px 12px 40px;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 12.5px;
+    line-height: 1.9;
+  }
+
+  footer .foot-title {
+    margin: 0 0 4px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--ink-2);
+  }
+
+  footer p { margin: 0; }
+
+  footer a { color: var(--ink-2); text-decoration: none; border-bottom: 1px dashed var(--ink-3); }
+  footer a:hover { color: var(--green-d); }
+
+  /* ================= 响应式 ================= */
+  @media (max-width: 760px) {
+    .nav-inner { height: 44px; }
+    .brand { font-size: 12.5px; gap: 6px; }
+    .brand-badge { width: 22px; height: 22px; }
+    .brand-badge img { width: 22px; height: 22px; }
+    .nav-links { gap: 0; }
+    .nav-links a { padding: 4px 8px; font-size: 12px; }
+    main { padding-top: 18px; }
+    .hero-media { border-radius: 18px; }
+    .hero-copy { padding: 22px 6px 4px; }
+    .hero-copy .lead { font-size: 14px; }
+    .hero-copy h1 {
+      font-size: clamp(17px, 5.5vw, 22px);
+      line-height: 1.45;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+    .hero-badges { gap: 6px; margin-top: 14px; }
+    .hero-badges .hero-badge { font-size: 11.5px; padding: 4px 11px; }
+    .group { padding-top: 34px; scroll-margin-top: 70px; }
+    .group-head h2 { font-size: 20px; }
+    .about-panel { padding: 18px; border-radius: 20px; }
+    .about-copy { font-size: 14px; margin-bottom: 16px; }
+    .about-photos { grid-template-columns: 1fr; gap: 14px; }
+    .cards { grid-template-columns: 1fr; gap: 14px; }
+    .card { padding: 20px; }
+    .card-feature {
+      grid-template-columns: 56px minmax(0, 1fr);
+      grid-template-areas:
+        "icon title"
+        "body body"
+        "go go";
+      column-gap: 14px;
+      row-gap: 12px;
+      padding: 22px;
+    }
+    .feature-icon { width: 56px; height: 56px; border-radius: 17px; }
+    .feature-icon svg { width: 26px; height: 26px; }
+    .feature-title { font-size: 20px; align-self: center; }
+    .feature-go { width: 100%; justify-content: center; justify-self: stretch; }
+  }
+
+  @media (max-width: 480px) {
+    .nav-inner { gap: 8px; }
+    .brand { font-size: 12px; gap: 5px; }
+    .brand-badge { width: 20px; height: 20px; }
+    .brand-badge img { width: 20px; height: 20px; }
+    .nav-links a { padding: 4px 5px; font-size: 11.5px; }
+  }
+
+  @media (max-width: 360px) {
+    .brand-badge { display: none; }
+    .nav-links a { padding: 4px 4px; font-size: 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+<style>/* variant e */
+.nav-links a.active { color: var(--ink); background: transparent; font-weight: 800; }
+.nav-links a.active::after { content:''; position:absolute; left:50%; bottom:0; width:4px; height:4px; margin-left:-2px; border-radius:50%; background: #b8861e; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="brand-badge" aria-hidden="true"><img src="assets/family-icon.png" alt="" width="60" height="60" /></span>
+      <span class="word">新手保护联盟</span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a href="#apply">申请入会</a>
+      <a href="#tools">工具</a>
+      <a href="#rules" class="active">远征规则</a>
+      <a href="#about" class="only-pc">关于我们</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ==================== 横幅 ==================== -->
+  <section class="hero" aria-label="新手保护联盟">
+    <div class="hero-media">
+      <picture>
+        <source srcset="assets/banner.webp" type="image/webp" />
+        <img src="assets/banner.jpg" width="1600" height="678" fetchpriority="high"
+             alt="新手保护联盟 WingsMS 横幅" />
+      </picture>
+    </div>
+    <div class="hero-copy">
+      <p class="eyebrow">WINGSMS · 家族官网</p>
+      <h1>守护每一位新手，一起走得更远</h1>
+      <p class="lead">新手保护联盟是在 WingsMS 服务器致力于保护新手的家族联盟。我们组织远征一条龙以及各种副本，制定公平的分配与处罚规则，也用入会面试认识每一位新伙伴。</p>
+      <div class="hero-badges">
+        <button type="button" class="hero-badge" data-copy="956341484">QQ群 956341484</button>
+        <button type="button" class="hero-badge" data-copy="47625960">KOOK ID 47625960</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 申请入会 ==================== -->
+  <section class="group" id="apply">
+    <div class="group-head">
+      <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></div>
+      <div>
+        <h2>申请入会</h2>
+        <p>想成为联盟的一员？先完成入会申请面试。</p>
+      </div>
+    </div>
+
+    <div class="cards">
+      <a class="card card-feature" href="apply/index.html" style="--accent:#2f7d4f;--accent-soft:#e7f4e1">
+        <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span>
+        <h3 class="feature-title">入会申请面试</h3>
+        <div class="feature-body">
+          <p>填写游戏昵称后开始答题，每次随机抽取 20 道题，题目与选项顺序都会打乱。满分 100 分，80 分及以上合格，提交后自动评分，并可保存结果截图。</p>
+          <div class="feature-meta">
+            <span class="chip">v1.0.25</span>
+            <span class="chip">20 题随机</span>
+            <span class="chip">题库更新 2026-11-17</span>
+          </div>
+        </div>
+        <span class="feature-go">开始面试 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ==================== 工具 ==================== -->
+  <section class="group" id="tools">
+    <div class="group-head">
+      <div class="group-icon" aria-hidden="true" style="--accent:#3e8fc1;--accent-soft:#e9f3fb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></div>
+      <div>
+        <h2>工具</h2>
+        <p>联盟内部工具，带队和报价时都能用上。</p>
+      </div>
+    </div>
+
+    <div class="cards cards-tools">
+      <a class="card" href="tools/leader-checklist.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
+        <div class="card-top">
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>
+          <span class="card-tag">v1.0.3</span>
+        </div>
+        <h3>实习团长检查清单</h3>
+        <p>一条龙、扎昆、PB、JJB 全流程检查表，从集合前到道具分配共 9 个阶段、31 项检查点，支持逐项打勾与一键截图保存。</p>
+        <div class="card-foot">
+          <span class="card-meta">9 个阶段 · 31 项检查点</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+
+      <a class="card" href="tools/price-formatter.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
+        <div class="card-top">
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg></span>
+          <span class="card-tag">v1.0.1</span>
+        </div>
+        <h3>商店价格规范器</h3>
+        <p>输入数值即时刷新千分位显示与「万」等中文单位，标价、报价时快速核对，支持一键复制结果。</p>
+        <div class="card-foot">
+          <span class="card-meta">千分位 · 中文单位</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+
+      <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
+        <div class="card-top">
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
+          <span class="card-tag">v1.1.8</span>
+        </div>
+        <h3>贤者贡品 · 四象祭坛</h3>
+        <p>家务贡品关卡的试玩练习：给四位贤者摆放卷轴、勋章、酒和食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。</p>
+        <div class="card-foot">
+          <span class="card-meta">7 次机会 · 4 位贤者</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ==================== 远征规则 ==================== -->
+  <section class="group" id="rules">
+    <div class="group-head">
+      <div class="group-icon" aria-hidden="true" style="--accent:#b8861e;--accent-soft:#fbf2dd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></div>
+      <div>
+        <h2>远征规则</h2>
+        <p>出发前先看规则，少踩坑、少罚款。</p>
+      </div>
+    </div>
+
+    <div class="cards">
+      <a class="card" href="rules/one-dragon.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
+        <div class="card-top">
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span>
+          <span class="card-tag">远征</span>
+        </div>
+        <h3>远征一条龙规则</h3>
+        <p>扎昆、JJB / PB 一条龙的 KOOK 语音要求、车队二维码、掉落分配、奶补与误捡罚款标准，全部整理在一页。</p>
+        <div class="card-foot">
+          <span class="card-meta">含 KOOK 语音频道与车队二维码</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+
+      <a class="card" href="rules/tayza.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
+        <div class="card-top">
+          <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <span class="card-tag">副本</span>
+        </div>
+        <h3>泰扎副本规则</h3>
+        <p>泰扎报名与开团时间、KOOK 语音、主力队门槛与职业要求、分红和误捡罚款规则，开团前建议通读一遍。</p>
+        <div class="card-foot">
+          <span class="card-meta">报名 · 门槛 · 分红 · 罚款</span>
+          <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+    <!-- ==================== 关于我们 ==================== -->
+  <section class="group" id="about">
+    <div class="group-head">
+      <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div>
+        <h2>关于我们</h2>
+        <p>一群在 WingsMS 服务器一起冒险的伙伴。</p>
+      </div>
+    </div>
+
+    <div class="about-panel">
+      <p class="about-copy">新手保护联盟是 WingsMS 服务器的新手家族。我们平时一起开远征、打副本，也会组织家族活动。希望每个刚入坑的新手都有人带、有规则可依，也能在这里找到一起玩下去的伙伴。</p>
+      <div class="about-photos">
+        <figure>
+          <a class="photo-link" href="assets/activity-1.jpg" data-lightbox>
+            <picture>
+              <source srcset="assets/activity-1.webp" type="image/webp" />
+              <img src="assets/activity-1.jpg" width="1200" height="675" loading="lazy" alt="第一届活动合影" />
+            </picture>
+          </a>
+          <figcaption>第一届活动合影</figcaption>
+        </figure>
+        <figure>
+          <a class="photo-link" href="assets/activity-2.jpg" data-lightbox>
+            <picture>
+              <source srcset="assets/activity-2.webp" type="image/webp" />
+              <img src="assets/activity-2.jpg" width="1200" height="675" loading="lazy" alt="第二届活动合影" />
+            </picture>
+          </a>
+          <figcaption>第二届活动合影</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="foot-title">WINGSMS · 新手保护联盟</p>
+  <p>WingsMS 服务器 · 守护每一位新手</p>
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+    if (!links.length) return;
+
+    var map = {};
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      if (id) map[id] = a;
+    });
+
+    var sections = Object.keys(map)
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    var ticking = false;
+
+    function setActive(id) {
+      links.forEach(function (a) {
+        a.classList.toggle('active', !!id && a === map[id]);
+      });
+    }
+
+    function update() {
+      return;
+      ticking = false;
+      var current = null;
+      // 判定线放在视口上部约 1/3：板块标题滚进这个位置就算当前，不必等它顶到最上面。
+      // 板块较矮（如「远征规则」387px）时也能稳定选中。
+      var line = Math.max(120, window.innerHeight * 0.35);
+      sections.forEach(function (s) {
+        if (s.getBoundingClientRect().top <= line) current = s;
+      });
+      var doc = document.documentElement;
+      if (window.innerHeight + window.pageYOffset >= doc.scrollHeight - 4) {
+        current = sections[sections.length - 1];
+      }
+      setActive(current ? current.id : null);
+    }
+
+    function requestUpdate() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    update();
+  })();
+
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('[data-lightbox]'));
+    if (!links.length) return;
+
+    var box = document.createElement('div');
+    box.className = 'lightbox';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-label', '查看大图');
+    box.innerHTML = '<button type="button" class="lightbox-close" aria-label="关闭">×</button><div class="lightbox-stage"></div>';
+    document.body.appendChild(box);
+
+    var stage = box.querySelector('.lightbox-stage');
+    var closeBtn = box.querySelector('.lightbox-close');
+    var lastFocus = null;
+    var loadToken = 0;
+
+    function open(link) {
+      var token = ++loadToken;
+      var thumb = link.querySelector('img');
+      var fullSrc = link.getAttribute('href');
+      var placeholder = thumb ? (thumb.currentSrc || thumb.src) : '';
+
+      // 每次打开都新建 img，彻底避免复用旧元素造成串图
+      var next = document.createElement('img');
+      next.alt = thumb ? thumb.alt : '';
+      if (placeholder) next.src = placeholder;
+
+      var old = stage.querySelector('img');
+      if (old) {
+        stage.replaceChild(next, old);
+      } else {
+        stage.appendChild(next);
+      }
+
+      // 预加载大图，完成后替换（丢弃过期请求，防止快速切换时串图）
+      var full = new Image();
+      full.onload = function () {
+        if (token !== loadToken) return;
+        if (next.src !== full.src) next.src = full.src;
+      };
+      full.src = fullSrc;
+
+      box.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      lastFocus = link;
+      closeBtn.focus();
+    }
+
+    function close() {
+      loadToken++;
+      box.classList.remove('is-open');
+      document.body.style.overflow = '';
+      if (lastFocus) lastFocus.focus();
+    }
+
+    links.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        open(a);
+      });
+    });
+
+    box.addEventListener('click', function (e) {
+      if (e.target === box) close();
+    });
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && box.classList.contains('is-open')) close();
+    });
+  })();
+
+  (function () {
+    var btns = Array.prototype.slice.call(document.querySelectorAll('[data-copy]'));
+    if (!btns.length) return;
+
+    // execCommand 同步执行，在移动端（含微信内置浏览器）兼容性最好
+    function legacyCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    function copyText(text) {
+      if (legacyCopy(text)) return Promise.resolve(true);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(
+          function () { return true; },
+          function () { return false; }
+        );
+      }
+      return Promise.resolve(false);
+    }
+
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var original = btn.dataset.orig === undefined ? btn.textContent : btn.dataset.orig;
+        copyText(btn.getAttribute('data-copy')).then(function (ok) {
+          clearTimeout(btn._copyTimer);
+          if (!ok) {
+            btn.textContent = '复制失败，请长按选择';
+            btn._copyTimer = setTimeout(function () { btn.textContent = original; }, 1800);
+            return;
+          }
+          if (btn.dataset.orig === undefined) btn.dataset.orig = original;
+          btn.textContent = '已复制 ✓';
+          btn.classList.add('is-copied');
+          btn._copyTimer = setTimeout(function () {
+            btn.textContent = btn.dataset.orig;
+            btn.classList.remove('is-copied');
+          }, 1500);
+        });
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
