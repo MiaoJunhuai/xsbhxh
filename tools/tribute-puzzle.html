@@ -1833,8 +1833,27 @@
       return h + ' 小时 ' + (m % 60) + ' 分';
     }
 
+    // 「你的最好成绩」存在本地，用于和本局成绩对比；每次拉到新榜单会用它校准（见 syncBestFromRows）
     function readBest() {
       try { return JSON.parse(localStorage.getItem(LB_BEST_KEY) || 'null'); } catch (e) { return null; }
+    }
+
+    // 拉到榜单后让本地记录和服务器对齐，避免服务器数据被删后本地还留着一个过期的"最好成绩"
+    function syncBestFromRows(rows) {
+      if (!Array.isArray(rows)) return;
+      let nick = '';
+      try { nick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) { nick = ''; }
+      if (!nick) return;
+      const row = rows.find(function (r) { return r.nickname === nick; });
+      try {
+        if (row) {
+          localStorage.setItem(LB_BEST_KEY, JSON.stringify({ rounds: row.rounds, duration: row.duration }));
+        } else if (rows.length < LB_LIMIT) {
+          // 榜单条数没到上限，说明这就是全部数据：找不到自己 = 服务器上确实没有记录
+          localStorage.removeItem(LB_BEST_KEY);
+        }
+        // 榜单满 20 条时找不到自己，可能只是没进前 20，本地记录保持不动
+      } catch (e) {}
     }
 
     function isBetter(a, b) {
@@ -1925,13 +1944,17 @@
       const cached = readRankCache();
 
       // 先用缓存立刻渲染，避免每次打开页面都发请求
-      if (cached && !force) renderRank(cached.rows);
+      if (cached && !force) {
+        renderRank(cached.rows);
+        syncBestFromRows(cached.rows);
+      }
       if (cached && !force && Date.now() - cached.at < LB_CACHE_TTL) return;
 
       try {
         const rows = await fetchRank();
         writeRankCache(rows);
         renderRank(rows);
+        syncBestFromRows(rows);
       } catch (e) {
         if (!cached) {
           listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响</div>';
@@ -2102,13 +2125,7 @@
 
         try {
           const accepted = await postScore(nick, pendingScore.rounds, pendingScore.duration);
-          const submitted = { rounds: pendingScore.rounds, duration: pendingScore.duration };
-          try {
-            localStorage.setItem(LB_NICK_KEY, nick);
-            if (accepted && isBetter(submitted, readBest())) {
-              localStorage.setItem(LB_BEST_KEY, JSON.stringify(submitted));
-            }
-          } catch (e) {}
+          try { localStorage.setItem(LB_NICK_KEY, nick); } catch (e) {}
           if (msg) {
             msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
             msg.textContent = accepted
