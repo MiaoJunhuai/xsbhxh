@@ -110,6 +110,25 @@
       transform: scale(0.92);
       box-shadow: 0 2px 4px rgba(0,0,0,0.6);
     }
+    /* 贡品图标：像素画放大后保持硬边，尺寸跟随所在位置的字号 */
+    .trib-icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      object-fit: contain;
+      image-rendering: pixelated;
+      vertical-align: -0.12em;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    /* 连在一起时留一点缝，不然四个图标会贴成一坨 */
+    .trib-icon + .trib-icon { margin-left: 0.14em; }
+    .item-btn .trib-icon,
+    .slot .trib-icon {
+      width: 1.1em;
+      height: 1.1em;
+    }
     .selected-slot {
       display: flex;
       gap: 0.8rem;
@@ -1011,10 +1030,10 @@
   <div class="input-area play-only">
     <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(Q/W/E/R)放入物品</div>
     <div class="items-grid">
-      <div class="item-btn" data-item="Q" title="卷轴(Scroll)">📜</div>
-      <div class="item-btn" data-item="W" title="勋章(Medal)">🎖️</div>
-      <div class="item-btn" data-item="E" title="酒(Wine)">🍾</div>
-      <div class="item-btn" data-item="R" title="食物(Dish)">🍲</div>
+      <div class="item-btn" data-item="Q" title="兵法卷轴(Art of War Scroll)"><img class="trib-icon" src="../assets/tribute/scroll.png" alt="兵法卷轴"></div>
+      <div class="item-btn" data-item="W" title="勇猛勋章(Bravery Medal)"><img class="trib-icon" src="../assets/tribute/medal.png" alt="勇猛勋章"></div>
+      <div class="item-btn" data-item="E" title="蛇酒(Snake Wine)"><img class="trib-icon" src="../assets/tribute/wine.png" alt="蛇酒"></div>
+      <div class="item-btn" data-item="R" title="过期食物(Expired Food)"><img class="trib-icon" src="../assets/tribute/food.png" alt="过期食物"></div>
     </div>
     <div class="selected-slot" id="slotContainer">
       <div class="slot" data-index="0"></div>
@@ -1149,12 +1168,22 @@
     let roundStartAt = 0;
     let pendingScore = null;
     const ITEMS = ['Q', 'W', 'E', 'R'];
-    const ITEM_EMOJI = {
-      'Q': '📜',
-      'W': '🎖️',
-      'E': '🍾',
-      'R': '🍲'
+    const ITEM_IMG = {
+      'Q': '../assets/tribute/scroll.png',
+      'W': '../assets/tribute/medal.png',
+      'E': '../assets/tribute/wine.png',
+      'R': '../assets/tribute/food.png'
     };
+    const ITEM_NAME = {
+      'Q': '兵法卷轴',
+      'W': '勇猛勋章',
+      'E': '蛇酒',
+      'R': '过期食物'
+    };
+
+    function itemIcon(key) {
+      return '<img class="trib-icon" src="' + ITEM_IMG[key] + '" alt="' + ITEM_NAME[key] + '">';
+    }
 
     const HINT_PRIORITY = {
       'satisfied': 1,
@@ -1216,7 +1245,7 @@
     function updateSlotDisplay() {
       slots.forEach((slot, index) => {
         const item = currentGuess[index];
-        slot.textContent = item ? ITEM_EMOJI[item] : '';
+        slot.innerHTML = item ? itemIcon(item) : '';
       });
     }
 
@@ -1347,7 +1376,7 @@
       const chosenHints = allCandidates;
       const hintLines = chosenHints.map(h => `<div class="feedback-line">${h.text}</div>`).join('');
 
-      const guessStr = guessArr.map(i => ITEM_EMOJI[i]).join('');
+      const guessStr = guessArr.map(itemIcon).join('');
 
       // 贡品记录：只用物品图标，其余用文字 + 分色加粗，不再放额外图标
       const hintRows = chosenHints.map(h =>
@@ -1383,7 +1412,7 @@
       attemptSpan.textContent = `${attemptsLeft} / ${MAX_ATTEMPTS}`;
 
       if (attemptsLeft <= 0) {
-        const correctStr = secret.map(i => ITEM_EMOJI[i]).join('');
+        const correctStr = secret.map(itemIcon).join('');
         feedbackDiv.innerHTML = `<div class="feedback-line">💀 七次错误，邪恶降临...</div>
                                  <div class="feedback-line">正确答案是「${correctStr}」。</div>
                                  <div class="feedback-line">点击下方“重置答案”重新开始。</div>`;
@@ -1399,7 +1428,7 @@
     resetBtn.addEventListener('click', resetGame);
 
     /* ==================== 自动驾驶 ==================== */
-    const ITEM_LIST = ITEMS.map(k => ITEM_EMOJI[k]);
+    const ITEM_LIST = ITEMS.map(function (k) { return itemIcon(k); });
 
     // 全部 256 种可能的答案，每位用 0..3 表示
     const ALL_COMBOS = [];
