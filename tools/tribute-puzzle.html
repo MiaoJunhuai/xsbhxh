@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>贤者贡品 · 四象祭坛</title>
   <link rel="icon" href="../assets/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
@@ -483,6 +483,15 @@
     }
     .type-btn.has-value[data-type="wrong"] .type-num { color: #9c3a2c; }
     .type-btn.has-value .type-note { color: inherit; opacity: 0.8; }
+
+    /* ---------- 移动端点按优化：消除双击缩放判定带来的点击延迟 ---------- */
+    .item-btn,
+    .slot,
+    .btn,
+    .mode-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     .pick-sum {
       text-align: center;
@@ -1499,6 +1508,9 @@
         submitGuess();
       }
     });
+
+    // iOS Safari：让 :active 按下态立刻生效，不然要等手指抬起才有反馈
+    document.addEventListener('touchstart', function () {}, { passive: true });
 
     resetGame();
   })();
