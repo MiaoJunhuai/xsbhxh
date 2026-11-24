@@ -781,7 +781,19 @@
       color: #4e3b21;
     }
     .rank-row:last-child { border-bottom: none; }
-    .rank-row.is-flagged { opacity: .5; }
+    .rank-row.is-flagged { opacity: .72; }
+    .rank-flag {
+      display: inline-block;
+      margin-left: .35rem;
+      padding: .02rem .32rem;
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .02rem;
+      color: #fff3ee;
+      background: rgba(176, 58, 46, .9);
+      border-radius: .28rem;
+      vertical-align: .06em;
+    }
     .rank-no {
       grid-area: no;
       text-align: center;
@@ -2246,7 +2258,8 @@
                  '<span class="rank-no">' + no + '</span>' +
                  '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
                  '<span class="rank-score">' + r.score + '<small>分</small></span>' +
-                 '<span class="rank-meta">题型 <b>' + r.pattern + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) + '</span>' +
+                 '<span class="rank-meta">题型 <b>' + r.pattern + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) +
+                   (r.flagged ? '<span class="rank-flag">疑似作弊</span>' : '') + '</span>' +
                '</div>';
       }).join('');
     }
