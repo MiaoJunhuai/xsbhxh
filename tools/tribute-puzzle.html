@@ -374,6 +374,33 @@
     .auto-reset:active,
     .reset-pill:active { transform: scale(0.95); }
 
+    /* 触摸设备：重置要长按 0.8 秒，按住时底色逐渐填满 */
+    .reset-pill {
+      position: relative;
+      overflow: hidden;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .reset-pill::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: rgba(255, 255, 255, 0.58);
+      pointer-events: none;
+    }
+    .reset-pill.is-holding::before {
+      width: 100%;
+      transition: width 0.8s linear;
+    }
+    .reset-pill.is-armed {
+      box-shadow: 0 0 0 3px rgba(255, 190, 180, 0.4);
+    }
+
     .auto-guess-label {
       text-align: center;
       font-size: 0.82rem;
@@ -1476,7 +1503,52 @@
     }
 
     submitBtn.addEventListener('click', submitGuess);
-    resetBtn.addEventListener('click', resetGame);
+
+    /* 重置按钮：触摸设备要长按 0.8 秒（按住时按钮被白色进度条填满），
+       桌面浏览器仍然是一点就重置。这样手机上不会误碰「清空祭坛」。 */
+    const RESET_HOLD_MS = 800;
+    const isTouchDevice = function () {
+      return navigator.maxTouchPoints > 0 || window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    };
+
+    let resetHoldTimer = 0;
+
+    function beginResetHold() {
+      if (resetHoldTimer || resetBtn.disabled) return;
+      resetBtn.classList.add('is-holding');
+      resetHoldTimer = setTimeout(function () {
+        resetHoldTimer = 0;
+        resetBtn.classList.remove('is-holding');
+        resetBtn.classList.add('is-armed');
+        setTimeout(function () { resetBtn.classList.remove('is-armed'); }, 280);
+        try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
+        resetGame();
+      }, RESET_HOLD_MS);
+    }
+
+    function cancelResetHold() {
+      if (resetHoldTimer) {
+        clearTimeout(resetHoldTimer);
+        resetHoldTimer = 0;
+      }
+      resetBtn.classList.remove('is-holding');
+    }
+
+    resetBtn.addEventListener('pointerdown', function (e) {
+      if (!isTouchDevice()) return;
+      e.preventDefault();
+      beginResetHold();
+    });
+    resetBtn.addEventListener('pointerup', cancelResetHold);
+    resetBtn.addEventListener('pointercancel', cancelResetHold);
+    resetBtn.addEventListener('pointerleave', cancelResetHold);
+
+    resetBtn.addEventListener('click', function (e) {
+      if (isTouchDevice()) { e.preventDefault(); return; }  // 触摸设备走长按
+      resetGame();
+    });
+
+    if (isTouchDevice()) resetBtn.textContent = '长按重置';
 
     /* ==================== 自动驾驶 ==================== */
     const ITEM_LIST = ITEMS.map(function (k) { return itemIcon(k); });
