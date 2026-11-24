@@ -216,6 +216,33 @@
       border-bottom: 1px dashed #c3a775;
     }
     .history-item:last-child { border-bottom: none; }
+
+    /* 破纪录时收起贡品记录，给下面的排行榜腾出一屏空间 */
+    .history.is-folded .history-title,
+    .history.is-folded #historyList { display: none; }
+    .history-fold {
+      display: block;
+      width: 100%;
+      margin: 0.25rem 0 0.6rem;
+      padding: 0.5rem 0.7rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06rem;
+      color: #7b6a50;
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px dashed rgba(139, 110, 60, 0.45);
+      border-radius: 0.6rem;
+      cursor: pointer;
+      transition: color .15s, background .15s, border-color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .history-fold:hover {
+      color: #7a4b12;
+      background: rgba(212, 175, 55, 0.2);
+      border-color: rgba(184, 134, 30, 0.6);
+    }
+    .history-fold[hidden] { display: none; }
     .history-guess {
       flex: none;
       font-size: 1.4rem;
@@ -752,6 +779,20 @@
     }
     .rank-msg.is-err { color: #b0361e; }
     .rank-msg.is-ok { color: #2f6b46; }
+    .rank-est {
+      display: block;
+      margin-top: .2rem;
+      color: #6b5a3a;
+      font-size: .8rem;
+    }
+    .rank-est b { color: #8a5a12; }
+    .rank-row.is-flash { animation: rank-flash 2s ease-out; }
+    @keyframes rank-flash {
+      0%, 15% { background: rgba(212, 175, 55, .6); border-radius: .45rem; }
+      100% { background: transparent; }
+    }
+    /* 滚动定位时给固定导航留出高度，别被挡住 */
+    .attempt-badge, .rank-submit, .rank-panel { scroll-margin-top: 62px; }
     @media (max-width: 480px) {
       .rank-meta { font-size: .72rem; }
       .rank-form { flex-direction: column; }
@@ -972,8 +1013,9 @@
     <div class="feedback-line">⚡ 摆放供品，询问贤者...</div>
   </div>
 
-  <div class="history play-only">
-    <div class="history-title">贡品记录</div>
+  <div class="history play-only" id="historyBox">
+    <button type="button" class="history-fold" id="historyFold" hidden>展开贡品记录</button>
+    <div class="history-title" id="historyTitle">贡品记录</div>
     <div id="historyList"></div>
   </div>
 
@@ -1121,6 +1163,7 @@
       roundStartAt = 0;
       pendingScore = null;
       resetRankSubmit();
+      setHistoryFolded(false, 0);
       updateSlotDisplay();
       attemptSpan.textContent = `${attemptsLeft} / ${MAX_ATTEMPTS}`;
       feedbackDiv.innerHTML = '<div class="feedback-line">⚡ 摆放供品，询问贤者...</div>';
@@ -1871,6 +1914,13 @@
       }
     }
 
+    const historyFoldBtn = document.getElementById('historyFold');
+    if (historyFoldBtn) {
+      historyFoldBtn.addEventListener('click', function () {
+        setHistoryFolded(false, 0);
+      });
+    }
+
     const rankRefreshBtn = document.getElementById('rankRefreshBtn');
     if (rankRefreshBtn) {
       rankRefreshBtn.addEventListener('click', async function () {
@@ -1896,6 +1946,84 @@
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
     }
 
+    // 破纪录时收起贡品记录，一次点击就能展开
+    function setHistoryFolded(folded, rounds) {
+      const box = document.getElementById('historyBox');
+      const btn = document.getElementById('historyFold');
+      if (!box) return;
+      box.classList.toggle('is-folded', !!folded);
+      if (btn) {
+        btn.hidden = !folded;
+        btn.textContent = folded ? '展开 ' + rounds + ' 轮贡品记录' : '展开贡品记录';
+      }
+    }
+
+    // 只用本地缓存的榜单算名次，不额外请求服务器
+    function estimateRank(rounds, duration) {
+      const cached = readRankCache();
+      if (!cached || !Array.isArray(cached.rows)) return null;
+      const rows = cached.rows;
+      const total = rows.length;
+      if (total === 0) {
+        return { rank: 1, total: 0, beatPct: 100, out: false };
+      }
+      let better = 0;
+      for (let i = 0; i < total; i++) {
+        const r = rows[i];
+        if (r.rounds < rounds || (r.rounds === rounds && r.duration < duration)) better++;
+      }
+      if (better >= total) {
+        return { rank: total + 1, total: total, beatPct: 0, out: true };
+      }
+      return {
+        rank: better + 1,
+        total: total,
+        beatPct: Math.round(((total - better) / total) * 100),
+        out: false
+      };
+    }
+
+    function fillRankEstimate(rounds, duration) {
+      const el = document.getElementById('rankEst');
+      if (!el) return;
+
+      const paint = function () {
+        const est = estimateRank(rounds, duration);
+        if (!est) return;
+        if (est.total === 0) {
+          el.innerHTML = '榜上还没有别人，你就是第 <b>1</b> 名';
+        } else if (est.out) {
+          el.innerHTML = '暂未进入前 <b>' + est.total + '</b> 名（榜单只显示前 ' + est.total + ' 位）';
+        } else {
+          el.innerHTML = '预估第 <b>' + est.rank + '</b> 名 · 击败了榜上 <b>' +
+                         est.beatPct + '%</b> 的贤者';
+        }
+      };
+
+      paint();
+
+      // 只有当本地完全没有榜单缓存时才补一次请求，平时不碰服务器
+      if (!readRankCache()) {
+        loadRank(true).then(paint).catch(function () {});
+      }
+    }
+
+    function flashMyRow() {
+      const row = document.querySelector('.rank-row.is-me');
+      if (row) {
+        try { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        row.classList.remove('is-flash');
+        void row.offsetWidth;
+        row.classList.add('is-flash');
+        setTimeout(function () { row.classList.remove('is-flash'); }, 2100);
+        return;
+      }
+      const panel = document.querySelector('.rank-panel');
+      if (panel) {
+        try { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+    }
+
     function showRankSubmit(rounds, duration) {
       const box = document.getElementById('rankSubmit');
       if (!box) return;
@@ -1905,16 +2033,29 @@
       const btn = document.getElementById('rankSubmitBtn');
       const nick = document.getElementById('rankNick');
       const best = readBest();
+      const brokeRecord = isBetter(pendingScore, best);
       let extra = '';
-      if (best && !isBetter(pendingScore, best)) {
+      if (best && !brokeRecord) {
         extra = '　（你的最好成绩：' + best.rounds + ' 轮 · ' + fmtDuration(best.duration) + '）';
       }
-      if (txt) txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' + extra;
+      if (txt) {
+        txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' + extra +
+                        '<span class="rank-est" id="rankEst"></span>';
+      }
+      fillRankEstimate(rounds, duration);
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
       if (nick) { try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {} }
       box.hidden = false;
-      try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+
+      // 破纪录就把贡品记录收起来，让「结果 + 提交 + 榜单」尽量挤进一屏
+      setHistoryFolded(brokeRecord, rounds);
+
+      // 收起后「剩余尝试」条下面正好是结果和排行榜；没收起时直接对准提交框
+      const anchor = brokeRecord ? document.querySelector('.attempt-badge') : box;
+      if (anchor) {
+        try { anchor.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
     }
 
     const rankSubmitBtn = document.getElementById('rankSubmitBtn');
@@ -1950,7 +2091,8 @@
           rankSubmitBtn.textContent = '已提交';
           pendingScore = null;
           clearRankCache();
-          loadRank(true);
+          await loadRank(true);
+          flashMyRow();
         } catch (e) {
           rankSubmitBtn.disabled = false;
           rankSubmitBtn.textContent = '重试';
