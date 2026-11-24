@@ -805,27 +805,25 @@
       white-space: nowrap;
     }
     .rank-row.is-me .rank-name { font-weight: 700; color: #7a4b12; }
-    .rank-pattern {
-      display: inline-block;
-      margin-left: .35rem;
-      padding: 0 .3rem;
-      font-size: .62rem;
-      font-weight: 700;
-      letter-spacing: .02rem;
-      color: #7b6a50;
-      background: rgba(212, 175, 55, .18);
-      border-radius: .28rem;
-      vertical-align: .08em;
-    }
     .rank-score {
       grid-area: score;
       font-weight: 800;
-      font-size: .92rem;
+      font-size: 1.12rem;
+      line-height: 1.1;
       color: #8a5a12;
       font-variant-numeric: tabular-nums;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .rank-score small {
+      margin-left: .1rem;
+      font-size: .62rem;
+      font-weight: 700;
+      color: #a08a63;
     }
     .rank-meta {
       grid-area: meta;
+      margin-top: .1rem;
       color: #6b5a3a;
       font-size: .75rem;
       font-variant-numeric: tabular-nums;
@@ -879,14 +877,6 @@
     .rank-help p + p { margin-top: .3rem; }
     .rank-help b { color: #7a4b12; }
     .rank-help strong { color: #7a4b12; font-weight: 700; }
-    .rank-foot {
-      margin-top: .55rem;
-      text-align: center;
-      font-size: .7rem;
-      line-height: 1.6;
-      color: #9a8a6c;
-    }
-    .rank-foot b { color: #7b6a50; font-weight: 700; }
     .rank-empty, .rank-loading {
       text-align: center;
       color: #9a8a6c;
@@ -1287,7 +1277,6 @@
     <div class="rank-list" id="rankList">
       <div class="rank-loading">正在载入…</div>
     </div>
-    <div class="rank-foot">昵称后面的字母是<b>题型</b>，右侧数字是<b>分数</b> · 点 ⓘ 看计分方式</div>
   </div>
 
   <!-- ==================== 自动驾驶 ==================== -->
@@ -2255,9 +2244,9 @@
         if (r.flagged) cls.push('is-flagged');
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
-                 '<span class="rank-name">' + escapeHtml(r.nickname) + patternTag(r.pattern) + '</span>' +
-                 '<span class="rank-score">' + r.score + '</span>' +
-                 '<span class="rank-meta"><b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) + '</span>' +
+                 '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
+                 '<span class="rank-score">' + r.score + '<small>分</small></span>' +
+                 '<span class="rank-meta">题型 <b>' + r.pattern + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) + '</span>' +
                '</div>';
       }).join('');
     }
