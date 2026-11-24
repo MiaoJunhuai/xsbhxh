@@ -155,6 +155,33 @@
       justify-content: center;
       flex-wrap: wrap;
     }
+    /* 键盘快捷键提示：只在有鼠标/键盘的设备上显示 */
+    .hotkey-hint {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      margin-top: 0.55rem;
+      font-size: 0.72rem;
+      color: #9a8a6c;
+      letter-spacing: 0.02rem;
+    }
+    .hotkey-hint kbd {
+      display: inline-block;
+      padding: 0.05rem 0.32rem;
+      margin-right: 0.12rem;
+      font-family: inherit;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #7b6a50;
+      background: rgba(255, 250, 240, 0.9);
+      border: 1px solid rgba(139, 110, 60, 0.4);
+      border-bottom-width: 2px;
+      border-radius: 0.28rem;
+    }
+    @media (hover: none) {
+      .hotkey-hint { display: none; }
+    }
     .btn {
       background: linear-gradient(180deg, #f3d78c 0%, #b68b40 100%);
       border: none;
@@ -1266,6 +1293,11 @@
     <div class="actions">
       <button class="btn" id="submitBtn" title="快捷键 Enter">🔮 询问贤者</button>
       <button class="btn clear-btn" id="clearBtn" title="快捷键 Delete">🧹 清空祭坛</button>
+    </div>
+    <div class="hotkey-hint">
+      <span><kbd>Enter</kbd> 询问</span>
+      <span><kbd>Delete</kbd> 清空</span>
+      <span><kbd>Backspace</kbd> 撤销</span>
     </div>
   </div>
 
