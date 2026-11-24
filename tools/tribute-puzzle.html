@@ -786,6 +786,31 @@
       font-size: .8rem;
     }
     .rank-est b { color: #8a5a12; }
+    .rank-badge {
+      display: inline-block;
+      margin-left: .45rem;
+      padding: .06rem .45rem;
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .08rem;
+      color: #fff7e6;
+      background: linear-gradient(135deg, #c8402a, #e0803a);
+      border-radius: .4rem;
+      box-shadow: 0 2px 7px rgba(200, 64, 42, .38);
+      vertical-align: middle;
+      animation: record-pop .95s cubic-bezier(.34, 1.56, .64, 1) both;
+    }
+    @keyframes record-pop {
+      0%   { transform: scale(.55) translateY(5px); opacity: 0; }
+      22%  { transform: scale(1.2) translateY(-6px); opacity: 1; }
+      44%  { transform: scale(.95) translateY(1px); }
+      64%  { transform: scale(1.09) translateY(-4px); }
+      84%  { transform: scale(.99) translateY(0); }
+      100% { transform: scale(1) translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .rank-badge { animation: none; }
+    }
     .rank-row.is-flash { animation: rank-flash 2s ease-out; }
     @keyframes rank-flash {
       0%, 15% { background: rgba(212, 175, 55, .6); border-radius: .45rem; }
@@ -2039,7 +2064,9 @@
         extra = '　（你的最好成绩：' + best.rounds + ' 轮 · ' + fmtDuration(best.duration) + '）';
       }
       if (txt) {
-        txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' + extra +
+        txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' +
+                        (brokeRecord ? '<span class="rank-badge">破纪录</span>' : '') +
+                        extra +
                         '<span class="rank-est" id="rankEst"></span>';
       }
       fillRankEstimate(rounds, duration);
