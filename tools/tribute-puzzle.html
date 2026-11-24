@@ -769,18 +769,21 @@
     }
     .rank-list { display: flex; flex-direction: column; }
     .rank-row {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .42rem .25rem;
+      display: grid;
+      grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        "no name score"
+        ".  meta meta";
+      column-gap: .5rem;
+      padding: .45rem .25rem;
       border-bottom: 1px dashed rgba(195, 167, 117, .55);
       font-size: .86rem;
       color: #4e3b21;
     }
     .rank-row:last-child { border-bottom: none; }
+    .rank-row.is-flagged { opacity: .5; }
     .rank-no {
-      flex: none;
-      width: 1.5rem;
+      grid-area: no;
       text-align: center;
       font-weight: 700;
       color: #8a7752;
@@ -795,20 +798,87 @@
     .rank-row.is-top2 .rank-no { color: #8c8c8c; }
     .rank-row.is-top3 .rank-no { color: #a9714b; }
     .rank-name {
-      flex: 1;
+      grid-area: name;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .rank-row.is-me .rank-name { font-weight: 700; color: #7a4b12; }
+    .rank-pattern {
+      display: inline-block;
+      margin-left: .35rem;
+      padding: 0 .3rem;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .02rem;
+      color: #7b6a50;
+      background: rgba(212, 175, 55, .18);
+      border-radius: .28rem;
+      vertical-align: .08em;
+    }
+    .rank-score {
+      grid-area: score;
+      font-weight: 800;
+      font-size: .92rem;
+      color: #8a5a12;
+      font-variant-numeric: tabular-nums;
+    }
     .rank-meta {
-      flex: none;
+      grid-area: meta;
       color: #6b5a3a;
-      font-size: .78rem;
+      font-size: .75rem;
       font-variant-numeric: tabular-nums;
     }
     .rank-meta b { color: #8a5a12; }
+    .rank-this-score {
+      display: block;
+      margin-top: .15rem;
+      font-size: .82rem;
+      color: #6b5a3a;
+    }
+    .rank-this-score b { color: #8a5a12; font-size: .95rem; }
+    .rank-best {
+      display: block;
+      margin-top: .1rem;
+      font-size: .76rem;
+      color: #9a8a6c;
+    }
+    .rank-info {
+      flex: none;
+      width: 1.4rem;
+      height: 1.4rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-left: .15rem;
+      color: #8a7752;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: color .15s, background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rank-info:hover,
+    .rank-info.is-on { color: #7a4b12; background: rgba(184, 134, 30, .16); }
+    .rank-info svg { width: 1.05rem; height: 1.05rem; }
+    .rank-help {
+      margin: .1rem 0 .8rem;
+      padding: .7rem .85rem;
+      font-size: .78rem;
+      line-height: 1.7;
+      color: #5b4a30;
+      background: rgba(212, 175, 55, .1);
+      border: 1px dashed rgba(139, 110, 60, .42);
+      border-radius: .6rem;
+    }
+    .rank-help[hidden] { display: none; }
+    .rank-help p { margin: 0; }
+    .rank-help p + p { margin-top: .3rem; }
+    .rank-help b { color: #7a4b12; }
+    .rank-help strong { color: #7a4b12; font-weight: 700; }
     .rank-empty, .rank-loading {
       text-align: center;
       color: #9a8a6c;
@@ -1190,8 +1260,16 @@
   <div class="rank-panel play-only">
     <div class="rank-head">
       <span class="rank-title">排行榜</span>
+      <button type="button" class="rank-info" id="rankInfoBtn" aria-label="分数说明" title="分数怎么算" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></button>
       <button type="button" class="rank-refresh" id="rankRefreshBtn" aria-label="刷新排行榜" title="刷新排行榜"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
-      <span class="rank-sub">手动练习 · 轮数少者在前</span>
+      <span class="rank-sub">手动练习 · 分数高者在前</span>
+    </div>
+    <div class="rank-help" id="rankHelp" hidden>
+      <p><b>分数怎么算</b></p>
+      <p>综合<strong>题型复杂度</strong>、<strong>轮数</strong>、<strong>秒数</strong>算出：题型越复杂、轮数越少、秒数越少，分数越高。</p>
+      <p>题型是一局答案里贡品的重复结构，共五种：</p>
+      <p>AAAA 四件全同 · ABCD 四件全不同 · AABB 两两相同 · AAAB 三同一异 · AABC 两同加两个不同</p>
+      <p>各题型具体权重不公开，避免被利用。</p>
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
       <div class="rank-result" id="rankResult"></div>
@@ -1288,6 +1366,41 @@
     const LB_NICK_KEY = 'xsbhxh_nickname';
     const LB_BEST_KEY = 'xsbhxh_best';
     const LB_PID_KEY = 'xsbhxh_player_id_v1';
+
+    // 题型难度系数：五种重复结构的答案空间大小取 log2 再减半归一化。
+    // AAAA=4 / ABCD=24 / AABB=36 / AAAB=48 / AABC=144（合计 256）
+    const PATTERN_FACTOR = {
+      'AAAA': 1.00000,
+      'ABCD': 2.29248,
+      'AABB': 2.58496,
+      'AAAB': 2.79248,
+      'AABC': 3.58496
+    };
+    const PATTERN_NOTE = {
+      'AAAA': '四件全同',
+      'ABCD': '四件全不同',
+      'AABB': '两两相同',
+      'AAAB': '三同一异',
+      'AABC': '两同 + 两个不同'
+    };
+
+    // 判断一局答案属于哪种重复结构
+    function patternOf(code) {
+      const counts = {};
+      for (let i = 0; i < code.length; i++) counts[code[i]] = (counts[code[i]] || 0) + 1;
+      const kinds = Object.keys(counts).length;
+      if (kinds === 1) return 'AAAA';
+      if (kinds === 4) return 'ABCD';
+      if (kinds === 3) return 'AABC';
+      const vals = Object.keys(counts).map(function (k) { return counts[k]; });
+      return vals.indexOf(3) >= 0 ? 'AAAB' : 'AABB';
+    }
+
+    // 和数据库触发器里的公式必须完全一致
+    function calcScore(pattern, rounds, durationMs) {
+      const f = PATTERN_FACTOR[pattern] || 1;
+      return Math.max(1, Math.round(100 * f * (8 - rounds) - 2 * (durationMs / 1000)));
+    }
 
     let roundStartAt = 0;
     let pendingScore = null;
@@ -1518,17 +1631,18 @@
 
       if (bulls === CODE_LENGTH) {
         const usedRounds = MAX_ATTEMPTS - attemptsLeft + 1;
-        const usedSeconds = roundStartAt
-          ? Math.min(86400, Math.max(1, Math.round((Date.now() - roundStartAt) / 1000)))
-          : 1;
+        const usedMs = roundStartAt
+          ? Math.min(86400000, Math.max(500, Date.now() - roundStartAt))
+          : 1000;
+        const secretPattern = patternOf(secret);
 
         feedbackDiv.innerHTML = `<div class="feedback-line">🎉 奇迹降临！所有贤者满意！</div>
                                  <div class="feedback-line">正确答案正是「${guessStr}」。</div>
-                                 <div class="feedback-line">用了 ${usedRounds} 轮。请重置答案再次挑战。</div>`;
+                                 <div class="feedback-line">用了 ${usedRounds} 轮（${PATTERN_NOTE[secretPattern]}）。请重置答案再次挑战。</div>`;
         gameOver = true;
         enableControls(false);
         attemptSpan.textContent = `胜利`;
-        showRankSubmit(usedRounds, usedSeconds);
+        showRankSubmit(usedRounds, usedMs, secretPattern);
         return;
       }
 
@@ -2034,12 +2148,12 @@
       });
     }
 
-    function fmtDuration(sec) {
-      sec = Math.max(0, Math.round(sec));
-      if (sec < 60) return sec + ' 秒';
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      if (m < 60) return s ? m + ' 分 ' + s + ' 秒' : m + ' 分';
+    function fmtSeconds(ms) {
+      const s = Math.max(0, ms) / 1000;
+      if (s < 60) return s.toFixed(1) + ' 秒';
+      const m = Math.floor(s / 60);
+      const r = s - m * 60;
+      if (m < 60) return m + ' 分 ' + r.toFixed(1) + ' 秒';
       const h = Math.floor(m / 60);
       return h + ' 小时 ' + (m % 60) + ' 分';
     }
@@ -2058,7 +2172,12 @@
       const row = rows.find(function (r) { return r.nickname === nick; });
       try {
         if (row) {
-          localStorage.setItem(LB_BEST_KEY, JSON.stringify({ rounds: row.rounds, duration: row.duration }));
+          localStorage.setItem(LB_BEST_KEY, JSON.stringify({
+            score: row.score,
+            rounds: row.rounds,
+            durationMs: row.duration_ms,
+            pattern: row.pattern
+          }));
         } else if (rows.length < LB_LIMIT) {
           // 榜单条数没到上限，说明这就是全部数据：找不到自己 = 服务器上确实没有记录
           localStorage.removeItem(LB_BEST_KEY);
@@ -2067,22 +2186,22 @@
       } catch (e) {}
     }
 
+    // 分数高就是更好（题型已经折算进分数了）
     function isBetter(a, b) {
       if (!a) return false;
       if (!b) return true;
-      if (a.rounds !== b.rounds) return a.rounds < b.rounds;
-      return a.duration < b.duration;
+      return a.score > b.score;
     }
 
     async function fetchRank() {
-      const q = LB_VIEW + '?select=nickname,rounds,duration,created_at' +
-                '&order=rounds.asc,duration.asc,created_at.asc&limit=' + LB_LIMIT;
+      const q = LB_VIEW + '?select=nickname,pattern,rounds,duration_ms,score,flagged' +
+                '&order=score.desc,duration_ms.asc,created_at.asc&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     }
 
-    async function postScore(nickname, rounds, duration) {
+    async function postScore(nickname, pattern, rounds, durationMs) {
       const res = await fetch(LB_URL + '/rest/v1/' + LB_TABLE, {
         method: 'POST',
         headers: Object.assign({}, lbHeaders(), {
@@ -2092,8 +2211,9 @@
         body: JSON.stringify({
           player_id: getPlayerId(),
           nickname: nickname,
+          pattern: pattern,
           rounds: rounds,
-          duration: duration
+          duration_ms: durationMs
         })
       });
       if (!res.ok) {
@@ -2101,10 +2221,15 @@
         try { detail = await res.text(); } catch (e) {}
         throw new Error('HTTP ' + res.status + (detail ? ' ' + detail : ''));
       }
-      // 数据库触发器是「每人只保留最好一局」：成绩没进步时这次插入会被丢弃，
+      // 数据库触发器是「每人只保留最好一局」：分数没进步时这次插入会被丢弃，
       // 返回空数组；真正写进库了才会返回一行。
       const rows = await res.json();
       return Array.isArray(rows) && rows.length > 0;
+    }
+
+    function patternTag(pattern) {
+      const note = PATTERN_NOTE[pattern] || '';
+      return '<span class="rank-pattern" title="' + note + '">' + pattern + '</span>';
     }
 
     function renderRank(rows) {
@@ -2121,10 +2246,12 @@
         const cls = ['rank-row'];
         if (no <= 3) cls.push('is-top' + no);
         if (myNick && r.nickname === myNick) cls.push('is-me');
+        if (r.flagged) cls.push('is-flagged');
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
-                 '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
-                 '<span class="rank-meta"><b>' + r.rounds + '</b> 轮 · ' + fmtDuration(r.duration) + '</span>' +
+                 '<span class="rank-name">' + escapeHtml(r.nickname) + patternTag(r.pattern) + '</span>' +
+                 '<span class="rank-score">' + r.score + '</span>' +
+                 '<span class="rank-meta"><b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) + '</span>' +
                '</div>';
       }).join('');
     }
@@ -2180,6 +2307,17 @@
       });
     }
 
+    const rankInfoBtn = document.getElementById('rankInfoBtn');
+    const rankHelp = document.getElementById('rankHelp');
+    if (rankInfoBtn && rankHelp) {
+      rankInfoBtn.addEventListener('click', function () {
+        const open = rankHelp.hidden;
+        rankHelp.hidden = !open;
+        rankInfoBtn.classList.toggle('is-on', open);
+        rankInfoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
     const rankRefreshBtn = document.getElementById('rankRefreshBtn');
     if (rankRefreshBtn) {
       rankRefreshBtn.addEventListener('click', async function () {
@@ -2218,7 +2356,7 @@
     }
 
     // 只用本地缓存的榜单算名次，不额外请求服务器
-    function estimateRank(rounds, duration) {
+    function estimateRank(score) {
       const cached = readRankCache();
       if (!cached || !Array.isArray(cached.rows)) return null;
       const rows = cached.rows;
@@ -2228,8 +2366,7 @@
       }
       let better = 0;
       for (let i = 0; i < total; i++) {
-        const r = rows[i];
-        if (r.rounds < rounds || (r.rounds === rounds && r.duration < duration)) better++;
+        if (rows[i].score > score) better++;
       }
       if (better >= total) {
         return { rank: total + 1, total: total, beatPct: 0, out: true };
@@ -2242,12 +2379,12 @@
       };
     }
 
-    function fillRankEstimate(rounds, duration) {
+    function fillRankEstimate(score) {
       const el = document.getElementById('rankEst');
       if (!el) return;
 
       const paint = function () {
-        const est = estimateRank(rounds, duration);
+        const est = estimateRank(score);
         if (!est) return;
         if (est.total === 0) {
           el.innerHTML = '榜上还没有别人，你就是第 <b>1</b> 名';
@@ -2344,10 +2481,11 @@
       }, 5000);
     }
 
-    function showRankSubmit(rounds, duration) {
+    function showRankSubmit(rounds, durationMs, pattern) {
       const box = document.getElementById('rankSubmit');
       if (!box) return;
-      pendingScore = { rounds: rounds, duration: duration };
+      const score = calcScore(pattern, rounds, durationMs);
+      pendingScore = { rounds: rounds, durationMs: durationMs, pattern: pattern, score: score };
       const txt = document.getElementById('rankResult');
       const msg = document.getElementById('rankMsg');
       const btn = document.getElementById('rankSubmitBtn');
@@ -2356,16 +2494,19 @@
       const brokeRecord = isBetter(pendingScore, best);
       let extra = '';
       if (best && !brokeRecord) {
-        extra = '　（你的最好成绩：' + best.rounds + ' 轮 · ' + fmtDuration(best.duration) + '）';
+        extra = '（你榜上的最好成绩：' + best.rounds + ' 轮 · ' + fmtSeconds(best.durationMs) +
+                ' · ' + best.score + ' 分）';
       }
       if (txt) {
-        txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtDuration(duration) + '</b>' +
+        txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtSeconds(durationMs) + '</b>' +
+                        ' · <b>' + pattern + '</b>　' + PATTERN_NOTE[pattern] +
                         (brokeRecord ? recordBadgeHtml() : '') +
-                        extra +
+                        '<span class="rank-this-score">本局 <b>' + score + '</b> 分</span>' +
+                        (extra ? '<span class="rank-best">' + extra + '</span>' : '') +
                         '<span class="rank-est" id="rankEst"></span>';
       }
       if (brokeRecord) iconRain();
-      fillRankEstimate(rounds, duration);
+      fillRankEstimate(score);
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
       if (nick) { try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {} }
@@ -2397,7 +2538,7 @@
         if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
         try {
-          const accepted = await postScore(nick, pendingScore.rounds, pendingScore.duration);
+          const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs);
           try { localStorage.setItem(LB_NICK_KEY, nick); } catch (e) {}
           if (msg) {
             msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
