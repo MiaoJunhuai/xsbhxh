@@ -1325,7 +1325,11 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
     transition: background .18s ease, color .18s ease, border-color .18s ease;
   }
   .copy-mini svg { width: 14px; height: 14px; display: block; }
-  .copy-mini:hover { background: #1e5c26; border-color: #1e5c26; color: #fff; }
+  /* 触屏设备没有真正的悬停，只在有鼠标的设备上启用 hover，避免复制后按钮一直停在绿色 */
+  @media (hover: hover) and (pointer: fine) {
+    .copy-mini:hover { background: #1e5c26; border-color: #1e5c26; color: #fff; }
+  }
+  .copy-mini:active { background: #1e5c26; border-color: #1e5c26; color: #fff; }
   .copy-mini.is-copied { background: #2f7d4f; border-color: #2f7d4f; color: #fff; }
   .copy-mini .icon-check { display: none; }
   .copy-mini.is-copied .icon-copy { display: none; }
@@ -1364,11 +1368,16 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
 
     btns.forEach(function (btn) {
       btn.addEventListener('click', function () {
+        // 触屏上点击后按钮可能残留焦点/悬停状态，主动失焦让它恢复原样
+        btn.blur();
         copyText(btn.getAttribute('data-copy')).then(function (ok) {
           if (!ok) return;
           btn.classList.add('is-copied');
           clearTimeout(btn._t);
-          btn._t = setTimeout(function () { btn.classList.remove('is-copied'); }, 1500);
+          btn._t = setTimeout(function () {
+            btn.classList.remove('is-copied');
+            btn.blur();
+          }, 1500);
         });
       });
     });
