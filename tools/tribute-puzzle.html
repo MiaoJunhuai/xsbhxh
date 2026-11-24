@@ -598,7 +598,7 @@
       .btn { font-size: 0.85rem; padding: 0.55rem 0.8rem; }
     }
 
-    /* ================= 群贤榜 ================= */
+    /* ================= 排行榜 ================= */
     .rank-panel {
       margin-top: 1.5rem;
       padding-top: 1.1rem;
@@ -950,7 +950,7 @@
 
   <div class="rank-panel play-only">
     <div class="rank-head">
-      <span class="rank-title">群贤榜</span>
+      <span class="rank-title">排行榜</span>
       <span class="rank-sub">手动练习 · 轮数少者在前</span>
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
@@ -1034,7 +1034,7 @@
     const CODE_LENGTH = 4;
     const MAX_ATTEMPTS = 7;
 
-    // ===== 群贤榜（Supabase 免费层）=====
+    // ===== 排行榜（Supabase 免费层）=====
     // 这里用的是 publishable key，公开是安全的：数据库只开了「读」和「新增」，
     // 改不了删不了别人的成绩。千万别把 secret key 放到这里。
     const LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
@@ -1684,7 +1684,7 @@
       }
     });
 
-    // ==================== 群贤榜 ====================
+    // ==================== 排行榜 ====================
     function lbHeaders() {
       return { 'apikey': LB_KEY, 'Accept': 'application/json' };
     }
