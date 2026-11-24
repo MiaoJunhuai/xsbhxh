@@ -1723,12 +1723,22 @@
           : 1000;
         const secretPattern = patternOf(secret);
 
-        feedbackDiv.innerHTML = `<div class="feedback-line">🎉 奇迹降临！所有贤者满意！</div>
-                                 <div class="feedback-line">正确答案正是「${guessStr}」。</div>
-                                 <div class="feedback-line">用了 ${usedRounds} 轮（${PATTERN_NOTE[secretPattern]}）。请重置答案再次挑战。</div>`;
         gameOver = true;
         enableControls(false);
         attemptSpan.textContent = `胜利`;
+
+        // 第一轮就中，没有任何反馈信息可用，纯粹是蒙的，不计入排行榜
+        if (usedRounds <= 1) {
+          feedbackDiv.innerHTML = `<div class="feedback-line">🎉 第一轮就中了！</div>
+                                   <div class="feedback-line">正确答案正是「${guessStr}」。</div>
+                                   <div class="feedback-line">不过 1 轮属于蒙中，本局不计入排行榜。</div>`;
+          resetRankSubmit();
+          return;
+        }
+
+        feedbackDiv.innerHTML = `<div class="feedback-line">🎉 奇迹降临！所有贤者满意！</div>
+                                 <div class="feedback-line">正确答案正是「${guessStr}」。</div>
+                                 <div class="feedback-line">用了 ${usedRounds} 轮（${PATTERN_NOTE[secretPattern]}）。请重置答案再次挑战。</div>`;
         showRankSubmit(usedRounds, usedMs, secretPattern);
         return;
       }
