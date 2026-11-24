@@ -947,6 +947,28 @@
     }
     .rank-msg.is-err { color: #b0361e; }
     .rank-msg.is-ok { color: #2f6b46; }
+    .rank-confirm {
+      margin-top: .55rem;
+      padding: .6rem .7rem;
+      background: rgba(176, 58, 46, .08);
+      border: 1px dashed rgba(176, 58, 46, .45);
+      border-radius: .55rem;
+    }
+    .rank-confirm[hidden] { display: none; }
+    .rank-confirm p {
+      margin: 0 0 .5rem;
+      font-size: .78rem;
+      line-height: 1.6;
+      color: #7b3a2c;
+    }
+    .rank-confirm b { color: #b0361e; }
+    .rank-confirm-actions { display: flex; gap: .5rem; }
+    .rank-confirm-actions .rank-btn { flex: 1; padding: .45rem .5rem; font-size: .8rem; }
+    .rank-confirm-no {
+      color: #7b6a50;
+      background: rgba(255, 250, 240, .9);
+      border: 1px solid rgba(139, 110, 60, .45);
+    }
     .rank-est {
       display: block;
       margin-top: .2rem;
@@ -1284,6 +1306,13 @@
         <button type="button" id="rankSubmitBtn" class="rank-btn">计入排行榜</button>
       </div>
       <div class="rank-msg" id="rankMsg"></div>
+      <div class="rank-confirm" id="rankConfirm" hidden>
+        <p>昵称「<b id="rankConfirmNick"></b>」已被别的设备用过，提交会覆盖那条记录。</p>
+        <div class="rank-confirm-actions">
+          <button type="button" class="rank-btn" id="rankConfirmYes">仍要覆盖</button>
+          <button type="button" class="rank-btn rank-confirm-no" id="rankConfirmNo">换个昵称</button>
+        </div>
+      </div>
     </div>
     <div class="rank-list" id="rankList">
       <div class="rank-loading">正在载入…</div>
@@ -2374,6 +2403,7 @@
       if (box) box.hidden = true;
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
+      hideConflictConfirm();
     }
 
     // 破纪录时收起贡品记录，一次点击就能展开
@@ -2542,7 +2572,11 @@
       fillRankEstimate(score);
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
-      if (nick) { try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {} }
+      if (nick) {
+        try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+        // 本机没存过昵称，就看服务器上这个浏览器 ID 有没有历史记录，有就自动填上
+        if (!nick.value.trim()) autofillNickname();
+      }
       box.hidden = false;
 
       // 破纪录就把贡品记录收起来，让「结果 + 提交 + 榜单」尽量挤进一屏
@@ -2555,40 +2589,127 @@
       }
     }
 
+    // 查这个昵称在服务器上是否被别的浏览器 ID 占着
+    async function checkNickConflict(nick) {
+      if (!nick || nick === '无名贤者') return null;
+      try {
+        const q = 'scores?nickname=eq.' + encodeURIComponent(nick) +
+                  '&select=player_id,score&limit=5';
+        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+        if (!res.ok) return null;          // 查不到就放行，别挡住正常提交
+        const rows = await res.json();
+        if (!Array.isArray(rows) || !rows.length) return null;
+        const myId = getPlayerId();
+        return rows.find(function (r) { return r.player_id !== myId; }) || null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // 如果这个浏览器已经有记录，把分数最高的那条昵称自动填进输入框
+    async function autofillNickname() {
+      const nickEl = document.getElementById('rankNick');
+      if (!nickEl || nickEl.value.trim()) return;
+      try {
+        const q = 'scores?player_id=eq.' + encodeURIComponent(getPlayerId()) +
+                  '&select=nickname,score&order=score.desc&limit=5';
+        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (!Array.isArray(rows) || !rows.length) return;
+        const best = rows[0];
+        if (best.nickname && best.nickname !== '无名贤者' && !nickEl.value.trim()) {
+          nickEl.value = best.nickname;
+        }
+      } catch (e) {}
+    }
+
+    function hideConflictConfirm() {
+      const box = document.getElementById('rankConfirm');
+      if (box) box.hidden = true;
+    }
+
+    async function doSubmit(nick) {
+      if (!pendingScore) return;
+      const msg = document.getElementById('rankMsg');
+      hideConflictConfirm();
+      rankSubmitBtn.disabled = true;
+      rankSubmitBtn.textContent = '提交中…';
+      if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
+
+      try {
+        const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs);
+        try { localStorage.setItem(LB_NICK_KEY, nick); } catch (e) {}
+        if (msg) {
+          msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
+          msg.textContent = accepted
+            ? '已计入排行榜'
+            : '本局没有超过你之前的最好成绩，榜上保留原记录';
+        }
+        rankSubmitBtn.textContent = '已提交';
+        pendingScore = null;
+        clearRankCache();
+        await loadRank(true);
+        flashMyRow();
+      } catch (e) {
+        rankSubmitBtn.disabled = false;
+        rankSubmitBtn.textContent = '重试';
+        if (msg) { msg.className = 'rank-msg is-err'; msg.textContent = '提交失败，请稍后再试'; }
+      }
+    }
+
     const rankSubmitBtn = document.getElementById('rankSubmitBtn');
     if (rankSubmitBtn) {
       rankSubmitBtn.addEventListener('click', async function () {
         if (!pendingScore) return;
-        const msg = document.getElementById('rankMsg');
         const nickEl = document.getElementById('rankNick');
+        const msg = document.getElementById('rankMsg');
         let nick = (nickEl && nickEl.value ? nickEl.value : '').trim().replace(/\s+/g, ' ');
         const chars = Array.from(nick);
         if (chars.length > 12) nick = chars.slice(0, 12).join('');
         if (!nick) nick = '无名贤者';
 
+        // 先查这个昵称有没有被别的浏览器 ID 占着
         rankSubmitBtn.disabled = true;
-        rankSubmitBtn.textContent = '提交中…';
-        if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
+        rankSubmitBtn.textContent = '检查中…';
+        const conflict = await checkNickConflict(nick);
+        rankSubmitBtn.disabled = false;
+        rankSubmitBtn.textContent = '计入排行榜';
 
-        try {
-          const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs);
-          try { localStorage.setItem(LB_NICK_KEY, nick); } catch (e) {}
-          if (msg) {
-            msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
-            msg.textContent = accepted
-              ? '已计入排行榜'
-              : '本局没有超过你之前的最好成绩，榜上保留原记录';
+        if (conflict) {
+          const box = document.getElementById('rankConfirm');
+          const nickSpan = document.getElementById('rankConfirmNick');
+          if (nickSpan) nickSpan.textContent = nick;
+          if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
+          if (box) {
+            box.hidden = false;
+            try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
           }
-          rankSubmitBtn.textContent = '已提交';
-          pendingScore = null;
-          clearRankCache();
-          await loadRank(true);
-          flashMyRow();
-        } catch (e) {
-          rankSubmitBtn.disabled = false;
-          rankSubmitBtn.textContent = '重试';
-          if (msg) { msg.className = 'rank-msg is-err'; msg.textContent = '提交失败，请稍后再试'; }
+          return;
         }
+
+        await doSubmit(nick);
+      });
+    }
+
+    const rankConfirmYes = document.getElementById('rankConfirmYes');
+    if (rankConfirmYes) {
+      rankConfirmYes.addEventListener('click', async function () {
+        const nickEl = document.getElementById('rankNick');
+        let nick = (nickEl && nickEl.value ? nickEl.value : '').trim().replace(/\s+/g, ' ');
+        const chars = Array.from(nick);
+        if (chars.length > 12) nick = chars.slice(0, 12).join('');
+        if (!nick) nick = '无名贤者';
+        await doSubmit(nick);
+      });
+    }
+
+    const rankConfirmNo = document.getElementById('rankConfirmNo');
+    if (rankConfirmNo) {
+      rankConfirmNo.addEventListener('click', function () {
+        hideConflictConfirm();
+        const nickEl = document.getElementById('rankNick');
+        if (nickEl) { nickEl.focus(); nickEl.select(); }
       });
     }
 
@@ -2603,6 +2724,9 @@
         }
       });
     }
+
+    // 页面一打开就分配匿名 ID，这样「自动填昵称」查历史记录时才有得查
+    getPlayerId();
 
     loadRank();
 
