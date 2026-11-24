@@ -1162,6 +1162,12 @@
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
+                    // 截图里隐藏不可点击的语音频道切换按钮和复制小图标
+                    onclone: (clonedDoc) => {
+                        clonedDoc.querySelectorAll('.voice-tabs, .copy-mini').forEach(el => {
+                            el.style.display = 'none';
+                        });
+                    },
                 });
 
                 blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
