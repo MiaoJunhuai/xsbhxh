@@ -1242,8 +1242,8 @@
       <div class="slot" data-index="3"></div>
     </div>
     <div class="actions">
-      <button class="btn" id="submitBtn">🔮 询问贤者</button>
-      <button class="btn clear-btn" id="clearBtn">🧹 清空祭坛</button>
+      <button class="btn" id="submitBtn" title="快捷键 Enter">🔮 询问贤者</button>
+      <button class="btn clear-btn" id="clearBtn" title="快捷键 Delete">🧹 清空祭坛</button>
     </div>
   </div>
 
@@ -2100,6 +2100,10 @@
     });
 
     window.addEventListener('keydown', (e) => {
+      // 在输入框里打字时不要抢按键（否则昵称里按退格会误删贡品）
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+
       if (currentMode === 'auto') {
         if (!hoveredType || !autoState || autoState.done) return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -2115,7 +2119,8 @@
       if (key === 'q' || key === 'w' || key === 'e' || key === 'r') {
         e.preventDefault();
         handleItemSelect(key.toUpperCase());
-      } else if (key === 'backspace' || key === 'delete') {
+      } else if (key === 'backspace') {
+        // 退格：删掉最后一个贡品
         e.preventDefault();
         for (let i = CODE_LENGTH - 1; i >= 0; i--) {
           if (currentGuess[i] !== '') {
@@ -2126,6 +2131,10 @@
           }
         }
         feedbackDiv.innerHTML = '<div class="feedback-line">所有位置已空。</div>';
+      } else if (key === 'delete') {
+        // Delete：清空整个祭坛
+        e.preventDefault();
+        clearSlots();
       } else if (key === 'enter') {
         e.preventDefault();
         submitGuess();
