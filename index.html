@@ -125,7 +125,7 @@
   }
 
   .nav-links a.active {
-    color: var(--ink);
+    color: #c4662a;
     background: rgba(59, 51, 39, .11);
   }
 
@@ -972,6 +972,13 @@
 
     window.addEventListener('scroll', requestUpdate, { passive: true });
     window.addEventListener('resize', requestUpdate);
+    // 从子页面跳到 index.html#rules 这类锚点时，浏览器直接定位、不一定触发 scroll 事件，
+    // 这里在加载完成和 hash 变化时各补一次，保证高亮能对上。
+    window.addEventListener('hashchange', requestUpdate);
+    window.addEventListener('load', function () {
+      requestUpdate();
+      setTimeout(requestUpdate, 350);
+    });
     update();
   })();
 
