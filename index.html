@@ -126,7 +126,9 @@
 
   .nav-links a.active {
     color: #4e3e2b;
-    background: rgba(184, 134, 30, .26);
+    /* 胶囊底色由当前文字色混合而成，自动比所在导航背景深一档，适配各页面底色 */
+    background: rgba(59, 51, 39, .16);
+    background: color-mix(in srgb, currentColor 16%, transparent);
   }
 
   /* ================= 主体 ================= */
