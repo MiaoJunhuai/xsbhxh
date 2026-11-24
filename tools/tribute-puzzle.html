@@ -1339,10 +1339,10 @@
       </div>
       <div class="rank-msg" id="rankMsg"></div>
       <div class="rank-confirm" id="rankConfirm" hidden>
-        <p>昵称「<b id="rankConfirmNick"></b>」已被别的设备用过，提交会覆盖那条记录。</p>
+        <p id="rankConfirmText"></p>
         <div class="rank-confirm-actions">
-          <button type="button" class="rank-btn" id="rankConfirmYes">仍要覆盖</button>
-          <button type="button" class="rank-btn rank-confirm-no" id="rankConfirmNo">换个昵称</button>
+          <button type="button" class="rank-btn" id="rankConfirmYes">确认</button>
+          <button type="button" class="rank-btn rank-confirm-no" id="rankConfirmNo">取消</button>
         </div>
       </div>
     </div>
@@ -2360,7 +2360,7 @@
                  '<span class="rank-no">' + no + '</span>' +
                  '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
                  '<span class="rank-score">' + r.score + '<small>分</small></span>' +
-                 '<span class="rank-meta">题型 <b>' + r.pattern + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) +
+                 '<span class="rank-meta">题型 <b>' + (PATTERN_NOTE[r.pattern] ? r.pattern : '?') + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) +
                    (r.flagged ? '<span class="rank-flag">疑似作弊</span>' : '') + '</span>' +
                '</div>';
       }).join('');
@@ -2672,9 +2672,38 @@
       } catch (e) {}
     }
 
+    let confirmAction = null;
+
     function hideConflictConfirm() {
       const box = document.getElementById('rankConfirm');
       if (box) box.hidden = true;
+      confirmAction = null;
+    }
+
+    function showConfirm(html, yesText, noText, onYes, onNo) {
+      const box = document.getElementById('rankConfirm');
+      const textEl = document.getElementById('rankConfirmText');
+      const yes = document.getElementById('rankConfirmYes');
+      const no = document.getElementById('rankConfirmNo');
+      if (!box) return;
+      if (textEl) textEl.innerHTML = html;
+      if (yes) yes.textContent = yesText;
+      if (no) no.textContent = noText;
+      confirmAction = { yes: onYes, no: onNo };
+      box.hidden = false;
+      try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+    }
+
+    // 查这个浏览器 ID 当前在榜上的那条记录（用来判断是不是换了昵称）
+    async function getMyActiveRecord() {
+      try {
+        const q = 'scores?player_id=eq.' + encodeURIComponent(getPlayerId()) +
+                  '&superseded=eq.false&select=nickname,score&order=score.desc&limit=1';
+        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+        if (!res.ok) return null;
+        const rows = await res.json();
+        return Array.isArray(rows) && rows.length ? rows[0] : null;
+      } catch (e) { return null; }
     }
 
     async function doSubmit(nick) {
@@ -2737,18 +2766,36 @@
         rankSubmitBtn.disabled = true;
         rankSubmitBtn.textContent = '检查中…';
         const conflict = await checkNickConflict(nick);
+        const mine = conflict ? null : await getMyActiveRecord();
         rankSubmitBtn.disabled = false;
         rankSubmitBtn.textContent = '计入排行榜';
+        if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
+        // 情况一：这个昵称被别的浏览器 ID 占着
         if (conflict) {
-          const box = document.getElementById('rankConfirm');
-          const nickSpan = document.getElementById('rankConfirmNick');
-          if (nickSpan) nickSpan.textContent = nick;
-          if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
-          if (box) {
-            box.hidden = false;
-            try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
-          }
+          showConfirm(
+            '昵称「<b>' + escapeHtml(nick) + '</b>」已被别的设备用过，提交会覆盖那条记录。',
+            '仍要覆盖', '换个昵称',
+            function () { doSubmit(nick); },
+            function () {
+              const el = document.getElementById('rankNick');
+              if (el) { el.focus(); el.select(); }
+            }
+          );
+          return;
+        }
+
+        // 情况二：同一个浏览器换了昵称
+        if (mine && mine.nickname !== nick && nick !== '无名贤者') {
+          showConfirm(
+            '你之前的昵称是「<b>' + escapeHtml(mine.nickname) + '</b>」，提交后原昵称的记录会被替换成「<b>' + escapeHtml(nick) + '</b>」。',
+            '确认替换', '保留原名',
+            function () { doSubmit(nick); },
+            function () {
+              const el = document.getElementById('rankNick');
+              if (el) el.value = mine.nickname;
+            }
+          );
           return;
         }
 
@@ -2759,21 +2806,18 @@
     const rankConfirmYes = document.getElementById('rankConfirmYes');
     if (rankConfirmYes) {
       rankConfirmYes.addEventListener('click', async function () {
-        const nickEl = document.getElementById('rankNick');
-        let nick = (nickEl && nickEl.value ? nickEl.value : '').trim().replace(/\s+/g, ' ');
-        const chars = Array.from(nick);
-        if (chars.length > 12) nick = chars.slice(0, 12).join('');
-        if (!nick) nick = '无名贤者';
-        await doSubmit(nick);
+        const act = confirmAction;
+        hideConflictConfirm();
+        if (act && act.yes) await act.yes();
       });
     }
 
     const rankConfirmNo = document.getElementById('rankConfirmNo');
     if (rankConfirmNo) {
       rankConfirmNo.addEventListener('click', function () {
+        const act = confirmAction;
         hideConflictConfirm();
-        const nickEl = document.getElementById('rankNick');
-        if (nickEl) { nickEl.focus(); nickEl.select(); }
+        if (act && act.no) act.no();
       });
     }
 
