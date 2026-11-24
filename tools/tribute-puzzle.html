@@ -1544,7 +1544,10 @@
       feedbackDiv.innerHTML = '<div class="feedback-line">⚡ 摆放供品，询问贤者...</div>';
       historyList.innerHTML = '';
       enableControls(true);
-      console.log('答案(调试):', secret.join(''));
+      // 只在地址栏带 ?debug 时才打印答案，普通玩家打开控制台看不到
+      if (/[?&]debug\b/.test(location.search)) {
+        console.log('答案(调试):', secret.join(''));
+      }
     }
 
     function enableControls(enable) {
