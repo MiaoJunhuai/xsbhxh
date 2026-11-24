@@ -879,6 +879,14 @@
     .rank-help p + p { margin-top: .3rem; }
     .rank-help b { color: #7a4b12; }
     .rank-help strong { color: #7a4b12; font-weight: 700; }
+    .rank-foot {
+      margin-top: .55rem;
+      text-align: center;
+      font-size: .7rem;
+      line-height: 1.6;
+      color: #9a8a6c;
+    }
+    .rank-foot b { color: #7b6a50; font-weight: 700; }
     .rank-empty, .rank-loading {
       text-align: center;
       color: #9a8a6c;
@@ -1267,9 +1275,6 @@
     <div class="rank-help" id="rankHelp" hidden>
       <p><b>分数怎么算</b></p>
       <p>综合<strong>题型复杂度</strong>、<strong>轮数</strong>、<strong>秒数</strong>算出：题型越复杂、轮数越少、秒数越少，分数越高。</p>
-      <p>题型是一局答案里贡品的重复结构，共五种：</p>
-      <p>AAAA 四件全同 · ABCD 四件全不同 · AABB 两两相同 · AAAB 三同一异 · AABC 两同加两个不同</p>
-      <p>各题型具体权重不公开，避免被利用。</p>
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
       <div class="rank-result" id="rankResult"></div>
@@ -1282,6 +1287,7 @@
     <div class="rank-list" id="rankList">
       <div class="rank-loading">正在载入…</div>
     </div>
+    <div class="rank-foot">昵称后面的字母是<b>题型</b>，右侧数字是<b>分数</b> · 点 ⓘ 看计分方式</div>
   </div>
 
   <!-- ==================== 自动驾驶 ==================== -->
