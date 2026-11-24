@@ -204,6 +204,7 @@
       margin: 0.15rem 0;
     }
     .attempt-badge {
+      position: relative;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -215,7 +216,7 @@
       margin: 0.8rem 0;
     }
     .attempt-badge > span:nth-child(2) { margin-left: auto; }
-    .attempt-badge .reset-pill { margin-left: 0.85rem; }
+    .attempt-badge .reset-wrap { margin-left: 0.85rem; }
     .history {
       margin-top: 1.1rem;
     }
@@ -374,31 +375,73 @@
     .auto-reset:active,
     .reset-pill:active { transform: scale(0.95); }
 
-    /* 触摸设备：重置要长按 0.8 秒，按住时底色逐渐填满 */
+    /* 触摸设备：重置要长按 0.8 秒。进度条浮在按钮上方，手指盖不到 */
+    .reset-wrap {
+      display: inline-flex;
+      flex: none;
+    }
     .reset-pill {
-      position: relative;
-      overflow: hidden;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
       touch-action: manipulation;
     }
-    .reset-pill::before {
-      content: '';
+    .hold-bar {
       position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 0;
-      background: rgba(255, 255, 255, 0.58);
+      left: 12px;
+      right: 12px;
+      bottom: 3px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.12s ease;
       pointer-events: none;
+      z-index: 5;
     }
-    .reset-pill.is-holding::before {
+    .hold-bar i {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ffd27a, #ff9a6a);
+      box-shadow: 0 0 8px rgba(255, 180, 100, 0.75);
+    }
+    .reset-wrap.is-holding .hold-bar {
+      opacity: 1;
+    }
+    .reset-wrap.is-holding .hold-bar i {
       width: 100%;
       transition: width 0.8s linear;
     }
     .reset-pill.is-armed {
-      box-shadow: 0 0 0 3px rgba(255, 190, 180, 0.4);
+      box-shadow: 0 0 0 3px rgba(255, 190, 180, 0.42);
+    }
+
+    /* 重置完成：四尊石像依次跳一下，反馈框闪一圈金光 */
+    .game-container.is-resetting .statue {
+      animation: statue-reset 0.55s ease both;
+    }
+    .game-container.is-resetting .statue:nth-child(2) { animation-delay: 0.05s; }
+    .game-container.is-resetting .statue:nth-child(3) { animation-delay: 0.1s; }
+    .game-container.is-resetting .statue:nth-child(4) { animation-delay: 0.15s; }
+    @keyframes statue-reset {
+      0%   { transform: translateY(0) scale(1); filter: brightness(1); }
+      35%  { transform: translateY(-7px) scale(1.08); filter: brightness(1.55) drop-shadow(0 0 7px rgba(255, 214, 130, 0.85)); }
+      100% { transform: translateY(0) scale(1); filter: brightness(1); }
+    }
+    .game-container.is-resetting .feedback-box {
+      animation: feedback-reset 0.6s ease both;
+    }
+    @keyframes feedback-reset {
+      0%   { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+      35%  { box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.55); }
+      100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .game-container.is-resetting .statue,
+      .game-container.is-resetting .feedback-box { animation: none; }
     }
 
     .auto-guess-label {
@@ -1128,7 +1171,10 @@
   <div class="attempt-badge play-only">
     <span>🏺 剩余尝试</span>
     <span id="attemptLeft">7 / 7</span>
-    <button type="button" class="reset-pill" id="resetBtn">重置答案</button>
+    <span class="reset-wrap" id="resetWrap">
+      <span class="hold-bar" aria-hidden="true"><i></i></span>
+      <button type="button" class="reset-pill" id="resetBtn">重置答案</button>
+    </span>
   </div>
 
   <div class="feedback-box play-only" id="feedbackMessage">
@@ -1507,22 +1553,34 @@
     /* 重置按钮：触摸设备要长按 0.8 秒（按住时按钮被白色进度条填满），
        桌面浏览器仍然是一点就重置。这样手机上不会误碰「清空祭坛」。 */
     const RESET_HOLD_MS = 800;
+    const resetWrap = document.getElementById('resetWrap');
     const isTouchDevice = function () {
       return navigator.maxTouchPoints > 0 || window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     };
 
     let resetHoldTimer = 0;
 
+    // 重置完成的小动画：石像依次跳起、反馈框闪一圈金光
+    function playResetAnimation() {
+      const box = document.querySelector('.game-container');
+      if (!box) return;
+      box.classList.remove('is-resetting');
+      void box.offsetWidth;
+      box.classList.add('is-resetting');
+      setTimeout(function () { box.classList.remove('is-resetting'); }, 750);
+    }
+
     function beginResetHold() {
       if (resetHoldTimer || resetBtn.disabled) return;
-      resetBtn.classList.add('is-holding');
+      resetWrap.classList.add('is-holding');
       resetHoldTimer = setTimeout(function () {
         resetHoldTimer = 0;
-        resetBtn.classList.remove('is-holding');
+        resetWrap.classList.remove('is-holding');
         resetBtn.classList.add('is-armed');
         setTimeout(function () { resetBtn.classList.remove('is-armed'); }, 280);
         try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
         resetGame();
+        playResetAnimation();
       }, RESET_HOLD_MS);
     }
 
@@ -1531,7 +1589,7 @@
         clearTimeout(resetHoldTimer);
         resetHoldTimer = 0;
       }
-      resetBtn.classList.remove('is-holding');
+      resetWrap.classList.remove('is-holding');
     }
 
     resetBtn.addEventListener('pointerdown', function (e) {
@@ -1546,6 +1604,7 @@
     resetBtn.addEventListener('click', function (e) {
       if (isTouchDevice()) { e.preventDefault(); return; }  // 触摸设备走长按
       resetGame();
+      playResetAnimation();
     });
 
     if (isTouchDevice()) resetBtn.textContent = '长按重置';
