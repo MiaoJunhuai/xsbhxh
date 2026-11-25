@@ -1489,8 +1489,17 @@
       return Math.max(1, Math.round(2000 * rf * tf));
     }
 
+    // 把 Q/W/E/R 序列压成 0/1/2/3 的字符串，上传时更小、也更难被一眼读懂
+    const TRACE_INDEX = { Q: '0', W: '1', E: '2', R: '3' };
+    function traceCode(codeArr) {
+      return codeArr.map(function (c) { return TRACE_INDEX[c] || '0'; }).join('');
+    }
+
     let roundStartAt = 0;
     let pendingScore = null;
+    // 每一轮的操作记录：{ t: 距开局的毫秒, g: 猜测, f: [bulls, cows] }
+    // 提交时随成绩一起上传，后端用它校验这一局是不是真的玩出来的
+    let roundTrace = [];
     const ITEMS = ['Q', 'W', 'E', 'R'];
     const ITEM_IMG = {
       'Q': '../assets/tribute/scroll.png',
@@ -1540,6 +1549,7 @@
       currentGuess = ['', '', '', ''];
       roundStartAt = 0;
       pendingScore = null;
+      roundTrace = [];
       resetRankSubmit();
       setHistoryFolded(false, 0);
       updateSlotDisplay();
@@ -1674,6 +1684,13 @@
       const guessArr = [...currentGuess];
       const { bulls, cows } = calculateBullsAndCows(guessArr, secret);
       const wrong = CODE_LENGTH - bulls - cows;
+
+      // 记录这一轮：时间点、猜测、反馈
+      roundTrace.push({
+        t: roundStartAt ? Math.max(0, Date.now() - roundStartAt) : 0,
+        g: guessArr.join(''),
+        f: [bulls, cows]
+      });
 
       const allCandidates = [];
       if (bulls > 0) allCandidates.push({
@@ -2310,7 +2327,7 @@
       return res.json();
     }
 
-    async function postScore(nickname, pattern, rounds, durationMs) {
+    async function postScore(nickname, pattern, rounds, durationMs, trace) {
       const res = await fetch(LB_URL + '/rest/v1/' + LB_TABLE, {
         method: 'POST',
         headers: Object.assign({}, lbHeaders(), {
@@ -2322,7 +2339,8 @@
           nickname: nickname,
           pattern: pattern,
           rounds: rounds,
-          duration_ms: durationMs
+          duration_ms: durationMs,
+          trace: trace || null
         })
       });
       if (!res.ok) {
@@ -2596,7 +2614,20 @@
       const box = document.getElementById('rankSubmit');
       if (!box) return;
       const score = calcScore(pattern, rounds, durationMs);
-      pendingScore = { rounds: rounds, durationMs: durationMs, pattern: pattern, score: score };
+      pendingScore = {
+        rounds: rounds,
+        durationMs: durationMs,
+        pattern: pattern,
+        score: score,
+        // 紧凑格式：Q/W/E/R 映射成 0/1/2/3，时间用毫秒数
+        // { s: 答案, t: 每轮时间点, g: 每轮猜测, f: 每轮 [bulls, cows] }
+        trace: {
+          s: traceCode(secret),
+          t: roundTrace.map(function (x) { return x.t; }),
+          g: roundTrace.map(function (x) { return traceCode(x.g.split('')); }),
+          f: roundTrace.map(function (x) { return x.f; })
+        }
+      };
       const txt = document.getElementById('rankResult');
       const msg = document.getElementById('rankMsg');
       const btn = document.getElementById('rankSubmitBtn');
@@ -2728,7 +2759,7 @@
       if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
       try {
-        const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs);
+        const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs, pendingScore.trace);
         try {
           localStorage.setItem(LB_NICK_KEY, nick);
           if (accepted) localStorage.setItem(LB_SUBMIT_KEY, String(Date.now()));
