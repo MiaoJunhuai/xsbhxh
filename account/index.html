@@ -221,6 +221,20 @@
       border-radius: 10px;
       cursor: pointer;
     }
+    .acct-rename {
+      margin-top: 14px;
+      color: #96690a;
+      background: rgba(184, 134, 30, .1);
+      border-color: rgba(184, 134, 30, .32);
+    }
+    .acct-nickedit {
+      margin-top: 14px;
+      padding: 12px;
+      background: rgba(139, 110, 60, .07);
+      border: 1px dashed rgba(139, 110, 60, .3);
+      border-radius: 10px;
+    }
+    .acct-nickedit[hidden] { display: none; }
     .acct-back {
       margin-top: 20px;
       text-align: center;
@@ -289,6 +303,7 @@
       <input type="email" id="acctEmail" class="acct-input" placeholder="邮箱（当用户名用）" autocomplete="email" spellcheck="false">
       <input type="email" id="acctEmail2" class="acct-input" placeholder="再输一次邮箱" autocomplete="email" spellcheck="false" hidden>
       <input type="password" id="acctPass" class="acct-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
+      <input type="text" id="acctNick" class="acct-input" placeholder="昵称（1~12 个字，会显示在排行榜上）" maxlength="12" spellcheck="false" hidden>
       <div class="acct-msg" id="acctMsg"></div>
       <button type="button" class="acct-submit" id="acctSubmit">登录</button>
       <p class="acct-note">不发验证邮件，邮箱只当用户名用，忘记密码找群主。</p>
@@ -296,8 +311,16 @@
 
     <div id="viewUser" hidden>
       <div class="acct-row"><span>邮箱</span><b id="acctWho">—</b></div>
+      <div class="acct-row"><span>昵称</span><b id="acctNickView">—</b></div>
       <div class="acct-row"><span>关联的游戏成绩</span><b id="acctScores">—</b></div>
       <div class="acct-row"><span>登录状态</span><b id="acctClaim">—</b></div>
+      <div class="acct-nickedit" id="acctNickEdit" hidden>
+        <input type="text" id="acctNickNew" class="acct-input" placeholder="新昵称（1~12 个字）" maxlength="12" spellcheck="false">
+        <div class="acct-msg" id="acctNickMsg"></div>
+        <button type="button" class="acct-submit" id="acctNickSave">保存昵称</button>
+        <p class="acct-note">昵称每月只能改一次。</p>
+      </div>
+      <button type="button" class="acct-logout acct-rename" id="acctRenameBtn">修改昵称</button>
       <button type="button" class="acct-logout" id="acctLogout">退出登录</button>
       <p class="acct-note">退出后这台设备变回未登录，账号里的东西不会丢。</p>
     </div>
@@ -422,12 +445,20 @@
   var emailEl = document.getElementById('acctEmail');
   var email2El = document.getElementById('acctEmail2');
   var passEl = document.getElementById('acctPass');
+  var nickEl = document.getElementById('acctNick');
   var submitEl = document.getElementById('acctSubmit');
   var guestView = document.getElementById('viewGuest');
   var userView = document.getElementById('viewUser');
   var whoEl = document.getElementById('acctWho');
   var scoresEl = document.getElementById('acctScores');
   var claimEl = document.getElementById('acctClaim');
+  var nickViewEl = document.getElementById('acctNickView');
+  var nickEditEl = document.getElementById('acctNickEdit');
+  var nickNewEl = document.getElementById('acctNickNew');
+  var nickMsgEl = document.getElementById('acctNickMsg');
+  var nickSaveEl = document.getElementById('acctNickSave');
+  var renameBtn = document.getElementById('acctRenameBtn');
+  var profile = null;
   var mode = 'login';
 
   function setMsg(text, cls) {
@@ -443,8 +474,29 @@
       btns[i].classList.toggle('is-active', btns[i].getAttribute('data-mode') === m);
     }
     if (email2El) email2El.hidden = m !== 'signup';
+    if (nickEl) nickEl.hidden = m !== 'signup';
     if (submitEl) submitEl.textContent = m === 'signup' ? '注册' : '登录';
     setMsg('');
+  }
+
+  function loadProfile() {
+    if (!authToken) return Promise.resolve(null);
+    return postJson('/rest/v1/rpc/my_profile', {})
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (rows) {
+        profile = (Array.isArray(rows) && rows.length) ? rows[0] : null;
+        return profile;
+      })
+      .catch(function () { return null; });
+  }
+
+  function paintProfile() {
+    if (!nickViewEl) return;
+    nickViewEl.textContent = (profile && profile.nickname) ? profile.nickname : '还没设置';
+    // 把昵称同步到本地，游戏页会直接读它当默认昵称
+    if (profile && profile.nickname) {
+      try { localStorage.setItem('xsbhxh_nickname', profile.nickname); } catch (e) {}
+    }
   }
 
   function render() {
@@ -454,6 +506,7 @@
       whoEl.textContent = authEmail;
       claimEl.textContent = '已登录';
       scoresEl.textContent = '读取中…';
+      loadProfile().then(paintProfile);
       fetchMyScores().then(function (rows) {
         if (!rows || !rows.length) { scoresEl.textContent = '这台设备还没有成绩'; return; }
         scoresEl.textContent = rows.map(function (r) {
@@ -475,12 +528,17 @@
     setMsg('');
     var email = (emailEl.value || '').trim();
     var pass = passEl.value || '';
+    var nick = (nickEl && nickEl.value ? nickEl.value : '').trim();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg('邮箱格式不对', 'is-err'); return; }
     if (mode === 'signup' && (email2El.value || '').trim() !== email) {
       setMsg('两次输入的邮箱不一致', 'is-err'); return;
     }
     if (pass.length < 6) { setMsg('密码至少 6 位', 'is-err'); return; }
+    if (mode === 'signup') {
+      if (!nick) { setMsg('请填一个昵称，它会显示在排行榜上', 'is-err'); return; }
+      if (Array.from(nick).length > 12) { setMsg('昵称最多 12 个字', 'is-err'); return; }
+    }
 
     submitEl.disabled = true;
     submitEl.textContent = '处理中…';
@@ -492,10 +550,16 @@
     req.then(function (data) {
       if (!data.access_token) throw new Error('这个邮箱可能已经注册过了，切到「登录」再试');
       saveAuth(data);
+      // 注册时把昵称写进 profiles；登录的话如果还没有资料也顺手补一个
+      var ensure = mode === 'signup'
+        ? postJson('/rest/v1/rpc/create_profile', { p_nick: nick }).then(function () {}, function () {})
+        : loadProfile().then(function (p) {
+            if (!p) return postJson('/rest/v1/rpc/create_profile', { p_nick: '无名贤者' }).then(function () {}, function () {});
+          });
       setMsg('已登录，正在合并这台设备上的成绩…', 'is-ok');
-      return claimRecords().then(function (n) {
+      return ensure.then(function () { return claimRecords(); }).then(function (n) {
         render();
-        setMsg('登录成功' + (n > 0 ? '，合并了 ' + n + ' 条成绩' : ''), 'is-ok');
+        setMsg(mode === 'signup' ? '注册成功' : ('登录成功' + (n > 0 ? '，合并了 ' + n + ' 条成绩' : '')), 'is-ok');
       });
     }).catch(function (e) {
       setMsg(e.message || '操作失败', 'is-err');
@@ -504,6 +568,55 @@
       submitEl.textContent = mode === 'signup' ? '注册' : '登录';
     });
   });
+
+  if (renameBtn) {
+    renameBtn.addEventListener('click', function () {
+      nickEditEl.hidden = !nickEditEl.hidden;
+      if (!nickEditEl.hidden && nickNewEl) {
+        nickNewEl.value = (profile && profile.nickname) || '';
+        nickNewEl.focus();
+      }
+    });
+  }
+
+  if (nickSaveEl) {
+    nickSaveEl.addEventListener('click', function () {
+      var v = (nickNewEl.value || '').trim();
+      if (nickMsgEl) { nickMsgEl.textContent = ''; nickMsgEl.className = 'acct-msg'; }
+      if (!v) { if (nickMsgEl) { nickMsgEl.textContent = '昵称不能为空'; nickMsgEl.className = 'acct-msg is-err'; } return; }
+      if (Array.from(v).length > 12) { if (nickMsgEl) { nickMsgEl.textContent = '昵称最多 12 个字'; nickMsgEl.className = 'acct-msg is-err'; } return; }
+      nickSaveEl.disabled = true;
+      nickSaveEl.textContent = '保存中…';
+      postJson('/rest/v1/rpc/change_nickname', { p_nick: v })
+        .then(function (res) {
+          return res.text().then(function (t) {
+            if (!res.ok) {
+              var m = '';
+              try { m = (JSON.parse(t) || {}).message || ''; } catch (e) {}
+              throw new Error(m || '修改失败');
+            }
+            return JSON.parse(t);
+          });
+        })
+        .then(function (nextAt) {
+          return loadProfile().then(function () {
+            paintProfile();
+            if (nickMsgEl) {
+              var d = new Date(nextAt);
+              nickMsgEl.textContent = '改好了，下次可改：' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+              nickMsgEl.className = 'acct-msg is-ok';
+            }
+          });
+        })
+        .catch(function (e) {
+          if (nickMsgEl) { nickMsgEl.textContent = e.message || '修改失败'; nickMsgEl.className = 'acct-msg is-err'; }
+        })
+        .then(function () {
+          nickSaveEl.disabled = false;
+          nickSaveEl.textContent = '保存昵称';
+        });
+    });
+  }
 
   document.getElementById('acctLogout').addEventListener('click', function () {
     clearAuth();

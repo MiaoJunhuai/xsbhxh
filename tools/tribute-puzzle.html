@@ -3397,6 +3397,13 @@
     async function autofillNickname() {
       const nickEl = document.getElementById('rankNick');
       if (!nickEl || nickEl.value.trim()) return;
+      // 登录用户优先用账号昵称（账号页改昵称时会同步写进这里）
+      let accNick = '';
+      try { accNick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+      if (authEmail && accNick && accNick !== '无名贤者') {
+        nickEl.value = accNick;
+        return;
+      }
       const rows = await fetchMyScores();
       if (!rows.length) return;
       const best = rows[0];
