@@ -2779,16 +2779,28 @@
       if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
       try {
-        const accepted = await postScore(nick, pendingScore.pattern, pendingScore.rounds, pendingScore.durationMs, pendingScore.trace);
+        const submitted = pendingScore;
+        // 提交前先记住「当时的最好成绩」，用来区分「分数确实不够」和「分数够了但被服务端判异常」
+        const bestBefore = readBest();
+        const accepted = await postScore(nick, submitted.pattern, submitted.rounds, submitted.durationMs, submitted.trace);
+        const shouldHaveWon = !bestBefore || submitted.score > bestBefore.score;
         try {
           localStorage.setItem(LB_NICK_KEY, nick);
           if (accepted) localStorage.setItem(LB_SUBMIT_KEY, String(Date.now()));
         } catch (e) {}
         if (msg) {
-          msg.className = accepted ? 'rank-msg is-ok' : 'rank-msg';
-          msg.textContent = accepted
-            ? '已计入排行榜'
-            : '本局没有超过你之前的最好成绩，榜上保留原记录';
+          if (accepted) {
+            msg.className = 'rank-msg is-ok';
+            msg.textContent = '已计入排行榜';
+          } else if (shouldHaveWon) {
+            // 分数明明更高却被丢掉：只可能是服务端把这一局判成异常（比如某一轮操作过快），
+            // 不能再说成「没超过最好成绩」——那句话把玩家引到错误的排查方向上了
+            msg.className = 'rank-msg is-err';
+            msg.textContent = '这一局没有被排行榜接受（可能被判定操作异常），过一会儿再试';
+          } else {
+            msg.className = 'rank-msg';
+            msg.textContent = '本局没有超过你之前的最好成绩，榜上保留原记录';
+          }
         }
         rankSubmitBtn.textContent = '已提交';
         pendingScore = null;
