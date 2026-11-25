@@ -1363,12 +1363,11 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
       overflow: hidden;
       white-space: nowrap;
       vertical-align: bottom;
-      transition: max-width .2s ease, opacity .1s ease;
+      transition: max-width .3s cubic-bezier(.4, 0, .2, 1), opacity .16s ease;
     }
     .xsb-links a.is-active .xsb-txt {
       max-width: 8em;
       opacity: 1;
-      transition: max-width .12s ease .2s, opacity .12s ease .2s;
     }
     .xsb-auth-txt { display: none; }
     .xsb-auth { margin-left: 4px; padding: 0 8px; }
@@ -1389,8 +1388,8 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
       opacity: 0;
       pointer-events: none;
       z-index: 0;
-      transition: left .2s cubic-bezier(.4, 0, .2, 1),
-                  width .2s cubic-bezier(.4, 0, .2, 1),
+      transition: left .3s cubic-bezier(.4, 0, .2, 1),
+                  width .3s cubic-bezier(.4, 0, .2, 1),
                   top .2s ease, height .2s ease, opacity .16s ease;
     }
     /* 选中项自己不再画底色，交给胶囊 */
