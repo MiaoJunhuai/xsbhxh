@@ -1244,6 +1244,10 @@
       <a href="../index.html#rules">远征规则</a>
       <a href="../index.html#about" class="xsb-only-pc">关于我们</a>
     </nav>
+    <a href="#" class="xsb-auth" id="navAuth" role="button" aria-label="登录或注册">
+      <span class="xsb-auth-ico" id="navAuthIco" aria-hidden="true">👤</span>
+      <span class="xsb-auth-txt" id="navAuthTxt">登录</span>
+    </a>
   </div>
 </header>
 <style>
@@ -1314,11 +1318,38 @@
     font-size: 12.5px;
     font-weight: 600;
     letter-spacing: .2px;
+    white-space: nowrap;
     transition: color .18s ease, background .18s ease;
   }
 
   .xsb-links a:hover { color: #1f5a3a; background: rgba(47, 125, 79, .08); }
   .xsb-links a.is-active { color: #1f5a3a; background: rgba(47, 125, 79, .12); }
+
+  /* 导航右侧的登录入口：桌面显示文字，手机只留图标，避免挤爆 */
+  .xsb-auth {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+    margin-left: 8px;
+    height: 26px;
+    padding: 0 11px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #1f5a3a;
+    background: rgba(47, 125, 79, .12);
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .18s ease;
+  }
+  .xsb-auth:hover { background: rgba(47, 125, 79, .22); }
+  .xsb-auth.is-on { background: rgba(47, 125, 79, .22); }
+  .xsb-auth-ico { font-size: 12px; line-height: 1; }
+  @media (max-width: 560px) {
+    .xsb-auth { margin-left: 4px; padding: 0 8px; }
+    .xsb-auth-txt { display: none; }
+  }
 
   @media (max-width: 760px) {
     body { padding-top: 56px !important; overflow-x: hidden !important; }
@@ -1327,6 +1358,8 @@
     .xsb-badge { width: 22px; height: 22px; }
     .xsb-badge img { width: 22px; height: 22px; }
     .xsb-links a { padding: 4px 8px; font-size: 12px; }
+    /* 手机端把「关于我们」收起来，给右侧登录按钮腾位置（首页导航里还能进） */
+    .xsb-only-pc { display: none; }
   }
 
   @media (max-width: 480px) {
@@ -2510,6 +2543,14 @@
       if (toggle) toggle.hidden = !!authEmail;
       if (logout) logout.hidden = !authEmail;
       if (form && authEmail) form.hidden = true;
+
+      // 导航栏右上角那个入口也要跟着变
+      const navIco = document.getElementById('navAuthIco');
+      const navTxt = document.getElementById('navAuthTxt');
+      const navBtn = document.getElementById('navAuth');
+      if (navIco) navIco.textContent = authEmail ? '✓' : '👤';
+      if (navTxt) navTxt.textContent = authEmail ? '已登录' : '登录';
+      if (navBtn) navBtn.classList.toggle('is-on', !!authEmail);
     }
 
     function openAuthForm() {
@@ -2589,6 +2630,21 @@
           renderAuthBar();
           loadRank(true);
           if (currentTab === 'total') loadTotalRank();
+        });
+      }
+      // 导航栏上的入口：没登录就展开表单，登录了就滚到账号那一栏
+      const navAuthBtn = document.getElementById('navAuth');
+      if (navAuthBtn) {
+        navAuthBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (authEmail) {
+            const bar = document.getElementById('authBar');
+            if (bar) {
+              try { bar.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
+            }
+          } else {
+            openAuthForm();
+          }
         });
       }
       if (submitEl) {
@@ -3228,39 +3284,53 @@
       }
     }
 
-    // 查这个昵称在服务器上是否被别的浏览器 ID 占着
-    async function checkNickConflict(nick) {
-      if (!nick || nick === '无名贤者') return null;
+    // 走后台函数，只回答「这个昵称是不是被别人的设备/账号占着」
+    // —— 以前是直接查 scores.player_id 再在本地比对，那等于把所有人的设备 ID 公开了
+    async function nickIsTaken(nick) {
+      if (!nick || nick === '无名贤者') return false;
       try {
-        const q = 'scores?nickname=eq.' + encodeURIComponent(nick) +
-                  '&superseded=eq.false&select=player_id,score&limit=5';
-        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
-        if (!res.ok) return null;          // 查不到就放行，别挡住正常提交
-        const rows = await res.json();
-        if (!Array.isArray(rows) || !rows.length) return null;
-        const myId = getPlayerId();
-        return rows.find(function (r) { return r.player_id !== myId; }) || null;
+        const res = await fetch(LB_URL + '/rest/v1/rpc/nick_taken', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ p_nick: nick, p_player: getPlayerId() })
+        });
+        if (!res.ok) return false;         // 接口不可用就放行，别挡住正常提交
+        return (await res.json()) === true;
       } catch (e) {
-        return null;
+        return false;
       }
+    }
+
+    // 后台函数返回「这台设备上还没被顶掉的成绩」，同样不吐 player_id
+    async function fetchMyScores() {
+      try {
+        const res = await fetch(LB_URL + '/rest/v1/rpc/my_scores', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ p_player: getPlayerId() })
+        });
+        if (!res.ok) return [];
+        const rows = await res.json();
+        return Array.isArray(rows) ? rows : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function checkNickConflict(nick) {
+      return (await nickIsTaken(nick)) ? { taken: true } : null;
     }
 
     // 如果这个浏览器已经有记录，把分数最高的那条昵称自动填进输入框
     async function autofillNickname() {
       const nickEl = document.getElementById('rankNick');
       if (!nickEl || nickEl.value.trim()) return;
-      try {
-        const q = 'scores?player_id=eq.' + encodeURIComponent(getPlayerId()) +
-                  '&superseded=eq.false&select=nickname,score&order=score.desc&limit=5';
-        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
-        if (!res.ok) return;
-        const rows = await res.json();
-        if (!Array.isArray(rows) || !rows.length) return;
-        const best = rows[0];
-        if (best.nickname && best.nickname !== '无名贤者' && !nickEl.value.trim()) {
-          nickEl.value = best.nickname;
-        }
-      } catch (e) {}
+      const rows = await fetchMyScores();
+      if (!rows.length) return;
+      const best = rows[0];
+      if (best.nickname && best.nickname !== '无名贤者' && !nickEl.value.trim()) {
+        nickEl.value = best.nickname;
+      }
     }
 
     let confirmAction = null;
@@ -3285,16 +3355,10 @@
       try { box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
     }
 
-    // 查这个浏览器 ID 当前在榜上的那条记录（用来判断是不是换了昵称）
+    // 查这个浏览器当前在榜上的那条记录（用来判断是不是换了昵称）
     async function getMyActiveRecord() {
-      try {
-        const q = 'scores?player_id=eq.' + encodeURIComponent(getPlayerId()) +
-                  '&superseded=eq.false&select=nickname,score&order=score.desc&limit=1';
-        const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
-        if (!res.ok) return null;
-        const rows = await res.json();
-        return Array.isArray(rows) && rows.length ? rows[0] : null;
-      } catch (e) { return null; }
+      const rows = await fetchMyScores();
+      return rows.length ? { nickname: rows[0].nickname, score: rows[0].score } : null;
     }
 
     async function doSubmit(nick) {
