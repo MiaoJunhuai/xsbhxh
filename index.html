@@ -895,7 +895,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.2.9</span>
+          <span class="card-tag">v1.3.0</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
@@ -1198,7 +1198,15 @@
     function place() {
       raf = 0;
       var active = nav.querySelector('a.is-active, a.active');
-      if (!active) { pill.style.opacity = '0'; return; }
+
+      // 没有选中项（比如首页停在最顶上）：把胶囊收起来，并记住「这次是从无到有」
+      if (!active) {
+        pill.style.opacity = '0';
+        pill.style.width = '0px';
+        hadActive = false;
+        return;
+      }
+
       var nr = nav.getBoundingClientRect();
       var ar = active.getBoundingClientRect();
 
@@ -1211,8 +1219,7 @@
       }
 
       // 旧选中项正在把文字收回去，它变窄会让右边的项整体左移。
-      // 只统计位于目标左侧的那些（右边的不影响目标位置）——
-      // 漏掉这一步的话，从左往右切会先冲过头，再等校正时弹回来。
+      // 只统计位于目标左侧的那些（右边的不影响目标位置）
       var shift = 0;
       var items = nav.querySelectorAll('a');
       for (var i = 0; i < items.length; i++) {
@@ -1225,12 +1232,28 @@
         shift += t2.getBoundingClientRect().width;
       }
 
+      var targetLeft = (ar.left - nr.left - shift) + 'px';
+
+      // 「从无到有」的那一次：先瞬移到目标位置（不做 left 过渡），
+      // 再把宽度从 0 展开。看起来就是原地从图标里长出来，而不是从旁边横着滑过来。
+      if (!hadActive) {
+        pill.style.transition = 'none';
+        pill.style.left = targetLeft;
+        pill.style.top = (ar.top - nr.top) + 'px';
+        pill.style.height = ar.height + 'px';
+        pill.style.width = '0px';
+        void pill.offsetWidth;
+        pill.style.transition = '';
+        hadActive = true;
+      }
+
       pill.style.opacity = '1';
-      pill.style.left = (ar.left - nr.left - shift) + 'px';
+      pill.style.left = targetLeft;
       pill.style.top = (ar.top - nr.top) + 'px';
       pill.style.width = (ar.width + extra) + 'px';
       pill.style.height = ar.height + 'px';
     }
+
     function schedule() {
       if (!raf) raf = requestAnimationFrame(place);
       // 过渡走完、布局稳定后再对一次，防止量到中间态
