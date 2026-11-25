@@ -1661,10 +1661,6 @@
         </p>
         <button type="button" class="rank-btn rank-locked-btn" id="rankLockedRegister">注册 / 登录，用我自己的名字</button>
       </div>
-      <div class="rank-form" id="rankForm">
-        <input type="text" id="rankNick" class="rank-nick" maxlength="12" placeholder="留空记为「无名贤者」" autocomplete="off" spellcheck="false">
-        <button type="button" id="rankSubmitBtn" class="rank-btn">计入排行榜</button>
-      </div>
       <div class="rank-msg" id="rankMsg"></div>
       <div class="rank-confirm" id="rankConfirm" hidden>
         <p id="rankConfirmText"></p>
@@ -3338,12 +3334,8 @@
     function resetRankSubmit() {
       const box = document.getElementById('rankSubmit');
       const msg = document.getElementById('rankMsg');
-      const btn = document.getElementById('rankSubmitBtn');
-      const form = document.getElementById('rankForm');
       if (box) box.hidden = true;
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
-      if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
-      if (form) form.style.display = '';
       hideConflictConfirm();
     }
 
@@ -3534,9 +3526,6 @@
 
       const txt = document.getElementById('rankResult');
       const msg = document.getElementById('rankMsg');
-      const btn = document.getElementById('rankSubmitBtn');
-      const form = document.getElementById('rankForm');
-      const nick = document.getElementById('rankNick');
 
       let note = '';
       if (best && !brokeRecord) {
@@ -3554,43 +3543,31 @@
       }
       if (brokeRecord) iconRain();
       if (canSubmit) fillRankEstimate(score);
-      if (form) form.style.display = canSubmit ? '' : 'none';
 
-      // 未登录：把输入框藏掉，换成看得懂「不能改」的展示块
+      // 未登录：显示「游客临时名字」的锁定块（没有输入框，杜绝“能改”的错觉）
       const locked = document.getElementById('rankLocked');
       const lockedNick = document.getElementById('rankLockedNick');
-      if (canSubmit) {
-        if (authEmail) {
-          if (locked) locked.hidden = true;
-          if (nick) nick.style.display = '';
-        } else {
-          if (locked) locked.hidden = false;
-          if (lockedNick) lockedNick.textContent = anonNickname();
-          if (nick) nick.style.display = 'none';
-        }
-      } else {
-        if (locked) locked.hidden = true;
+      if (canSubmit && !authEmail) {
+        if (locked) locked.hidden = false;
+        if (lockedNick) lockedNick.textContent = anonNickname();
+      } else if (locked) {
+        locked.hidden = true;
       }
 
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
-      if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
-      if (canSubmit && nick && authEmail) {
-        let n = '';
-        try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
-        if (n && n !== '无名贤者') {
-          nick.value = n;
-        } else {
-          nick.value = '';
-          if (!nick.value.trim()) autofillNickname();
-        }
-        nick.readOnly = false;
-      }
       box.hidden = false;
 
       // 破纪录 → 看单局榜（自己刚上榜）；没破纪录 → 看总分榜（这一局已计入总分）
       setRankTab(brokeRecord ? 'single' : 'total');
       if (currentTab === 'single') loadRank(true);
       else loadTotalRank();
+
+      // 不用点按钮了：一打完就自动交卷
+      if (brokeRecord) {
+        doSubmit(currentNickname(), true);
+      } else if (!canSubmit) {
+        submitQuietly(currentNickname());
+      }
 
       // 「注册 / 登录」：直接展开旁边的内嵌表单
       const regBtn = document.getElementById('rankLockedRegister');
@@ -3650,25 +3627,6 @@
       return (await nickIsTaken(nick)) ? { taken: true } : null;
     }
 
-    // 如果这个浏览器已经有记录，把分数最高的那条昵称自动填进输入框
-    async function autofillNickname() {
-      const nickEl = document.getElementById('rankNick');
-      if (!nickEl || nickEl.value.trim()) return;
-      // 登录用户优先用账号昵称（账号页改昵称时会同步写进这里）
-      let accNick = '';
-      try { accNick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
-      if (authEmail && accNick && accNick !== '无名贤者') {
-        nickEl.value = accNick;
-        return;
-      }
-      const rows = await fetchMyScores();
-      if (!rows.length) return;
-      const best = rows[0];
-      if (best.nickname && best.nickname !== '无名贤者' && !nickEl.value.trim()) {
-        nickEl.value = best.nickname;
-      }
-    }
-
     let confirmAction = null;
 
     function hideConflictConfirm() {
@@ -3697,25 +3655,24 @@
       return rows.length ? { nickname: rows[0].nickname, score: rows[0].score } : null;
     }
 
-    async function doSubmit(nick) {
+    async function doSubmit(nick, auto) {
       if (!pendingScore) return;
       const msg = document.getElementById('rankMsg');
 
-      // 前端冷却提示：告诉用户还要等几秒，而不是看到他莫名其妙失败
-      let lastAt = 0;
-      try { lastAt = Number(localStorage.getItem(LB_SUBMIT_KEY) || 0); } catch (e) {}
-      const waitSec = LB_SUBMIT_GAP - (Date.now() - lastAt) / 1000;
-      if (lastAt && waitSec > 0) {
-        if (msg) {
-          msg.className = 'rank-msg is-err';
-          msg.textContent = '距上次提交不足 ' + LB_SUBMIT_GAP + ' 秒，请再等 ' + Math.ceil(waitSec) + ' 秒';
+      // 冷却只对「手动重试」生效；自动交卷不拦（玩家刚打完一局，本来就要提交）
+      if (!auto) {
+        let lastAt = 0;
+        try { lastAt = Number(localStorage.getItem(LB_SUBMIT_KEY) || 0); } catch (e) {}
+        const waitSec = LB_SUBMIT_GAP - (Date.now() - lastAt) / 1000;
+        if (lastAt && waitSec > 0) {
+          if (msg) {
+            msg.className = 'rank-msg is-err';
+            msg.textContent = '距上次提交不足 ' + LB_SUBMIT_GAP + ' 秒，请再等 ' + Math.ceil(waitSec) + ' 秒';
+          }
+          return;
         }
-        return;
       }
-
       hideConflictConfirm();
-      rankSubmitBtn.disabled = true;
-      rankSubmitBtn.textContent = '提交中…';
       if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
       try {
@@ -3724,8 +3681,6 @@
         const traceAccepted = await traceOk(submitted.trace, submitted.rounds, submitted.durationMs);
         if (traceAccepted === false) {
           pendingScore = null;
-          rankSubmitBtn.disabled = true;
-          rankSubmitBtn.textContent = '未提交';
           if (msg) {
             msg.className = 'rank-msg is-err';
             msg.textContent = '这一局的操作记录没过校验（多半是连着点得太快），没有提交，也不会算作作弊。再玩一局就好。';
@@ -3771,15 +3726,12 @@
             msg.textContent = '本局没有超过你之前的最好成绩，榜上保留原记录';
           }
         }
-        rankSubmitBtn.textContent = '已提交';
         pendingScore = null;
         clearRankCache();
         await loadRank(true);
         if (currentTab === 'total') loadTotalRank();
         flashMyRow();
       } catch (e) {
-        rankSubmitBtn.disabled = false;
-        rankSubmitBtn.textContent = '重试';
         // 具体原因（HTTP 码 + 数据库报错）一定打到控制台，方便排查；
         // 地址带 ?debug 时也直接显示在页面上
         try { console.error('[排行榜] 提交失败:', e && e.message); } catch (err) {}
@@ -3792,58 +3744,6 @@
           msg.textContent = (zh ? m : '提交失败，请稍后再试') + dbg;
         }
       }
-    }
-
-    const rankSubmitBtn = document.getElementById('rankSubmitBtn');
-    if (rankSubmitBtn) {
-      rankSubmitBtn.addEventListener('click', async function () {
-        if (!pendingScore) return;
-        const nickEl = document.getElementById('rankNick');
-        const msg = document.getElementById('rankMsg');
-        let nick = (nickEl && nickEl.value ? nickEl.value : '').trim().replace(/\s+/g, ' ');
-        const chars = Array.from(nick);
-        if (chars.length > 12) nick = chars.slice(0, 12).join('');
-        if (!nick) nick = '无名贤者';
-
-        // 先查这个昵称有没有被别的浏览器 ID 占着
-        rankSubmitBtn.disabled = true;
-        rankSubmitBtn.textContent = '检查中…';
-        const conflict = await checkNickConflict(nick);
-        const mine = conflict ? null : await getMyActiveRecord();
-        rankSubmitBtn.disabled = false;
-        rankSubmitBtn.textContent = '计入排行榜';
-        if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
-
-        // 情况一：这个昵称被别的设备占着 —— 没登录就先去登录，登录了交给服务端判定
-        if (conflict && !authEmail) {
-          showConfirm(
-            '昵称「<b>' + escapeHtml(nick) + '</b>」已被别的设备用过。<br>登录后可以接着用这个昵称，或者换一个。',
-            '去登录', '换昵称',
-            function () { openAuthForm(); },
-            function () {
-              const el = document.getElementById('rankNick');
-              if (el) { el.focus(); el.select(); }
-            }
-          );
-          return;
-        }
-
-        // 情况二：同一个浏览器换了昵称
-        if (mine && mine.nickname !== nick && nick !== '无名贤者') {
-          showConfirm(
-            '你之前的昵称是「<b>' + escapeHtml(mine.nickname) + '</b>」，提交后原昵称的记录会被替换成「<b>' + escapeHtml(nick) + '</b>」。',
-            '确认替换', '保留原名',
-            function () { doSubmit(nick); },
-            function () {
-              const el = document.getElementById('rankNick');
-              if (el) el.value = mine.nickname;
-            }
-          );
-          return;
-        }
-
-        await doSubmit(nick);
-      });
     }
 
     const rankConfirmYes = document.getElementById('rankConfirmYes');
@@ -3861,18 +3761,6 @@
         const act = confirmAction;
         hideConflictConfirm();
         if (act && act.no) act.no();
-      });
-    }
-
-    // 在昵称框里按回车直接提交，别让回车冒泡去触发「询问贤者」
-    const rankNickEl = document.getElementById('rankNick');
-    if (rankNickEl) {
-      rankNickEl.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (rankSubmitBtn && !rankSubmitBtn.disabled) rankSubmitBtn.click();
-        }
       });
     }
 
