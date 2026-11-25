@@ -1057,6 +1057,10 @@
     }
     .help-pop-list li { margin-bottom: .22rem; }
     .help-pop-list b { color: #8a2a17; }
+    /* 触屏设备没有物理键盘，别提示按键 */
+    @media (hover: none), (pointer: coarse) {
+      .kb-only { display: none; }
+    }
 
     /* 只给游客加标记：注册用户是「正常态」，不需要额外符号 */
     .rank-badge-guest {
@@ -1634,13 +1638,13 @@
 
   <div class="input-area play-only">
     <div class="hint-row">
-      <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(Q/W/E/R)放入物品</div>
+      <div style="color:#4b3a1e; font-weight:bold;">点击图标<span class="kb-only">或按键(Q/W/E/R)</span>放入物品</div>
       <div class="help-wrap">
         <button type="button" class="help-btn" id="helpBtn" aria-expanded="false">? 玩法</button>
         <div class="help-pop" id="helpPop" hidden role="dialog" aria-label="玩法说明">
           <div class="help-pop-title">玩法说明</div>
           <ol class="help-pop-list">
-            <li>四件贡品要按<b>正确顺序</b>摆给四位贤者。点图标，或按键盘 <b>Q / W / E / R</b>。</li>
+            <li>四件贡品要按<b>正确顺序</b>摆给四位贤者。点图标<span class="kb-only">，或按键盘 Q / W / E / R</span>。</li>
             <li>摆好后点「询问贤者」。反馈里 <b>满意</b> 表示材料对且位置也对，<b>不满意</b> 表示材料对但位置错了。</li>
             <li>最多 <b>7 次</b>机会。全部猜中即胜利。</li>
             <li>分数看<b>题型复杂度、轮数、用时</b>：越难、越少轮、越快，分越高。</li>
