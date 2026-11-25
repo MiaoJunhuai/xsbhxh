@@ -2896,6 +2896,27 @@
       return id;
     }
 
+    // 未登录玩家的自动昵称：由设备 ID 算出一个固定的四位数字。
+    // 同一台设备永远是同一个名字，换设备就会变。登录后改用账号昵称。
+    function anonNickname() {
+      const pid = getPlayerId();
+      let h = 0;
+      for (let i = 0; i < pid.length; i++) {
+        h = (h * 31 + pid.charCodeAt(i)) >>> 0;
+      }
+      return '无名冒险家#' + String(h % 10000).padStart(4, '0');
+    }
+
+    // 当前该用哪个昵称：登录了用账号昵称，否则用自动昵称
+    function currentNickname() {
+      if (authEmail) {
+        let n = '';
+        try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+        if (n && n !== '无名贤者') return n;
+      }
+      return anonNickname();
+    }
+
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, function (c) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -2959,11 +2980,10 @@
     // 之后如果一直没有任何通关提交，这局就会被算作放弃（超时 10 分钟）。
     // 玩家看答案后刷新页面、或者直接关掉，都逃不掉——记录已经在服务器上了。
     async function registerRun(gid) {
-      let nick = '无名贤者';
-      try { nick = localStorage.getItem(LB_NICK_KEY) || '无名贤者'; } catch (e) {}
+      let nick = currentNickname();
       const chars = Array.from(nick);
       if (chars.length > 12) nick = chars.slice(0, 12).join('');
-      if (!nick) nick = '无名贤者';
+      if (!nick) nick = anonNickname();
       try {
         await fetch(LB_URL + '/rest/v1/runs', {
           method: 'POST',
@@ -3473,10 +3493,7 @@
 
       // 没破纪录：不打扰玩家，但要把这一局报上去，让总分榜记上
       if (!brokeRecord) {
-        let autoNick = '无名贤者';
-        try { autoNick = localStorage.getItem(LB_NICK_KEY) || '无名贤者'; } catch (e) {}
-        if (!autoNick) autoNick = '无名贤者';
-        submitQuietly(autoNick);
+        submitQuietly(currentNickname());
       }
 
       const txt = document.getElementById('rankResult');
@@ -3505,9 +3522,22 @@
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
       if (canSubmit && nick) {
-        try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
-        // 本机没存过昵称，就看服务器上这个浏览器 ID 有没有历史记录，有就自动填上
-        if (!nick.value.trim()) autofillNickname();
+        // 未登录只能拿「无名冒险家#四位数字」，登录了才用账号昵称
+        if (authEmail) {
+          let n = '';
+          try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+          if (n && n !== '无名贤者') {
+            nick.value = n;
+          } else {
+            nick.value = '';
+            if (!nick.value.trim()) autofillNickname();
+          }
+          nick.readOnly = false;
+        } else {
+          nick.value = anonNickname();
+          nick.readOnly = true;
+          nick.title = '登录后才能自己取名';
+        }
       }
       box.hidden = false;
 
