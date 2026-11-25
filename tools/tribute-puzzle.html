@@ -997,28 +997,6 @@
     }
     .rate-detail[hidden] { display: none; }
     .rate-detail b { color: #4e3b21; }
-    /* 总分榜排序切换 */
-    .total-sort {
-      display: flex;
-      gap: .3rem;
-      margin: 0 0 .5rem;
-    }
-    .total-sort[hidden] { display: none; }
-    .sort-btn {
-      padding: .2rem .55rem;
-      font-size: .7rem;
-      font-family: inherit;
-      color: #7b6a50;
-      background: rgba(139, 110, 60, .08);
-      border: 1px solid rgba(139, 110, 60, .22);
-      border-radius: .4rem;
-      cursor: pointer;
-    }
-    .sort-btn.is-active {
-      color: #fff8e6;
-      background: linear-gradient(145deg, #b8860b, #96690a);
-      border-color: transparent;
-    }
     .rank-badge-acct {
       display: inline-block;
       margin-left: .22rem;
@@ -1596,13 +1574,13 @@
     <div class="rank-head">
       <span class="rank-title">排行榜</span>
       <div class="rank-tabs" id="rankTabs">
-        <button type="button" class="rank-tab is-active" data-tab="single">单局最高</button>
-        <button type="button" class="rank-tab" data-tab="total">累计总分</button>
+        <button type="button" class="rank-tab" data-tab="single">单局最高</button>
+        <button type="button" class="rank-tab is-active" data-tab="total">累计总分</button>
       </div>
       <button type="button" class="rank-info" id="rankInfoBtn" aria-label="分数说明" title="分数怎么算" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></button>
       <button type="button" class="rank-refresh" id="rankRefreshBtn" aria-label="刷新排行榜" title="刷新排行榜"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     </div>
-    <div class="rank-subline" id="rankSub">手动练习 · 分数高者在前</div>
+    <div class="rank-subline" id="rankSub">累计总分 · 每失败一局扣 1000 分</div>
     <div class="auth-bar" id="authBar">
       <span class="auth-who" id="authWho">未登录 · 换设备后分数不会同步</span>
       <button type="button" class="auth-toggle" id="authToggle">登录 / 注册</button>
@@ -1640,14 +1618,10 @@
         </div>
       </div>
     </div>
-    <div class="rank-list" id="rankList">
+    <div class="rank-list" id="rankList" hidden>
       <div class="rank-loading">正在载入…</div>
     </div>
-    <div class="total-sort" id="totalSort" hidden>
-      <button type="button" class="sort-btn is-active" data-sort="score">按总分</button>
-      <button type="button" class="sort-btn" data-sort="win_rate">按胜率</button>
-    </div>
-    <div class="rank-list" id="totalList" hidden>
+    <div class="rank-list" id="totalList">
       <div class="rank-loading">正在载入…</div>
     </div>
   </div>
@@ -3175,7 +3149,7 @@
     }
 
     // ==================== 总分榜 ====================
-    let currentTab = 'single';
+    let currentTab = 'total';
 
     function fmtNum(n) {
       n = Number(n) || 0;
@@ -3185,11 +3159,10 @@
     }
 
     async function fetchTotalRank() {
-      const order = totalSort === 'win_rate'
-        ? 'win_rate.desc.nullslast,total_score.desc'
-        : 'total_score.desc,win_rate.desc.nullslast';
-      const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account' +
-                '&order=' + order + '&limit=' + LB_LIMIT;
+      // 胜率每 5% 一档（rate_band），档内再比总分：
+      // 避免「胜率 100% 但只打了 5 局」把打了上百局的老玩家全压下去
+      const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account,rate_band' +
+                '&order=rate_band.desc,total_score.desc,win_rate.desc.nullslast&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
@@ -3271,9 +3244,6 @@
       if (single) single.hidden = tab !== 'single';
       if (total) total.hidden = tab !== 'total';
 
-      const sortBar = document.getElementById('totalSort');
-      if (sortBar) sortBar.hidden = tab !== 'total';
-
       const sub = document.getElementById('rankSub');
       if (sub) {
         sub.textContent = tab === 'single'
@@ -3281,6 +3251,7 @@
           : '累计总分 · 每失败一局扣 1000 分';
       }
       if (tab === 'total') loadTotalRank();
+      else loadRank();
     }
 
     const rankTabsEl = document.getElementById('rankTabs');
@@ -3289,23 +3260,6 @@
         const btn = e.target.closest('.rank-tab');
         if (!btn) return;
         setRankTab(btn.dataset.tab);
-      });
-    }
-
-    // 总分榜排序：按总分 / 按胜率
-    let totalSort = 'score';
-    const totalSortEl = document.getElementById('totalSort');
-    if (totalSortEl) {
-      totalSortEl.addEventListener('click', function (e) {
-        const btn = e.target.closest('.sort-btn');
-        if (!btn) return;
-        const s = btn.getAttribute('data-sort');
-        if (!s || s === totalSort) return;
-        totalSort = s;
-        totalSortEl.querySelectorAll('.sort-btn').forEach(function (b) {
-          b.classList.toggle('is-active', b.getAttribute('data-sort') === s);
-        });
-        loadTotalRank();
       });
     }
 
@@ -3851,7 +3805,8 @@
     // 先恢复登录状态，再拉榜单（榜单请求要带上令牌才会按账号视角返回）
     initAuthUI();
 
-    loadRank();
+    // 默认展示「累计总分」，单局榜点一下才加载
+    loadTotalRank();
 
     // iOS Safari：让 :active 按下态立刻生效，不然要等手指抬起才有反馈
     document.addEventListener('touchstart', function () {}, { passive: true });
