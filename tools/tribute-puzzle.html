@@ -446,6 +446,25 @@
       box-shadow: 0 0 0 3px rgba(255, 190, 180, 0.42);
     }
 
+    /* 重置前的二次确认提示 */
+    .reset-warn {
+      margin: -.2rem 0 .55rem;
+      padding: .35rem .6rem;
+      font-size: .72rem;
+      line-height: 1.4;
+      text-align: center;
+      color: #8a2a17;
+      background: rgba(176, 58, 46, .10);
+      border: 1px dashed rgba(176, 58, 46, .5);
+      border-radius: .45rem;
+      animation: resetWarnIn .16s ease-out;
+    }
+    .reset-warn[hidden] { display: none; }
+    @keyframes resetWarnIn {
+      from { opacity: 0; transform: translateY(-3px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     /* 重置完成：四尊石像依次跳一下，反馈框闪一圈金光 */
     .game-container.is-resetting .statue {
       animation: statue-reset 0.55s ease both;
@@ -1349,6 +1368,7 @@
       <button type="button" class="reset-pill" id="resetBtn">重置答案</button>
     </span>
   </div>
+  <div class="reset-warn" id="resetWarn" hidden></div>
 
   <div class="feedback-box play-only" id="feedbackMessage">
     <div class="feedback-line">⚡ 摆放供品，询问贤者...</div>
@@ -1859,6 +1879,44 @@
     };
 
     let resetHoldTimer = 0;
+    // 重置现在要「触发两次」：第一次只是亮出提示，第二次才真的重置。
+    // 桌面端点两下（双击自然满足），手机长按两次；第一次后 3 秒没动静就自动取消。
+    let resetArmed = false;
+    let resetArmTimer = 0;
+
+    function armReset() {
+      resetArmed = true;
+      const warn = document.getElementById('resetWarn');
+      if (warn) {
+        warn.textContent = isTouchDevice()
+          ? '⚠️ 再长按一次确认重置：本局算作放弃，排行榜扣 1000 分'
+          : '⚠️ 再点一次确认重置：本局算作放弃，排行榜扣 1000 分';
+        warn.hidden = false;
+      }
+      resetBtn.classList.add('is-armed');
+      resetBtn.textContent = '确认放弃';
+      clearTimeout(resetArmTimer);
+      resetArmTimer = setTimeout(disarmReset, 3000);
+    }
+
+    function disarmReset() {
+      resetArmed = false;
+      clearTimeout(resetArmTimer);
+      resetArmTimer = 0;
+      const warn = document.getElementById('resetWarn');
+      if (warn) warn.hidden = true;
+      resetBtn.classList.remove('is-armed');
+      resetBtn.textContent = isTouchDevice() ? '长按重置' : '重置答案';
+    }
+
+    function doReset() {
+      disarmReset();
+      resetBtn.classList.add('is-armed');
+      setTimeout(function () { resetBtn.classList.remove('is-armed'); }, 280);
+      try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
+      resetGame();
+      playResetAnimation();
+    }
 
     // 重置完成的小动画：石像依次跳起、反馈框闪一圈金光
     function playResetAnimation() {
@@ -1876,11 +1934,8 @@
       resetHoldTimer = setTimeout(function () {
         resetHoldTimer = 0;
         resetWrap.classList.remove('is-holding');
-        resetBtn.classList.add('is-armed');
-        setTimeout(function () { resetBtn.classList.remove('is-armed'); }, 280);
-        try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {}
-        resetGame();
-        playResetAnimation();
+        if (!resetArmed) { armReset(); return; }
+        doReset();
       }, RESET_HOLD_MS);
     }
 
@@ -1903,8 +1958,8 @@
 
     resetBtn.addEventListener('click', function (e) {
       if (isTouchDevice()) { e.preventDefault(); return; }  // 触摸设备走长按
-      resetGame();
-      playResetAnimation();
+      if (!resetArmed) { armReset(); return; }
+      doReset();
     });
 
     if (isTouchDevice()) resetBtn.textContent = '长按重置';
@@ -2598,13 +2653,17 @@
         const shown = nameCount[base] > 1 ? base + '（' + nameCount[base] + '）' : base;
         const cls = ['rank-row'];
         if (no <= 3) cls.push('is-top' + no);
+        // 历史数据不计入胜率；新规则下不足 5 局的先不显示，避免榜上全是 100%
+        const rateTxt = (r.win_rate === null || r.win_rate === undefined)
+          ? '胜率 <b>--</b>'
+          : '胜率 <b>' + r.win_rate + '%</b>';
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
                  '<span class="rank-name">' + escapeHtml(shown) +
                    (r.is_account ? '<i class="rank-badge-acct" title="已绑定账号">✓</i>' : '') +
                  '</span>' +
                  '<span class="rank-score">' + fmtNum(r.total_score) + '<small>分</small></span>' +
-                 '<span class="rank-meta"><b>' + r.games + '</b> 局 · 胜率 <b>' + r.win_rate + '%</b>' +
+                 '<span class="rank-meta"><b>' + r.games + '</b> 局 · ' + rateTxt +
                    (Number(r.abandons) > 0 ? ' · 放弃 <b>' + r.abandons + '</b>' : '') +
                  '</span>' +
                '</div>';
