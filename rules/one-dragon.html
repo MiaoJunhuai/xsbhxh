@@ -672,6 +672,7 @@
       <span class="xsb-word">新手保护联盟</span>
     </a>
     <nav class="xsb-links" aria-label="官网导航">
+      <span class="nav-pill" aria-hidden="true"></span>
       <a href="../index.html#apply"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="xsb-txt">申请入会</span></a>
       <a href="../index.html#tools"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="xsb-txt">工具</span></a>
       <a href="../index.html#rules" class="is-active"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="xsb-txt">远征规则</span></a>
@@ -1371,6 +1372,30 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
     .xsb-auth-txt { display: none; }
     .xsb-auth { margin-left: 4px; padding: 0 8px; }
   }
+  .xsb-links, .nav-links { --pill-bg: rgba(59, 51, 39, .55); }
+
+  /* ===== 导航选中胶囊：单独一个元素在各项之间滑动，不再整块淡入淡出 ===== */
+  .nav-pill { display: none; }
+  @media (max-width: 760px) {
+    .xsb-links, .nav-links { position: relative; }
+    .nav-pill {
+      display: block;
+      position: absolute;
+      left: 0; top: 0;
+      width: 0; height: 0;
+      border-radius: 999px;
+      background: var(--pill-bg, rgba(59, 51, 39, .55));
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition: left .34s cubic-bezier(.4, 0, .2, 1),
+                  width .34s cubic-bezier(.4, 0, .2, 1),
+                  top .2s ease, height .2s ease, opacity .16s ease;
+    }
+    /* 选中项自己不再画底色，交给胶囊 */
+    .xsb-links a.is-active, .nav-links a.active { background: transparent !important; }
+    .xsb-links a, .nav-links a { z-index: 1; }
+  }
 </style>
 <script>
   (function () {
@@ -1434,6 +1459,59 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
   } catch (e) {}
 })();
 </script>
+
+<!-- 让选中的胶囊滑动到当前项（移动端） -->
+<script>
+(function () {
+  function init() {
+    var nav = document.querySelector('.xsb-links, .nav-links');
+    if (!nav) return;
+    var pill = nav.querySelector('.nav-pill');
+    if (!pill) return;
+    var raf = 0;
+
+    function place() {
+      raf = 0;
+      var active = nav.querySelector('a.is-active, a.active');
+      if (!active) { pill.style.opacity = '0'; return; }
+      var nr = nav.getBoundingClientRect();
+      var ar = active.getBoundingClientRect();
+      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度，
+      // 这样胶囊的目标宽度一开始就是对的，滑过去正好包住
+      var txt = active.querySelector('.xsb-txt, .nav-txt');
+      var extra = 0;
+      if (txt) {
+        var tr = txt.getBoundingClientRect();
+        extra = Math.max(0, txt.scrollWidth - tr.width);
+      }
+      pill.style.opacity = '1';
+      pill.style.left = (ar.left - nr.left) + 'px';
+      pill.style.top = (ar.top - nr.top) + 'px';
+      pill.style.width = (ar.width + extra) + 'px';
+      pill.style.height = ar.height + 'px';
+    }
+    function schedule() {
+      if (!raf) raf = requestAnimationFrame(place);
+      // 过渡走完、布局稳定后再对一次，防止量到中间态
+      setTimeout(place, 420);
+    }
+
+    place();
+    setTimeout(place, 220);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+    window.addEventListener('resize', schedule);
+    window.addEventListener('orientationchange', schedule);
+
+    var obs = new MutationObserver(schedule);
+    Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
+      obs.observe(a, { attributes: true, attributeFilter: ['class'] });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
 </body>
 
 </html>
