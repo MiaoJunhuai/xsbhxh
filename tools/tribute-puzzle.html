@@ -3022,7 +3022,7 @@
     }
 
     async function fetchRank() {
-      const q = LB_VIEW + '?select=nickname,pattern,rounds,duration_ms,score,flagged' +
+      const q = LB_VIEW + '?select=nickname,pattern,rounds,duration_ms,score,flagged,is_account' +
                 '&order=score.desc,duration_ms.asc,created_at.asc&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -3133,7 +3133,9 @@
         if (r.flagged) cls.push('is-flagged');
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
-                 '<span class="rank-name">' + escapeHtml(r.nickname) + '</span>' +
+                 '<span class="rank-name">' + escapeHtml(r.nickname) +
+                   (r.is_account ? '' : '<i class="rank-badge-guest">游客</i>') +
+                 '</span>' +
                  '<span class="rank-score">' + r.score + '<small>分</small></span>' +
                  '<span class="rank-meta">题型 <b>' + (PATTERN_NOTE[r.pattern] ? r.pattern : '?') + '</b> · <b>' + r.rounds + '</b> 轮 · ' + fmtSeconds(r.duration_ms) +
                    (r.flagged ? '<span class="rank-flag">疑似作弊</span>' : '') + '</span>' +
