@@ -2333,7 +2333,10 @@
     }
 
     async function postScore(nickname, pattern, rounds, durationMs, trace) {
-      const res = await fetch(LB_URL + '/rest/v1/' + LB_TABLE, {
+      // 后面必须带 ?select=score：trace 列对匿名用户是「无权限」，而
+      // Prefer: return=representation 默认要求 RETURNING *（所有列），
+      // 一旦碰到 trace 整条插入就会被 42501 拒掉。限定只回传 score 就没问题。
+      const res = await fetch(LB_URL + '/rest/v1/' + LB_TABLE + '?select=score', {
         method: 'POST',
         headers: Object.assign({}, lbHeaders(), {
           'Content-Type': 'application/json',
@@ -2785,7 +2788,14 @@
       } catch (e) {
         rankSubmitBtn.disabled = false;
         rankSubmitBtn.textContent = '重试';
-        if (msg) { msg.className = 'rank-msg is-err'; msg.textContent = '提交失败，请稍后再试'; }
+        // 具体原因（HTTP 码 + 数据库报错）一定打到控制台，方便排查；
+        // 地址带 ?debug 时也直接显示在页面上
+        try { console.error('[排行榜] 提交失败:', e && e.message); } catch (err) {}
+        if (msg) {
+          msg.className = 'rank-msg is-err';
+          const dbg = /[?&]debug\b/.test(location.search) ? '（' + (e && e.message ? e.message : '未知错误') + '）' : '';
+          msg.textContent = '提交失败，请稍后再试' + dbg;
+        }
       }
     }
 
