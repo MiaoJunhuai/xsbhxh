@@ -228,15 +228,6 @@
     }
     .acct-back a { color: #8b7a5e; text-decoration: none; }
     .acct-back a:hover { color: #4e3e2b; }
-    .acct-hint {
-      margin-top: 16px;
-      padding: 12px 14px;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #7b6a50;
-      background: rgba(139, 110, 60, .07);
-      border-radius: 10px;
-    }
     .xsb-links, .nav-links { --pill-bg: rgba(47, 125, 79, .2); }
 
   /* ===== 导航选中胶囊：单独一个元素在各项之间滑动，不再整块淡入淡出 ===== */
@@ -288,7 +279,7 @@
 <main class="acct-wrap">
   <section class="acct-card">
     <h1 class="acct-title">账号</h1>
-    <p class="acct-sub">新手保护联盟的通用账号。以后开放的结账、留言等功能也都会用它。</p>
+    <p class="acct-sub">新手保护联盟的通用账号。用于结账、留言、小游戏成绩等功能。</p>
 
     <div id="viewGuest">
       <div class="acct-modes">
@@ -300,7 +291,7 @@
       <input type="password" id="acctPass" class="acct-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
       <div class="acct-msg" id="acctMsg"></div>
       <button type="button" class="acct-submit" id="acctSubmit">登录</button>
-      <p class="acct-note">不发验证邮件。邮箱只当用户名用，忘记密码找群主重置。</p>
+      <p class="acct-note">不发验证邮件，忘记密码找群主。</p>
     </div>
 
     <div id="viewUser" hidden>
@@ -308,12 +299,9 @@
       <div class="acct-row"><span>关联的游戏成绩</span><b id="acctScores">—</b></div>
       <div class="acct-row"><span>登录状态</span><b id="acctClaim">—</b></div>
       <button type="button" class="acct-logout" id="acctLogout">退出登录</button>
-      <p class="acct-note">退出只是让这台设备变回未登录，账号里的东西不会丢。</p>
+      <p class="acct-note">退出后这台设备变回未登录，账号里的东西不会丢。</p>
     </div>
 
-    <div class="acct-hint" id="acctHint">
-      没有账号也能玩游戏。只是换设备之后，之前的数据不会自动接上；以后开放的结账、留言等功能则需要登录才能用。
-    </div>
   </section>
 
   <p class="acct-back"><a href="../index.html">← 返回首页</a></p>
