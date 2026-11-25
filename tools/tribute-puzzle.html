@@ -3859,7 +3859,7 @@
     const helpBtn = document.getElementById('helpBtn');
     const helpPop = document.getElementById('helpPop');
     if (helpBtn && helpPop) {
-      // 把浮窗摆在按钮下方，并保证整个浮窗都在视口内（窄屏尤其要夹住）
+      // 把浮窗摆在按钮下方，水平居中于屏幕（窄屏也不会露出去）
       const placeHelp = function () {
         if (helpPop.hidden) return;
         const M = 10;
@@ -3867,9 +3867,8 @@
         const w = Math.min(320, window.innerWidth - M * 2);
         helpPop.style.width = w + 'px';
 
-        let left = b.right - w;                       // 默认右对齐按钮
-        left = Math.max(M, Math.min(left, window.innerWidth - M - w));
-        helpPop.style.left = left + 'px';
+        // 水平居中，而不是贴着按钮——贴着按钮在窄屏上总有一边很空
+        helpPop.style.left = Math.round((window.innerWidth - w) / 2) + 'px';
 
         const h = helpPop.offsetHeight;
         let top = b.bottom + 8;                       // 默认在按钮下方
