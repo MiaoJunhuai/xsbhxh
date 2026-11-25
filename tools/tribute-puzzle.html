@@ -999,6 +999,63 @@
     }
     .rate-detail[hidden] { display: none; }
     .rate-detail b { color: #4e3b21; }
+    /* 玩法说明：按钮 + 就地浮窗 */
+    .hint-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+    .help-wrap { position: relative; flex: none; }
+    .help-btn {
+      padding: .18rem .5rem;
+      font-size: .72rem;
+      font-family: inherit;
+      font-weight: 700;
+      color: #8a6a1e;
+      background: rgba(184, 134, 30, .12);
+      border: 1px solid rgba(184, 134, 30, .4);
+      border-radius: .4rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .help-btn:hover,
+    .help-btn[aria-expanded="true"] {
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border-color: transparent;
+    }
+    .help-pop {
+      position: absolute;
+      z-index: 30;
+      top: calc(100% + .4rem);
+      right: 0;
+      width: min(20rem, 78vw);
+      padding: .7rem .8rem;
+      text-align: left;
+      background: #fffaf0;
+      border: 1px solid rgba(139, 110, 60, .45);
+      border-radius: .6rem;
+      box-shadow: 0 8px 24px rgba(80, 60, 20, .22);
+    }
+    .help-pop[hidden] { display: none; }
+    .help-pop-title {
+      font-size: .82rem;
+      font-weight: 700;
+      color: #4e3b21;
+      margin-bottom: .3rem;
+    }
+    .help-pop-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: .74rem;
+      line-height: 1.6;
+      color: #5b4a30;
+    }
+    .help-pop-list li { margin-bottom: .22rem; }
+    .help-pop-list b { color: #8a2a17; }
+
     /* 只给游客加标记：注册用户是「正常态」，不需要额外符号 */
     .rank-badge-guest {
       display: inline-block;
@@ -1574,7 +1631,23 @@
   </div>
 
   <div class="input-area play-only">
-    <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(Q/W/E/R)放入物品</div>
+    <div class="hint-row">
+      <div style="color:#4b3a1e; font-weight:bold;">点击图标或按键(Q/W/E/R)放入物品</div>
+      <div class="help-wrap">
+        <button type="button" class="help-btn" id="helpBtn" aria-expanded="false">? 玩法</button>
+        <div class="help-pop" id="helpPop" hidden role="dialog" aria-label="玩法说明">
+          <div class="help-pop-title">玩法说明</div>
+          <ol class="help-pop-list">
+            <li>四件贡品要按<b>正确顺序</b>摆给四位贤者。点图标，或按键盘 <b>Q / W / E / R</b>。</li>
+            <li>摆好后点「询问贤者」。反馈里的 <b>🐂</b> 表示物品和位置都对，<b>🐄</b> 表示物品对但位置不对。</li>
+            <li>最多 <b>7 次</b>机会。全部猜中即胜利。</li>
+            <li>分数看<b>题型复杂度、轮数、用时</b>：越难、越少轮、越快，分越高。</li>
+            <li>累计总分里，每<b>失败一局扣 1000 分</b>（中途关页面也算失败）。</li>
+            <li>游客也能上榜，但名字是系统给的。想自己取名、换设备不丢分，得注册。</li>
+          </ol>
+        </div>
+      </div>
+    </div>
     <div class="items-grid">
       <div class="item-btn" data-item="Q" title="兵法卷轴(Art of War Scroll)"><img class="trib-icon" src="../assets/tribute/scroll.png" alt="兵法卷轴"></div>
       <div class="item-btn" data-item="W" title="勇猛勋章(Bravery Medal)"><img class="trib-icon" src="../assets/tribute/medal.png" alt="勇猛勋章"></div>
@@ -1758,6 +1831,8 @@
     const LB_VIEW = 'leaderboard';
     const LB_LIMIT = 20;
     const LB_CACHE_KEY = 'xsbhxh_rank_cache_v1';
+    // 缓存结构变了就 +1，老缓存会自动作废
+    const LB_CACHE_VER = 2;
     const LB_CACHE_TTL = 5 * 60 * 1000;
     const LB_REFRESH_GAP = 3000;
     const LB_NICK_KEY = 'xsbhxh_nickname';
@@ -3149,13 +3224,16 @@
         if (!raw) return null;
         const obj = JSON.parse(raw);
         if (!obj || !Array.isArray(obj.rows)) return null;
+        // 缓存格式升级过：老缓存里没有 is_account 字段，直接当过期丢掉，
+        // 否则「刀里个刀」这种已经绑定账号的会被错标成游客
+        if (obj.v !== LB_CACHE_VER) return null;
         return obj;
       } catch (e) { return null; }
     }
 
     function writeRankCache(rows) {
       try {
-        sessionStorage.setItem(LB_CACHE_KEY, JSON.stringify({ at: Date.now(), rows: rows }));
+        sessionStorage.setItem(LB_CACHE_KEY, JSON.stringify({ v: LB_CACHE_VER, at: Date.now(), rows: rows }));
       } catch (e) {}
     }
 
@@ -3774,6 +3852,30 @@
 
     // 先恢复登录状态，再拉榜单（榜单请求要带上令牌才会按账号视角返回）
     initAuthUI();
+
+    // 玩法说明：点按钮在它旁边展开，点外面 / 再点一次 / 按 Esc 收起
+    const helpBtn = document.getElementById('helpBtn');
+    const helpPop = document.getElementById('helpPop');
+    if (helpBtn && helpPop) {
+      const closeHelp = function () {
+        helpPop.hidden = true;
+        helpBtn.setAttribute('aria-expanded', 'false');
+      };
+      helpBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const willOpen = helpPop.hidden;
+        helpPop.hidden = !willOpen;
+        helpBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+      document.addEventListener('click', function (e) {
+        if (helpPop.hidden) return;
+        if (helpPop.contains(e.target) || helpBtn.contains(e.target)) return;
+        closeHelp();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeHelp();
+      });
+    }
 
     // 默认展示「累计总分」，单局榜点一下才加载
     loadTotalRank();
