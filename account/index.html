@@ -599,9 +599,17 @@
       saveAuth(data);
       // 注册时把昵称写进 profiles；登录的话如果还没有资料也顺手补一个
       var ensure = mode === 'signup'
-        ? postJson('/rest/v1/rpc/create_profile', { p_nick: nick }).then(function () {}, function () {})
+        ? postJson('/rest/v1/rpc/create_profile', { p_nick: nick, p_player: getPlayerId() }).then(function (res) {
+            if (!res.ok) {
+              return res.text().then(function (t) {
+                var m = '';
+                try { m = (JSON.parse(t) || {}).message || ''; } catch (e) {}
+                throw new Error(m || '昵称写不进去，换个名字试试');
+              });
+            }
+          })
         : loadProfile().then(function (p) {
-            if (!p) return postJson('/rest/v1/rpc/create_profile', { p_nick: '无名贤者' }).then(function () {}, function () {});
+            if (!p) return postJson('/rest/v1/rpc/create_profile', { p_nick: '无名贤者', p_player: getPlayerId() }).then(function () {}, function () {});
           });
       setMsg('已登录，正在合并这台设备上的成绩…', 'is-ok');
       return ensure.then(function () { return claimRecords(); }).then(function (n) {

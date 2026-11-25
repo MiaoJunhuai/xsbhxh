@@ -2806,12 +2806,23 @@
             // 注册时把昵称写进 profiles，登录时如果还没有资料就补一个「无名贤者」
             if (mode === 'signup') {
               try {
-                await fetch(LB_URL + '/rest/v1/rpc/create_profile', {
+                const pr = await fetch(LB_URL + '/rest/v1/rpc/create_profile', {
                   method: 'POST',
                   headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-                  body: JSON.stringify({ p_nick: signupNick })
+                  body: JSON.stringify({ p_nick: signupNick, p_player: getPlayerId() })
                 });
-                try { localStorage.setItem(LB_NICK_KEY, signupNick); } catch (e) {}
+                if (!pr.ok) {
+                  const errText = await pr.text();
+                  let em = '';
+                  try { em = (JSON.parse(errText) || {}).message || ''; } catch (e) {}
+                  // 昵称冲突：把刚建好的账号留在本地，但明确告诉玩家去账号页改个名
+                  if (msgEl) {
+                    msgEl.textContent = em || '昵称写不进去，登录后去账号页改一个吧';
+                    msgEl.className = 'auth-msg is-err';
+                  }
+                } else {
+                  try { localStorage.setItem(LB_NICK_KEY, signupNick); } catch (e) {}
+                }
               } catch (e) {}
             } else {
               try {
@@ -2825,7 +2836,7 @@
                   await fetch(LB_URL + '/rest/v1/rpc/create_profile', {
                     method: 'POST',
                     headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-                    body: JSON.stringify({ p_nick: '无名贤者' })
+                    body: JSON.stringify({ p_nick: '无名贤者', p_player: getPlayerId() })
                   });
                 } else if (rows[0] && rows[0].nickname) {
                   try { localStorage.setItem(LB_NICK_KEY, rows[0].nickname); } catch (e) {}
