@@ -2362,6 +2362,24 @@
       return Array.isArray(rows) && rows.length > 0;
     }
 
+    // 提交前先用服务端同一个校验函数自检一遍：不合格就不提交。
+    // 因为数据库那边「校验不通过」= 判作弊 + 封设备，一旦手速太快被误判，
+    // 之后连正常局都提交不了。宁可让这一局明确作废，也不要平白吃一次封禁。
+    async function traceOk(trace, rounds, durationMs) {
+      try {
+        const res = await fetch(LB_URL + '/rest/v1/rpc/validate_trace', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ p_ms: durationMs, p_rounds: rounds, p_trace: trace })
+        });
+        if (!res.ok) return null;          // 接口不可用就放行，别挡住正常提交
+        const v = await res.json();
+        return v === true;
+      } catch (e) {
+        return null;
+      }
+    }
+
     function patternTag(pattern) {
       const note = PATTERN_NOTE[pattern] || '';
       return '<span class="rank-pattern" title="' + note + '">' + pattern + '</span>';
@@ -2780,6 +2798,18 @@
 
       try {
         const submitted = pendingScore;
+        // 提交前先自检操作序列，不合格就不往上传（见 traceOk 的注释）
+        const traceAccepted = await traceOk(submitted.trace, submitted.rounds, submitted.durationMs);
+        if (traceAccepted === false) {
+          pendingScore = null;
+          rankSubmitBtn.disabled = true;
+          rankSubmitBtn.textContent = '未提交';
+          if (msg) {
+            msg.className = 'rank-msg is-err';
+            msg.textContent = '这一局的操作记录没过校验（多半是连着点得太快），没有提交，也不会算作作弊。再玩一局就好。';
+          }
+          return;
+        }
         // 提交前先记住「当时的最好成绩」，用来区分「分数确实不够」和「分数够了但被服务端判异常」
         const bestBefore = readBest();
         const accepted = await postScore(nick, submitted.pattern, submitted.rounds, submitted.durationMs, submitted.trace);
