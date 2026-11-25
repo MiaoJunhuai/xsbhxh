@@ -1057,6 +1057,15 @@
     }
     .help-pop-list li { margin-bottom: .22rem; }
     .help-pop-list b { color: #8a2a17; }
+    /* 页面版本号：方便一眼确认手机跑的是不是最新版 */
+    .page-ver {
+      margin-top: .35rem;
+      text-align: center;
+      font-size: .68rem;
+      letter-spacing: .04em;
+      color: #9a8764;
+      opacity: .85;
+    }
     /* 触屏设备没有物理键盘，别提示按键 */
     @media (hover: none), (pointer: coarse) {
       .kb-only { display: none; }
@@ -1623,6 +1632,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
+  <div class="page-ver" id="pageVer">v1.6.2</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
