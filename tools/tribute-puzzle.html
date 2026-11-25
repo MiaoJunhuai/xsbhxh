@@ -1500,6 +1500,8 @@
     // 每一轮的操作记录：{ t: 距开局的毫秒, g: 猜测, f: [bulls, cows] }
     // 提交时随成绩一起上传，后端用它校验这一局是不是真的玩出来的
     let roundTrace = [];
+    // 每一次点击物品的时间点（毫秒，从开局算），用来检测手填固定间隔
+    let clickTimes = [];
     const ITEMS = ['Q', 'W', 'E', 'R'];
     const ITEM_IMG = {
       'Q': '../assets/tribute/scroll.png',
@@ -1550,6 +1552,7 @@
       roundStartAt = 0;
       pendingScore = null;
       roundTrace = [];
+      clickTimes = [];
       resetRankSubmit();
       setHistoryFolded(false, 0);
       updateSlotDisplay();
@@ -1603,6 +1606,8 @@
       }
       // 第一次摆放贡品时开始计时
       if (!roundStartAt) roundStartAt = Date.now();
+      // 记下这一次点击的时间点（第一次点击记为 0）
+      clickTimes.push(Date.now() - roundStartAt);
       for (let i = 0; i < CODE_LENGTH; i++) {
         if (currentGuess[i] === '') {
           currentGuess[i] = item;
@@ -2625,7 +2630,9 @@
           s: traceCode(secret),
           t: roundTrace.map(function (x) { return x.t; }),
           g: roundTrace.map(function (x) { return traceCode(x.g.split('')); }),
-          f: roundTrace.map(function (x) { return x.f; })
+          f: roundTrace.map(function (x) { return x.f; }),
+          // 每次点击物品的时间点，后端会检查间隔是否过于均匀（真人不可能每次都一样）
+          k: clickTimes.slice()
         }
       };
       const txt = document.getElementById('rankResult');
