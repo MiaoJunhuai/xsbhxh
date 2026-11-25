@@ -997,6 +997,28 @@
     }
     .rate-detail[hidden] { display: none; }
     .rate-detail b { color: #4e3b21; }
+    /* 总分榜排序切换 */
+    .total-sort {
+      display: flex;
+      gap: .3rem;
+      margin: 0 0 .5rem;
+    }
+    .total-sort[hidden] { display: none; }
+    .sort-btn {
+      padding: .2rem .55rem;
+      font-size: .7rem;
+      font-family: inherit;
+      color: #7b6a50;
+      background: rgba(139, 110, 60, .08);
+      border: 1px solid rgba(139, 110, 60, .22);
+      border-radius: .4rem;
+      cursor: pointer;
+    }
+    .sort-btn.is-active {
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border-color: transparent;
+    }
     .rank-badge-acct {
       display: inline-block;
       margin-left: .22rem;
@@ -1620,6 +1642,10 @@
     </div>
     <div class="rank-list" id="rankList">
       <div class="rank-loading">正在载入…</div>
+    </div>
+    <div class="total-sort" id="totalSort" hidden>
+      <button type="button" class="sort-btn is-active" data-sort="score">按总分</button>
+      <button type="button" class="sort-btn" data-sort="win_rate">按胜率</button>
     </div>
     <div class="rank-list" id="totalList" hidden>
       <div class="rank-loading">正在载入…</div>
@@ -3096,8 +3122,11 @@
     }
 
     async function fetchTotalRank() {
+      const order = totalSort === 'win_rate'
+        ? 'win_rate.desc.nullslast,total_score.desc'
+        : 'total_score.desc,win_rate.desc.nullslast';
       const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account' +
-                '&order=total_score.desc,win_rate.desc&limit=' + LB_LIMIT;
+                '&order=' + order + '&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
@@ -3163,30 +3192,57 @@
       });
     }
 
+    // 切标签页（游戏结束后会自动切到总分榜，所以抽成函数复用）
+    function setRankTab(tab) {
+      if (!tab || tab === currentTab) return;
+      currentTab = tab;
+
+      const tabsEl = document.getElementById('rankTabs');
+      if (tabsEl) {
+        tabsEl.querySelectorAll('.rank-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.dataset.tab === tab);
+        });
+      }
+      const single = document.getElementById('rankList');
+      const total = document.getElementById('totalList');
+      if (single) single.hidden = tab !== 'single';
+      if (total) total.hidden = tab !== 'total';
+
+      const sortBar = document.getElementById('totalSort');
+      if (sortBar) sortBar.hidden = tab !== 'total';
+
+      const sub = document.getElementById('rankSub');
+      if (sub) {
+        sub.textContent = tab === 'single'
+          ? '手动练习 · 分数高者在前'
+          : '累计总分 · 每失败一局扣 1000 分';
+      }
+      if (tab === 'total') loadTotalRank();
+    }
+
     const rankTabsEl = document.getElementById('rankTabs');
     if (rankTabsEl) {
       rankTabsEl.addEventListener('click', function (e) {
         const btn = e.target.closest('.rank-tab');
         if (!btn) return;
-        const tab = btn.dataset.tab;
-        if (!tab || tab === currentTab) return;
-        currentTab = tab;
+        setRankTab(btn.dataset.tab);
+      });
+    }
 
-        rankTabsEl.querySelectorAll('.rank-tab').forEach(function (b) {
-          b.classList.toggle('is-active', b.dataset.tab === tab);
+    // 总分榜排序：按总分 / 按胜率
+    let totalSort = 'score';
+    const totalSortEl = document.getElementById('totalSort');
+    if (totalSortEl) {
+      totalSortEl.addEventListener('click', function (e) {
+        const btn = e.target.closest('.sort-btn');
+        if (!btn) return;
+        const s = btn.getAttribute('data-sort');
+        if (!s || s === totalSort) return;
+        totalSort = s;
+        totalSortEl.querySelectorAll('.sort-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b.getAttribute('data-sort') === s);
         });
-        const single = document.getElementById('rankList');
-        const total = document.getElementById('totalList');
-        if (single) single.hidden = tab !== 'single';
-        if (total) total.hidden = tab !== 'total';
-
-        const sub = document.getElementById('rankSub');
-        if (sub) {
-          sub.textContent = tab === 'single'
-            ? '手动练习 · 分数高者在前'
-            : '累计总分 · 每失败一局扣 1000 分';
-        }
-        if (tab === 'total') loadTotalRank();
+        loadTotalRank();
       });
     }
 
@@ -3437,6 +3493,11 @@
         if (!nick.value.trim()) autofillNickname();
       }
       box.hidden = false;
+
+      // 一局打完，默认给玩家看「累计总分」——单局榜只有破纪录才需要看，
+      // 而且现在这一局无论破没破都会计入总分，切过去更有意义
+      setRankTab('total');
+      if (currentTab === 'total') loadTotalRank();
 
       // 破纪录就把贡品记录收起来，让「结果 + 提交 + 榜单」尽量挤进一屏
       setHistoryFolded(brokeRecord, rounds);
