@@ -235,6 +235,20 @@
       border-radius: 10px;
     }
     .acct-nickedit[hidden] { display: none; }
+    .acct-game {
+      margin: 14px 0 4px;
+      padding: 10px 12px 4px;
+      background: rgba(139, 110, 60, .05);
+      border: 1px solid rgba(139, 110, 60, .16);
+      border-radius: 10px;
+    }
+    .acct-game-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #96690a;
+      letter-spacing: .04em;
+      margin-bottom: 2px;
+    }
     .acct-back {
       margin-top: 20px;
       text-align: center;
@@ -312,7 +326,12 @@
     <div id="viewUser" hidden>
       <div class="acct-row"><span>邮箱</span><b id="acctWho">—</b></div>
       <div class="acct-row"><span>昵称</span><b id="acctNickView">—</b></div>
-      <div class="acct-row"><span>关联的游戏成绩</span><b id="acctScores">—</b></div>
+      <div class="acct-game">
+        <div class="acct-game-title">贡品小游戏</div>
+        <div class="acct-row"><span>累计总分</span><b id="acctTotal">—</b></div>
+        <div class="acct-row"><span>单局最高</span><b id="acctBest">—</b></div>
+        <div class="acct-row"><span>完成局数</span><b id="acctRate">—</b></div>
+      </div>
       <div class="acct-row"><span>登录状态</span><b id="acctClaim">—</b></div>
       <div class="acct-nickedit" id="acctNickEdit" hidden>
         <input type="text" id="acctNickNew" class="acct-input" placeholder="新昵称（1~12 个字）" maxlength="12" spellcheck="false">
@@ -450,7 +469,9 @@
   var guestView = document.getElementById('viewGuest');
   var userView = document.getElementById('viewUser');
   var whoEl = document.getElementById('acctWho');
-  var scoresEl = document.getElementById('acctScores');
+  var totalEl = document.getElementById('acctTotal');
+  var bestEl = document.getElementById('acctBest');
+  var rateEl = document.getElementById('acctRate');
   var claimEl = document.getElementById('acctClaim');
   var nickViewEl = document.getElementById('acctNickView');
   var nickEditEl = document.getElementById('acctNickEdit');
@@ -499,20 +520,40 @@
     }
   }
 
+  function loadStats() {
+    if (!authToken) return;
+    postJson('/rest/v1/rpc/my_game_stats', {})
+      .then(function (res) { return res.ok ? res.json() : []; })
+      .then(function (rows) {
+        var g = (rows && rows.length) ? rows[0] : null;
+        if (!g) {
+          if (totalEl) totalEl.textContent = '—';
+          if (bestEl) bestEl.textContent = '—';
+          if (rateEl) rateEl.textContent = '还没有完成的对局';
+          return;
+        }
+        var games = Number(g.games) || 0;
+        var wins = Number(g.wins) || 0;
+        var losses = Number(g.losses) || 0;
+        if (totalEl) totalEl.textContent = Number(g.total_score || 0).toLocaleString('en-US') + ' 分';
+        if (bestEl) bestEl.textContent = games ? (Number(g.best_score || 0) + ' 分') : '—';
+        if (rateEl) {
+          rateEl.textContent = games
+            ? (Math.round(100 * wins / games) + '%（' + wins + ' 胜 / ' + losses + ' 负）')
+            : '还没有完成的对局';
+        }
+      })
+      .catch(function () {});
+  }
+
   function render() {
     if (authEmail) {
       guestView.hidden = true;
       userView.hidden = false;
       whoEl.textContent = authEmail;
       claimEl.textContent = '已登录';
-      scoresEl.textContent = '读取中…';
       loadProfile().then(paintProfile);
-      fetchMyScores().then(function (rows) {
-        if (!rows || !rows.length) { scoresEl.textContent = '这台设备还没有成绩'; return; }
-        scoresEl.textContent = rows.map(function (r) {
-          return (r.nickname || '无名贤者') + ' ' + r.score + ' 分';
-        }).join(' / ');
-      });
+      loadStats();
     } else {
       guestView.hidden = false;
       userView.hidden = true;

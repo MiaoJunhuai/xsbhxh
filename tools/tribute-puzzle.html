@@ -818,7 +818,8 @@
       grid-template-columns: 1.5rem minmax(0, 1fr) auto;
       grid-template-areas:
         "no name score"
-        ".  meta meta";
+        ".  meta meta"
+        ".  detail detail";
       column-gap: .5rem;
       padding: .45rem .25rem;
       border-bottom: 1px dashed rgba(195, 167, 117, .55);
@@ -976,6 +977,26 @@
       margin: -.05rem 0 .55rem;
     }
     .rank-list[hidden] { display: none; }
+    /* 胜率可点开，展开胜/负局数 */
+    .rate-btn {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline dotted rgba(123, 106, 80, .6);
+      text-underline-offset: 2px;
+    }
+    .rate-btn:hover { color: #96690a; }
+    .rate-detail {
+      grid-area: detail;
+      padding: .3rem 0 .1rem;
+      font-size: .72rem;
+      color: #7b6a50;
+    }
+    .rate-detail[hidden] { display: none; }
+    .rate-detail b { color: #4e3b21; }
     .rank-badge-acct {
       display: inline-block;
       margin-left: .22rem;
@@ -2075,12 +2096,12 @@
       const warn = document.getElementById('resetWarn');
       if (warn) {
         warn.textContent = isTouchDevice()
-          ? '⚠️ 再长按一次确认重置：本局算作放弃，排行榜扣 1000 分'
-          : '⚠️ 再点一次确认重置：本局算作放弃，排行榜扣 1000 分';
+          ? '⚠️ 再长按一次确认重置：本局算作失败，排行榜扣 1000 分'
+          : '⚠️ 再点一次确认重置：本局算作失败，排行榜扣 1000 分';
         warn.hidden = false;
       }
       resetBtn.classList.add('is-armed');
-      resetBtn.textContent = '确认放弃';
+      resetBtn.textContent = '确认失败';
       clearTimeout(resetArmTimer);
       resetArmTimer = setTimeout(disarmReset, 3000);
     }
@@ -3018,7 +3039,7 @@
     }
 
     async function fetchTotalRank() {
-      const q = 'total_rank?select=nickname,games,wins,abandons,win_rate,total_score,is_account' +
+      const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account' +
                 '&order=total_score.desc,win_rate.desc&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -3042,18 +3063,20 @@
         const cls = ['rank-row'];
         if (no <= 3) cls.push('is-top' + no);
         // 历史数据不计入胜率；新规则下不足 5 局的先不显示，避免榜上全是 100%
-        const rateTxt = (r.win_rate === null || r.win_rate === undefined)
-          ? '胜率 <b>--</b>'
-          : '胜率 <b>' + r.win_rate + '%</b>';
+        const hasRate = !(r.win_rate === null || r.win_rate === undefined);
+        const rateTxt = hasRate
+          ? '<button type="button" class="rate-btn" data-idx="' + i + '">胜率 <b>' + r.win_rate + '%</b></button>'
+          : '胜率 <b>--</b>';
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
                  '<span class="rank-name">' + escapeHtml(shown) +
                    (r.is_account ? '<i class="rank-badge-acct" title="已绑定账号">✓</i>' : '') +
                  '</span>' +
                  '<span class="rank-score">' + fmtNum(r.total_score) + '<small>分</small></span>' +
-                 '<span class="rank-meta"><b>' + r.games + '</b> 局 · ' + rateTxt +
-                   (Number(r.abandons) > 0 ? ' · 放弃 <b>' + r.abandons + '</b>' : '') +
-                 '</span>' +
+                 '<span class="rank-meta"><b>' + r.games + '</b> 局 · ' + rateTxt + '</span>' +
+                 (hasRate
+                   ? '<span class="rate-detail" data-detail="' + i + '" hidden>胜利 <b>' + r.wins + '</b> 局 · 失败 <b>' + (r.losses || 0) + '</b> 局</span>'
+                   : '') +
                '</div>';
       }).join('');
       listEl.dataset.loaded = '1';
@@ -3069,6 +3092,18 @@
           listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上</div>';
         }
       }
+    }
+
+    // 点胜率展开/收起「胜利 X 局 · 失败 Y 局」
+    const totalListEl = document.getElementById('totalList');
+    if (totalListEl) {
+      totalListEl.addEventListener('click', function (e) {
+        const btn = e.target.closest('.rate-btn');
+        if (!btn) return;
+        const idx = btn.getAttribute('data-idx');
+        const detail = totalListEl.querySelector('.rate-detail[data-detail="' + idx + '"]');
+        if (detail) detail.hidden = !detail.hidden;
+      });
     }
 
     const rankTabsEl = document.getElementById('rankTabs');
@@ -3092,7 +3127,7 @@
         if (sub) {
           sub.textContent = tab === 'single'
             ? '手动练习 · 分数高者在前'
-            : '累计总分 · 每放弃一局扣 1000 分';
+            : '累计总分 · 每失败一局扣 1000 分';
         }
         if (tab === 'total') loadTotalRank();
       });
