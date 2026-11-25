@@ -988,6 +988,84 @@
       border-radius: .25rem;
       vertical-align: middle;
     }
+    .auth-bar {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin: 0 0 .6rem;
+      padding: .35rem .55rem;
+      font-size: .72rem;
+      color: #7b6a50;
+      background: rgba(139, 110, 60, .07);
+      border-radius: .45rem;
+    }
+    .auth-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .auth-toggle {
+      flex: none;
+      padding: .18rem .5rem;
+      font-size: .7rem;
+      font-family: inherit;
+      color: #96690a;
+      background: rgba(184, 134, 30, .12);
+      border: 1px solid rgba(184, 134, 30, .35);
+      border-radius: .35rem;
+      cursor: pointer;
+    }
+    .auth-toggle[hidden] { display: none; }
+    .auth-out { color: #8a2a17; background: rgba(176, 58, 46, .10); border-color: rgba(176, 58, 46, .3); }
+    .auth-form {
+      margin: 0 0 .7rem;
+      padding: .6rem;
+      background: rgba(139, 110, 60, .07);
+      border: 1px dashed rgba(139, 110, 60, .35);
+      border-radius: .55rem;
+    }
+    .auth-form[hidden] { display: none; }
+    .auth-modes { display: flex; gap: .35rem; margin-bottom: .45rem; }
+    .auth-mode {
+      padding: .2rem .55rem;
+      font-size: .72rem;
+      font-family: inherit;
+      color: #7b6a50;
+      background: transparent;
+      border: 1px solid rgba(139, 110, 60, .3);
+      border-radius: .35rem;
+      cursor: pointer;
+    }
+    .auth-mode.is-active { color: #fff8e6; background: linear-gradient(145deg, #b8860b, #96690a); border-color: transparent; }
+    .auth-input {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: .4rem;
+      padding: .42rem .6rem;
+      font-size: .8rem;
+      font-family: inherit;
+      color: #4e3b21;
+      background: #fffaf0;
+      border: 1px solid rgba(139, 110, 60, .45);
+      border-radius: .45rem;
+      outline: none;
+    }
+    .auth-input[hidden] { display: none; }
+    .auth-input:focus { border-color: #b8860b; box-shadow: 0 0 0 3px rgba(184, 134, 30, .16); }
+    .auth-msg { min-height: 1em; margin-bottom: .35rem; font-size: .74rem; color: #7b6a50; }
+    .auth-msg.is-err { color: #b0361e; }
+    .auth-msg.is-ok { color: #2f6b46; }
+    .auth-submit {
+      width: 100%;
+      padding: .45rem;
+      font-size: .82rem;
+      font-family: inherit;
+      font-weight: 700;
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border: none;
+      border-radius: .45rem;
+      cursor: pointer;
+    }
+    .auth-submit:disabled { opacity: .55; }
+    .auth-note { margin: .45rem 0 0; font-size: .68rem; color: #9a8a6c; line-height: 1.4; }
     .rank-result {
       font-size: .85rem;
       color: #4e3b21;
@@ -1391,6 +1469,23 @@
       <button type="button" class="rank-refresh" id="rankRefreshBtn" aria-label="刷新排行榜" title="刷新排行榜"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     </div>
     <div class="rank-subline" id="rankSub">手动练习 · 分数高者在前</div>
+    <div class="auth-bar" id="authBar">
+      <span class="auth-who" id="authWho">未登录 · 换设备后分数不会同步</span>
+      <button type="button" class="auth-toggle" id="authToggle">登录 / 注册</button>
+      <button type="button" class="auth-toggle auth-out" id="authLogout" hidden>退出</button>
+    </div>
+    <div class="auth-form" id="authForm" hidden>
+      <div class="auth-modes">
+        <button type="button" class="auth-mode is-active" data-mode="login">登录</button>
+        <button type="button" class="auth-mode" data-mode="signup">注册</button>
+      </div>
+      <input type="email" id="authEmail" class="auth-input" placeholder="邮箱（当用户名用）" autocomplete="email" spellcheck="false">
+      <input type="email" id="authEmail2" class="auth-input" placeholder="再输一次邮箱" autocomplete="email" spellcheck="false" hidden>
+      <input type="password" id="authPass" class="auth-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
+      <div class="auth-msg" id="authMsg"></div>
+      <button type="button" class="auth-submit" id="authSubmit">登录</button>
+      <p class="auth-note">不发验证邮件。邮箱只当用户名用，忘记密码找群主。</p>
+    </div>
     <div class="rank-help" id="rankHelp" hidden>
       <p><b>分数怎么算</b></p>
       <p>综合<strong>题型复杂度</strong>、<strong>轮数</strong>、<strong>秒数</strong>算出：题型越复杂、轮数越少、秒数越少，分数越高。</p>
@@ -2361,8 +2456,191 @@
     });
 
     // ==================== 排行榜 ====================
+    // ==================== 账号（不发邮件，邮箱只当用户名）====================
+    const LB_TOKEN_KEY = 'xsbhxh_token';
+    const LB_REFRESH_KEY = 'xsbhxh_refresh';
+    const LB_EMAIL_KEY = 'xsbhxh_email';
+    const LB_UID_KEY = 'xsbhxh_uid';
+    const LB_SUBS_KEY = 'xsbhxh_subs';
+
+    let authToken = '';
+    let authRefresh = '';
+    let authEmail = '';
+    let authUid = '';
+
+    function loadAuth() {
+      try {
+        authToken = localStorage.getItem(LB_TOKEN_KEY) || '';
+        authRefresh = localStorage.getItem(LB_REFRESH_KEY) || '';
+        authEmail = localStorage.getItem(LB_EMAIL_KEY) || '';
+        authUid = localStorage.getItem(LB_UID_KEY) || '';
+      } catch (e) {}
+    }
+
+    function saveAuth(data) {
+      authToken = (data && data.access_token) || '';
+      authRefresh = (data && data.refresh_token) || authRefresh;
+      authUid = (data && data.user && data.user.id) || authUid;
+      authEmail = (data && data.user && data.user.email) || authEmail;
+      try {
+        if (authToken) localStorage.setItem(LB_TOKEN_KEY, authToken);
+        if (authRefresh) localStorage.setItem(LB_REFRESH_KEY, authRefresh);
+        if (authUid) localStorage.setItem(LB_UID_KEY, authUid);
+        if (authEmail) localStorage.setItem(LB_EMAIL_KEY, authEmail);
+      } catch (e) {}
+    }
+
+    function clearAuth() {
+      authToken = ''; authRefresh = ''; authEmail = ''; authUid = '';
+      try {
+        [LB_TOKEN_KEY, LB_REFRESH_KEY, LB_EMAIL_KEY, LB_UID_KEY].forEach(function (k) {
+          localStorage.removeItem(k);
+        });
+      } catch (e) {}
+    }
+
+    function renderAuthBar() {
+      const who = document.getElementById('authWho');
+      const toggle = document.getElementById('authToggle');
+      const logout = document.getElementById('authLogout');
+      const form = document.getElementById('authForm');
+      if (who) {
+        who.textContent = authEmail ? '已登录：' + authEmail : '未登录 · 换设备后分数不会同步';
+      }
+      if (toggle) toggle.hidden = !!authEmail;
+      if (logout) logout.hidden = !authEmail;
+      if (form && authEmail) form.hidden = true;
+    }
+
+    function openAuthForm() {
+      const form = document.getElementById('authForm');
+      if (!form) return;
+      form.hidden = false;
+      try { form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+    }
+
+    async function authRequest(path, body) {
+      const res = await fetch(LB_URL + path, {
+        method: 'POST',
+        headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      let data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok) {
+        const m = data.msg || data.error_description || data.message || ('HTTP ' + res.status);
+        throw new Error(m);
+      }
+      return data;
+    }
+
+    // 登录/注册成功后，把当前设备上还没归属的旧成绩绑到这个账号
+    async function claimRecords() {
+      if (!authToken) return;
+      try {
+        await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ p_player: getPlayerId() })
+        });
+      } catch (e) {}
+      clearRankCache();
+      await loadRank(true);
+      if (currentTab === 'total') loadTotalRank();
+    }
+
+    function initAuthUI() {
+      loadAuth();
+      renderAuthBar();
+
+      const form = document.getElementById('authForm');
+      const toggle = document.getElementById('authToggle');
+      const logout = document.getElementById('authLogout');
+      const modes = document.querySelectorAll('.auth-mode');
+      const emailEl = document.getElementById('authEmail');
+      const email2El = document.getElementById('authEmail2');
+      const passEl = document.getElementById('authPass');
+      const msgEl = document.getElementById('authMsg');
+      const submitEl = document.getElementById('authSubmit');
+      let mode = 'login';
+
+      function setMode(m) {
+        mode = m;
+        Array.prototype.forEach.call(modes, function (b) {
+          b.classList.toggle('is-active', b.dataset.mode === m);
+        });
+        if (email2El) email2El.hidden = m !== 'signup';
+        if (submitEl) submitEl.textContent = m === 'signup' ? '注册' : '登录';
+        if (msgEl) { msgEl.textContent = ''; msgEl.className = 'auth-msg'; }
+      }
+
+      if (toggle && form) {
+        toggle.addEventListener('click', function () {
+          form.hidden = !form.hidden;
+          if (!form.hidden) setMode('login');
+        });
+      }
+      Array.prototype.forEach.call(modes, function (b) {
+        b.addEventListener('click', function () { setMode(b.dataset.mode); });
+      });
+      if (logout) {
+        logout.addEventListener('click', function () {
+          clearAuth();
+          renderAuthBar();
+          loadRank(true);
+          if (currentTab === 'total') loadTotalRank();
+        });
+      }
+      if (submitEl) {
+        submitEl.addEventListener('click', async function () {
+          if (msgEl) { msgEl.textContent = ''; msgEl.className = 'auth-msg'; }
+          const email = (emailEl && emailEl.value ? emailEl.value : '').trim();
+          const pass = (passEl && passEl.value) || '';
+
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            if (msgEl) { msgEl.textContent = '邮箱格式不对'; msgEl.className = 'auth-msg is-err'; }
+            return;
+          }
+          if (mode === 'signup' && (email2El && email2El.value ? email2El.value.trim() : '') !== email) {
+            if (msgEl) { msgEl.textContent = '两次输入的邮箱不一致'; msgEl.className = 'auth-msg is-err'; }
+            return;
+          }
+          if (pass.length < 6) {
+            if (msgEl) { msgEl.textContent = '密码至少 6 位'; msgEl.className = 'auth-msg is-err'; }
+            return;
+          }
+
+          submitEl.disabled = true;
+          submitEl.textContent = '处理中…';
+          try {
+            const data = mode === 'signup'
+              ? await authRequest('/auth/v1/signup', { email: email, password: pass })
+              : await authRequest('/auth/v1/token?grant_type=password', { email: email, password: pass });
+
+            if (!data.access_token) {
+              throw new Error('这个邮箱可能已经注册过了，切到「登录」再试');
+            }
+            saveAuth(data);
+            renderAuthBar();
+            if (msgEl) { msgEl.textContent = '已登录，正在合并这台设备上的成绩…'; msgEl.className = 'auth-msg is-ok'; }
+            await claimRecords();
+            if (msgEl) { msgEl.textContent = '登录成功，成绩已合并'; msgEl.className = 'auth-msg is-ok'; }
+            setTimeout(function () { if (form) form.hidden = true; }, 1400);
+          } catch (e) {
+            if (msgEl) { msgEl.textContent = e.message || '操作失败'; msgEl.className = 'auth-msg is-err'; }
+          } finally {
+            submitEl.disabled = false;
+            submitEl.textContent = mode === 'signup' ? '注册' : '登录';
+          }
+        });
+      }
+    }
+
     function lbHeaders() {
-      return { 'apikey': LB_KEY, 'Accept': 'application/json' };
+      const h = { 'apikey': LB_KEY, 'Accept': 'application/json' };
+      // 登录后带上用户令牌，服务端才会把这一行记到账号名下
+      if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+      return h;
     }
 
     function makeUuid() {
@@ -2490,6 +2768,7 @@
         }),
         body: JSON.stringify({
           player_id: getPlayerId(),
+          user_id: authUid || null,
           nickname: nickname,
           pattern: pattern,
           rounds: rounds,
@@ -2499,9 +2778,13 @@
         })
       });
       if (!res.ok) {
-        let detail = '';
-        try { detail = await res.text(); } catch (e) {}
-        throw new Error('HTTP ' + res.status + (detail ? ' ' + detail : ''));
+        let raw = '';
+        let msg = '';
+        try {
+          raw = await res.text();
+          try { msg = (JSON.parse(raw) || {}).message || ''; } catch (e2) {}
+        } catch (e) {}
+        throw new Error(msg || ('HTTP ' + res.status + (raw ? ' ' + raw : '')));
       }
       // 数据库触发器是「每人只保留最好一局」：分数没进步时这次插入会被丢弃，
       // 返回空数组；真正写进库了才会返回一行。
@@ -3051,6 +3334,11 @@
         }
         // 提交前先记住「当时的最好成绩」，用来区分「分数确实不够」和「分数够了但被服务端判异常」
         const bestBefore = readBest();
+        let subs = 0;
+        try {
+          subs = Number(localStorage.getItem(LB_SUBS_KEY) || 0) + 1;
+          localStorage.setItem(LB_SUBS_KEY, String(subs));
+        } catch (e) {}
         const accepted = await postScore(nick, submitted.pattern, submitted.rounds, submitted.durationMs, submitted.trace, submitted.gameId);
         const shouldHaveWon = !bestBefore || submitted.score > bestBefore.score;
         try {
@@ -3060,7 +3348,19 @@
         if (msg) {
           if (accepted) {
             msg.className = 'rank-msg is-ok';
-            msg.textContent = '已计入排行榜';
+            // 第二次提交起提示注册：不强制，只是告诉他换了设备分数会断
+            if (!authEmail && subs >= 2) {
+              msg.innerHTML = '已计入排行榜 · <a href="#" id="msgRegister" style="color:#96690a;text-decoration:underline">注册账号可跨设备同步</a>';
+              const link = document.getElementById('msgRegister');
+              if (link) {
+                link.addEventListener('click', function (ev) {
+                  ev.preventDefault();
+                  openAuthForm();
+                });
+              }
+            } else {
+              msg.textContent = '已计入排行榜';
+            }
           } else if (shouldHaveWon) {
             // 分数明明更高却被丢掉：只可能是服务端把这一局判成异常（比如某一轮操作过快），
             // 不能再说成「没超过最好成绩」——那句话把玩家引到错误的排查方向上了
@@ -3085,8 +3385,11 @@
         try { console.error('[排行榜] 提交失败:', e && e.message); } catch (err) {}
         if (msg) {
           msg.className = 'rank-msg is-err';
-          const dbg = /[?&]debug\b/.test(location.search) ? '（' + (e && e.message ? e.message : '未知错误') + '）' : '';
-          msg.textContent = '提交失败，请稍后再试' + dbg;
+          const m = (e && e.message) || '';
+          // 数据库自己抛的中文提示（比如「昵称已被占用」）直接给玩家看
+          const zh = /[\u4e00-\u9fa5]/.test(m);
+          const dbg = /[?&]debug\b/.test(location.search) && m ? '（' + m + '）' : '';
+          msg.textContent = (zh ? m : '提交失败，请稍后再试') + dbg;
         }
       }
     }
@@ -3111,12 +3414,12 @@
         rankSubmitBtn.textContent = '计入排行榜';
         if (msg) { msg.className = 'rank-msg'; msg.textContent = ''; }
 
-        // 情况一：这个昵称被别的浏览器 ID 占着
-        if (conflict) {
+        // 情况一：这个昵称被别的设备占着 —— 没登录就先去登录，登录了交给服务端判定
+        if (conflict && !authEmail) {
           showConfirm(
-            '昵称「<b>' + escapeHtml(nick) + '</b>」已被别的设备用过，提交会覆盖那条记录。',
-            '仍要覆盖', '换个昵称',
-            function () { doSubmit(nick); },
+            '昵称「<b>' + escapeHtml(nick) + '</b>」已被别的设备用过。<br>登录后可以接着用这个昵称，或者换一个。',
+            '去登录', '换昵称',
+            function () { openAuthForm(); },
             function () {
               const el = document.getElementById('rankNick');
               if (el) { el.focus(); el.select(); }
@@ -3175,6 +3478,9 @@
 
     // 页面一打开就分配匿名 ID，这样「自动填昵称」查历史记录时才有得查
     getPlayerId();
+
+    // 先恢复登录状态，再拉榜单（榜单请求要带上令牌才会按账号视角返回）
+    initAuthUI();
 
     loadRank();
 
