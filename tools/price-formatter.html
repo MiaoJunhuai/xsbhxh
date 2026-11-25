@@ -399,7 +399,7 @@
     font-size: 12.5px;
     font-weight: 600;
     letter-spacing: .2px;
-    transition: color .18s ease, background .18s ease;
+    transition: color .24s ease, background .24s ease;
   }
 
   .xsb-links a:hover { color: #3b3327; background: rgba(59, 51, 39, .08); }
@@ -446,8 +446,19 @@
   .xsb-auth.is-on { background: rgba(47, 125, 79, .2); border-color: rgba(47, 125, 79, .45); }
   @media (max-width: 760px) {
     /* 手机端：只有当前这一页显示文字，其余只留图标，省下的宽度都归它 */
-    .xsb-links a .xsb-txt { display: none; }
-    .xsb-links a.is-active .xsb-txt { display: inline; }
+    .xsb-links a .xsb-txt {
+      display: inline-block;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      vertical-align: bottom;
+      transition: max-width .3s cubic-bezier(.4, 0, .2, 1), opacity .16s ease;
+    }
+    .xsb-links a.is-active .xsb-txt {
+      max-width: 8em;
+      opacity: 1;
+    }
     .xsb-auth-txt { display: none; }
     .xsb-auth { margin-left: 4px; padding: 0 8px; }
   }

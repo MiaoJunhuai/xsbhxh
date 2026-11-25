@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
   <link rel="manifest" href="../site.webmanifest">
-  <meta name="description" content="新手保护联盟账号：邮箱当用户名，一个账号在多台设备上共用同一份榜单成绩。" />
+  <meta name="description" content="新手保护联盟通用账号：登录后可跨设备使用站内各项功能。" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -71,7 +71,7 @@
       font-size: 12.5px;
       font-weight: 600;
       white-space: nowrap;
-      transition: color .18s ease, background .18s ease;
+      transition: color .24s ease, background .24s ease;
     }
     .xsb-links a:hover { color: #4e3e2b; background: rgba(120, 98, 64, .14); }
     .xsb-ico { display: inline-flex; align-items: center; }
@@ -103,7 +103,15 @@
       .xsb-brand { font-size: 12.5px; gap: 6px; }
       .xsb-badge img { width: 22px; height: 22px; }
       .xsb-links a { padding: 4px 8px; font-size: 12px; }
-      .xsb-links a .xsb-txt { display: none; }
+      .xsb-links a .xsb-txt {
+      display: inline-block;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      vertical-align: bottom;
+      transition: max-width .3s cubic-bezier(.4, 0, .2, 1), opacity .16s ease;
+    }
       .xsb-auth { margin-left: 4px; padding: 0 8px; }
       .xsb-auth-txt { display: none; }
     }
@@ -255,7 +263,7 @@
 <main class="acct-wrap">
   <section class="acct-card">
     <h1 class="acct-title">账号</h1>
-    <p class="acct-sub">一个账号，换手机、换电脑都能接着用同一份成绩。</p>
+    <p class="acct-sub">新手保护联盟的通用账号。以后开放的结账、留言等功能也都会用它。</p>
 
     <div id="viewGuest">
       <div class="acct-modes">
@@ -272,14 +280,14 @@
 
     <div id="viewUser" hidden>
       <div class="acct-row"><span>邮箱</span><b id="acctWho">—</b></div>
-      <div class="acct-row"><span>这台设备的成绩</span><b id="acctScores">—</b></div>
-      <div class="acct-row"><span>合并状态</span><b id="acctClaim">—</b></div>
+      <div class="acct-row"><span>关联的游戏成绩</span><b id="acctScores">—</b></div>
+      <div class="acct-row"><span>登录状态</span><b id="acctClaim">—</b></div>
       <button type="button" class="acct-logout" id="acctLogout">退出登录</button>
-      <p class="acct-note">退出只是让这台设备变回未登录，榜上的成绩不会消失。</p>
+      <p class="acct-note">退出只是让这台设备变回未登录，账号里的东西不会丢。</p>
     </div>
 
     <div class="acct-hint" id="acctHint">
-      账号用来把多台设备的成绩合到一起。没有账号也能玩，只是换设备后分数不会自动接上。
+      没有账号也能玩游戏。只是换设备之后，之前的数据不会自动接上；以后开放的结账、留言等功能则需要登录才能用。
     </div>
   </section>
 
