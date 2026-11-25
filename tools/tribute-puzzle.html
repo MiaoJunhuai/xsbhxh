@@ -222,7 +222,9 @@
       min-height: 4rem;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      /* 用 stretch 而不是 center：center 会让文字行的宽度随内容变化，
+         文字一变长整行就往左移，看着像页面在左右抖 */
+      align-items: stretch;
       justify-content: center;
       box-shadow: inset 0 0 12px rgba(160,120,50,0.5);
       font-weight: 500;
