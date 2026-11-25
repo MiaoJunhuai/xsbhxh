@@ -3294,10 +3294,10 @@
     }
 
     async function fetchTotalRank() {
-      // 胜率每 5% 一档（rate_band），档内再比总分：
-      // 避免「胜率 100% 但只打了 5 局」把打了上百局的老玩家全压下去
+      // 胜率每 5% 一档（rate_band），档内比总分，总分相同再比局数（玩得多的人排前面）。
+      // 这样「胜率 100% 但只打 5 局」压不过打了上百局的老玩家，0 分的人也不会永远并列
       const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account,rate_band' +
-                '&order=rate_band.desc,total_score.desc,win_rate.desc.nullslast&limit=' + LB_LIMIT;
+                '&order=rate_band.desc,total_score.desc,games.desc,win_rate.desc.nullslast&limit=' + LB_LIMIT;
       const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
