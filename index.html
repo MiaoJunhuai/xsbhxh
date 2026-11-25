@@ -894,7 +894,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.2.7</span>
+          <span class="card-tag">v1.2.8</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
@@ -1200,16 +1200,32 @@
       if (!active) { pill.style.opacity = '0'; return; }
       var nr = nav.getBoundingClientRect();
       var ar = active.getBoundingClientRect();
-      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度，
-      // 这样胶囊的目标宽度一开始就是对的，滑过去正好包住
+
+      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度
       var txt = active.querySelector('.xsb-txt, .nav-txt');
       var extra = 0;
       if (txt) {
         var tr = txt.getBoundingClientRect();
         extra = Math.max(0, txt.scrollWidth - tr.width);
       }
+
+      // 旧选中项正在把文字收回去，它变窄会让右边的项整体左移。
+      // 只统计位于目标左侧的那些（右边的不影响目标位置）——
+      // 漏掉这一步的话，从左往右切会先冲过头，再等校正时弹回来。
+      var shift = 0;
+      var items = nav.querySelectorAll('a');
+      for (var i = 0; i < items.length; i++) {
+        var a = items[i];
+        if (a === active) continue;
+        var t2 = a.querySelector('.xsb-txt, .nav-txt');
+        if (!t2) continue;
+        var r2 = a.getBoundingClientRect();
+        if (r2.left >= ar.left) continue;
+        shift += t2.getBoundingClientRect().width;
+      }
+
       pill.style.opacity = '1';
-      pill.style.left = (ar.left - nr.left) + 'px';
+      pill.style.left = (ar.left - nr.left - shift) + 'px';
       pill.style.top = (ar.top - nr.top) + 'px';
       pill.style.width = (ar.width + extra) + 'px';
       pill.style.height = ar.height + 'px';

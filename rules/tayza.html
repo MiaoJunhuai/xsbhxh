@@ -897,16 +897,32 @@ KOOK语音
       if (!active) { pill.style.opacity = '0'; return; }
       var nr = nav.getBoundingClientRect();
       var ar = active.getBoundingClientRect();
-      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度，
-      // 这样胶囊的目标宽度一开始就是对的，滑过去正好包住
+
+      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度
       var txt = active.querySelector('.xsb-txt, .nav-txt');
       var extra = 0;
       if (txt) {
         var tr = txt.getBoundingClientRect();
         extra = Math.max(0, txt.scrollWidth - tr.width);
       }
+
+      // 旧选中项正在把文字收回去，它变窄会让右边的项整体左移。
+      // 只统计位于目标左侧的那些（右边的不影响目标位置）——
+      // 漏掉这一步的话，从左往右切会先冲过头，再等校正时弹回来。
+      var shift = 0;
+      var items = nav.querySelectorAll('a');
+      for (var i = 0; i < items.length; i++) {
+        var a = items[i];
+        if (a === active) continue;
+        var t2 = a.querySelector('.xsb-txt, .nav-txt');
+        if (!t2) continue;
+        var r2 = a.getBoundingClientRect();
+        if (r2.left >= ar.left) continue;
+        shift += t2.getBoundingClientRect().width;
+      }
+
       pill.style.opacity = '1';
-      pill.style.left = (ar.left - nr.left) + 'px';
+      pill.style.left = (ar.left - nr.left - shift) + 'px';
       pill.style.top = (ar.top - nr.top) + 'px';
       pill.style.width = (ar.width + extra) + 'px';
       pill.style.height = ar.height + 'px';
