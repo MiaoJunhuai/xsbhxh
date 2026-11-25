@@ -2695,12 +2695,18 @@
     async function claimRecords() {
       if (!authToken) return;
       try {
-        await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
+        const res = await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
           method: 'POST',
           headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
           body: JSON.stringify({ p_player: getPlayerId() })
         });
-      } catch (e) {}
+        // 以前失败是静默吞掉的，导致「登录了却没合并」很难发现
+        if (!res.ok) {
+          try { console.warn('[账号] 认领旧成绩失败:', res.status, await res.text()); } catch (e) {}
+        }
+      } catch (e) {
+        try { console.warn('[账号] 认领旧成绩异常:', e && e.message); } catch (err) {}
+      }
       clearRankCache();
       await loadRank(true);
       if (currentTab === 'total') loadTotalRank();

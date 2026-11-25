@@ -448,7 +448,13 @@
     if (!authToken) return Promise.resolve(0);
     return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId() })
       .then(function (res) {
-        if (!res.ok) return 0;
+        if (!res.ok) {
+          // 以前失败静默吞掉，导致「登录了却没合并」很难发现
+          return res.text().then(function (t) {
+            try { console.warn('[账号] 认领旧成绩失败:', res.status, t); } catch (e) {}
+            return 0;
+          });
+        }
         return res.json();
       })
       .catch(function () { return 0; });
