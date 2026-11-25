@@ -2621,7 +2621,14 @@
       const logout = document.getElementById('authLogout');
       const form = document.getElementById('authForm');
       if (who) {
-        who.textContent = authEmail ? '已登录：' + authEmail : '未登录 · 换设备后分数不会同步';
+        // 这一行是截图高发区，只显示昵称，不显示邮箱
+        if (authEmail) {
+          let nick = '';
+          try { nick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+          who.textContent = '已登录' + (nick && nick !== '无名贤者' ? '：' + nick : '');
+        } else {
+          who.textContent = '未登录 · 换设备后分数不会同步';
+        }
       }
       if (toggle) toggle.hidden = !!authEmail;
       if (logout) logout.hidden = !authEmail;
