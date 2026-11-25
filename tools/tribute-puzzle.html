@@ -1333,7 +1333,7 @@
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
       <div class="rank-result" id="rankResult"></div>
-      <div class="rank-form">
+      <div class="rank-form" id="rankForm">
         <input type="text" id="rankNick" class="rank-nick" maxlength="12" placeholder="留空记为「无名贤者」" autocomplete="off" spellcheck="false">
         <button type="button" id="rankSubmitBtn" class="rank-btn">计入排行榜</button>
       </div>
@@ -2474,9 +2474,11 @@
       const box = document.getElementById('rankSubmit');
       const msg = document.getElementById('rankMsg');
       const btn = document.getElementById('rankSubmitBtn');
+      const form = document.getElementById('rankForm');
       if (box) box.hidden = true;
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
+      if (form) form.style.display = '';
       hideConflictConfirm();
     }
 
@@ -2622,7 +2624,13 @@
       const box = document.getElementById('rankSubmit');
       if (!box) return;
       const score = calcScore(pattern, rounds, durationMs);
-      pendingScore = {
+      const best = readBest();
+      // 没超过自己榜上的最好成绩就不给提交入口：服务端同样会丢掉这一局，
+      // 让玩家白填一次昵称、白等一次请求没有意义
+      const brokeRecord = !best || score > best.score;
+      const canSubmit = brokeRecord;
+
+      pendingScore = canSubmit ? {
         rounds: rounds,
         durationMs: durationMs,
         pattern: pattern,
@@ -2637,31 +2645,33 @@
           // 每次点击物品的时间点，后端会检查间隔是否过于均匀（真人不可能每次都一样）
           k: clickTimes.slice()
         }
-      };
+      } : null;
+
       const txt = document.getElementById('rankResult');
       const msg = document.getElementById('rankMsg');
       const btn = document.getElementById('rankSubmitBtn');
+      const form = document.getElementById('rankForm');
       const nick = document.getElementById('rankNick');
-      const best = readBest();
-      const brokeRecord = isBetter(pendingScore, best);
-      let extra = '';
+
+      let note = '';
       if (best && !brokeRecord) {
-        extra = '（你榜上的最好成绩：' + best.rounds + ' 轮 · ' + fmtSeconds(best.durationMs) +
-                ' · ' + best.score + ' 分）';
+        note = '<span class="rank-best">你榜上的最好成绩是 <b>' + best.score + '</b> 分（' +
+               best.rounds + ' 轮 · ' + fmtSeconds(best.durationMs) + '），这一局不上榜</span>';
       }
       if (txt) {
         txt.innerHTML = '本局 <b>' + rounds + '</b> 轮 · 用时 <b>' + fmtSeconds(durationMs) + '</b>' +
                         ' · <b>' + pattern + '</b>　' + PATTERN_NOTE[pattern] +
                         (brokeRecord ? recordBadgeHtml() : '') +
                         '<span class="rank-this-score">本局 <b>' + score + '</b> 分</span>' +
-                        (extra ? '<span class="rank-best">' + extra + '</span>' : '') +
+                        note +
                         '<span class="rank-est" id="rankEst"></span>';
       }
       if (brokeRecord) iconRain();
-      fillRankEstimate(score);
+      if (canSubmit) fillRankEstimate(score);
+      if (form) form.style.display = canSubmit ? '' : 'none';
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
-      if (nick) {
+      if (canSubmit && nick) {
         try { nick.value = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
         // 本机没存过昵称，就看服务器上这个浏览器 ID 有没有历史记录，有就自动填上
         if (!nick.value.trim()) autofillNickname();
