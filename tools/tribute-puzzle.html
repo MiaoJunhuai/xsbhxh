@@ -1027,11 +1027,13 @@
       border-color: transparent;
     }
     .help-pop {
-      position: absolute;
-      z-index: 30;
-      top: calc(100% + .4rem);
-      right: 0;
-      width: min(20rem, 78vw);
+      /* 固定在视口上（位置由 JS 算，见 placeHelp）：
+         用绝对定位 + right:0 在窄屏上会露到屏幕外面去 */
+      position: fixed;
+      z-index: 60;
+      top: 0;
+      left: 0;
+      width: min(20rem, calc(100vw - 1.5rem));
       padding: .7rem .8rem;
       text-align: left;
       background: #fffaf0;
@@ -3857,6 +3859,27 @@
     const helpBtn = document.getElementById('helpBtn');
     const helpPop = document.getElementById('helpPop');
     if (helpBtn && helpPop) {
+      // 把浮窗摆在按钮下方，并保证整个浮窗都在视口内（窄屏尤其要夹住）
+      const placeHelp = function () {
+        if (helpPop.hidden) return;
+        const M = 10;
+        const b = helpBtn.getBoundingClientRect();
+        const w = Math.min(320, window.innerWidth - M * 2);
+        helpPop.style.width = w + 'px';
+
+        let left = b.right - w;                       // 默认右对齐按钮
+        left = Math.max(M, Math.min(left, window.innerWidth - M - w));
+        helpPop.style.left = left + 'px';
+
+        const h = helpPop.offsetHeight;
+        let top = b.bottom + 8;                       // 默认在按钮下方
+        if (top + h > window.innerHeight - M) {
+          top = b.top - 8 - h;                        // 下方放不下就翻到上方
+        }
+        top = Math.max(M, Math.min(top, window.innerHeight - M - h));
+        helpPop.style.top = top + 'px';
+      };
+
       const closeHelp = function () {
         helpPop.hidden = true;
         helpBtn.setAttribute('aria-expanded', 'false');
@@ -3866,6 +3889,7 @@
         const willOpen = helpPop.hidden;
         helpPop.hidden = !willOpen;
         helpBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if (willOpen) placeHelp();
       });
       document.addEventListener('click', function (e) {
         if (helpPop.hidden) return;
@@ -3875,6 +3899,9 @@
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeHelp();
       });
+      // 转屏 / 改窗口大小时重新夹一次
+      window.addEventListener('resize', placeHelp);
+      window.addEventListener('scroll', placeHelp, { passive: true });
     }
 
     // 默认展示「累计总分」，单局榜点一下才加载
