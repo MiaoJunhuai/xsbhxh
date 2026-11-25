@@ -999,15 +999,17 @@
     }
     .rate-detail[hidden] { display: none; }
     .rate-detail b { color: #4e3b21; }
-    .rank-badge-acct {
+    /* 只给游客加标记：注册用户是「正常态」，不需要额外符号 */
+    .rank-badge-guest {
       display: inline-block;
-      margin-left: .22rem;
-      padding: 0 .22rem;
+      margin-left: .28rem;
+      padding: 0 .26rem;
       font-size: .6rem;
       font-style: normal;
       font-weight: 700;
-      color: #2f6b46;
-      background: rgba(47, 107, 70, .13);
+      color: #8a7a5e;
+      background: rgba(139, 110, 60, .1);
+      border: 1px solid rgba(139, 110, 60, .2);
       border-radius: .25rem;
       vertical-align: middle;
     }
@@ -3245,7 +3247,7 @@
         return '<div class="' + cls.join(' ') + '">' +
                  '<span class="rank-no">' + no + '</span>' +
                  '<span class="rank-name">' + escapeHtml(shown) +
-                   (r.is_account ? '<i class="rank-badge-acct" title="已绑定账号">✓</i>' : '') +
+                   (r.is_account ? '' : '<i class="rank-badge-guest">游客</i>') +
                  '</span>' +
                  '<span class="rank-score">' + fmtNum(r.total_score) + '<small>分</small></span>' +
                  '<span class="rank-meta"><b>' + r.games + '</b> 局 · ' + rateTxt + '</span>' +
