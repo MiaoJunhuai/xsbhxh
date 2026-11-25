@@ -725,6 +725,27 @@
     html { scroll-behavior: auto; }
     * { transition: none !important; }
   }
+
+  /* ===== 导航图标（与板块卡片同一套：24 网格 / stroke 1.7 / 圆角） ===== */
+  .nav-links a, .nav-auth { display: inline-flex; align-items: center; gap: 5px; }
+  .nav-ico, .nav-auth-ico { display: inline-flex; align-items: center; }
+  .nav-ico svg, .nav-auth-ico svg { width: 15px; height: 15px; display: block; }
+  .nav-auth {
+    flex: none; margin-left: 8px; height: 26px; padding: 0 11px;
+    font-size: 12.5px; font-weight: 700;
+    color: var(--ink-2); background: rgba(128, 128, 128, .16);
+    border: 1px solid rgba(128, 128, 128, .26); border-radius: 999px;
+    text-decoration: none; white-space: nowrap;
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .nav-auth:hover { background: rgba(128, 128, 128, .26); border-color: rgba(128, 128, 128, .4); }
+  @media (max-width: 760px) {
+    /* 手机端：只有当前分区显示文字，其余只留图标 */
+    .nav-links a .nav-txt { display: none; }
+    .nav-links a.active .nav-txt { display: inline; }
+    .nav-auth-txt { display: none; }
+    .nav-auth { margin-left: 4px; padding: 0 8px; }
+  }
 </style>
 </head>
 <body>
@@ -736,11 +757,15 @@
       <span class="word">新手保护联盟</span>
     </a>
     <nav class="nav-links" aria-label="页面导航">
-      <a href="#apply">申请入会</a>
-      <a href="#tools">工具</a>
-      <a href="#rules">远征规则</a>
-      <a href="#about" class="only-pc">关于我们</a>
+      <a href="#apply"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="nav-txt">申请入会</span></a>
+      <a href="#tools"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="nav-txt">工具</span></a>
+      <a href="#rules"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="nav-txt">远征规则</span></a>
+      <a href="#about" class="only-pc"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="nav-txt">关于我们</span></a>
     </nav>
+    <a href="tools/tribute-puzzle.html" class="nav-auth" aria-label="登录或注册">
+      <span class="nav-auth-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <span class="nav-auth-txt">登录</span>
+    </a>
   </div>
 </header>
 
@@ -833,7 +858,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.2.3</span>
+          <span class="card-tag">v1.2.4</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
