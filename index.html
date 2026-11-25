@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>鏂版墜淇濇姢鑱旂洘 路 瀹舵棌瀹樼綉</title>
-<meta name="description" content="WingsMS 鏈嶅姟鍣ㄦ柊鎵嬩繚鎶よ仈鐩熷鏃忓畼缃戯細瀹舵棌浠嬬粛銆佸叆浼氱敵璇烽潰璇曘€佸甫闃熷伐鍏蜂笌杩滃緛瑙勫垯銆? />
-<meta property="og:title" content="鏂版墜淇濇姢鑱旂洘 路 瀹舵棌瀹樼綉" />
-<meta property="og:description" content="瀹堟姢姣忎竴浣嶆柊鎵嬶紝涓€璧疯蛋寰楁洿杩溿€俉ingsMS 鏈嶅姟鍣ㄦ柊鎵嬪鏃忓畼缃戙€? />
+<title>新手保护联盟 · 家族官网</title>
+<meta name="description" content="WingsMS 服务器新手保护联盟家族官网：家族介绍、入会申请面试、带队工具与远征规则。" />
+<meta property="og:title" content="新手保护联盟 · 家族官网" />
+<meta property="og:description" content="守护每一位新手，一起走得更远。WingsMS 服务器新手家族官网。" />
 <meta property="og:image" content="https://miaojunhuai.github.io/xsbhxh/assets/banner.webp" />
 <meta property="og:type" content="website" />
 <meta name="theme-color" content="#fbf4e3" />
@@ -52,7 +52,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ================= 椤堕儴瀵艰埅 ================= */
+  /* ================= 顶部导航 ================= */
   .nav {
     position: sticky;
     top: 0;
@@ -118,22 +118,22 @@
     transition: color .24s ease, background .24s ease;
   }
 
-  /* 鍙湁鏀寔 hover 鐨勮澶囨墠鍚敤鎮仠鏁堟灉锛涜Е灞忕偣鍑诲悗娴忚鍣ㄤ細涓€鐩翠繚鎸?:hover锛?
-     瀵艰嚧琚偣杩囩殑鎸夐挳鍜屾粴鍔ㄩ珮浜悓鏃舵樉绀猴紝鍑虹幇涓や釜鈥滈€変腑椤光€濄€?*/
+  /* 只有支持 hover 的设备才启用悬停效果；触屏点击后浏览器会一直保持 :hover，
+     导致被点过的按钮和滚动高亮同时显示，出现两个“选中项”。 */
   @media (hover: hover) {
     .nav-links a:hover { color: var(--ink); background: rgba(59, 51, 39, .08); }
   }
 
   .nav-links a.active {
     color: #fffdf8;
-    /* 娣辫壊鑳跺泭 + 绫崇櫧瀛楋細鍜屾偓鍋滐紙娴呭簳娣卞瓧锛夊舰鎴愭槑纭尯鍒嗭紝鏂囧瓧涔熺湅寰楁竻 */
+    /* 深色胶囊 + 米白字：和悬停（浅底深字）形成明确区分，文字也看得清 */
     background: rgba(59, 51, 39, .60);
   }
 
-  /* ================= 涓讳綋 ================= */
+  /* ================= 主体 ================= */
   main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 26px 0 10px; scroll-margin-top: 76px; }
 
-  /* ================= 妯箙 ================= */
+  /* ================= 横幅 ================= */
   .hero-media {
     border-radius: 26px;
     overflow: hidden;
@@ -217,7 +217,7 @@
     color: #fff;
   }
 
-  /* ================= 鍒嗗尯 ================= */
+  /* ================= 分区 ================= */
   .group {
     padding: 46px 0 8px;
     scroll-margin-top: 78px;
@@ -260,14 +260,14 @@
     color: var(--ink-2);
   }
 
-  /* ================= 鍗＄墖 ================= */
+  /* ================= 卡片 ================= */
   .cards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
   }
 
-  /* 宸ュ叿鍖哄崱鐗囪緝澶氾紝鑷姩鎸夊彲鐢ㄥ搴﹀垎鍒?*/
+  /* 工具区卡片较多，自动按可用宽度分列 */
   .cards-tools { grid-template-columns: repeat(auto-fit, minmax(288px, 1fr)); }
 
   .card {
@@ -389,7 +389,7 @@
     transform: translateX(2px);
   }
 
-  /* 閲嶇偣鍗＄墖锛氱敵璇峰叆浼?*/
+  /* 重点卡片：申请入会 */
   .card-feature {
     grid-column: 1 / -1;
     display: grid;
@@ -489,7 +489,7 @@
 
   .card-feature:hover .feature-go { gap: 12px; filter: brightness(1.06); }
 
-  /* ================= 鍏充簬鎴戜滑 ================= */
+  /* ================= 关于我们 ================= */
   .about-panel {
     background: linear-gradient(180deg, #fffefb 0%, #fdf8ef 100%);
     border: 1px solid rgba(120, 98, 64, .13);
@@ -562,7 +562,7 @@
   }
 
   .photo-link::after {
-    content: "鐐瑰嚮鏌ョ湅澶у浘";
+    content: "点击查看大图";
     position: absolute;
     left: 50%;
     bottom: 10px;
@@ -585,7 +585,7 @@
 
   .photo-link:hover img { transform: scale(1.02); }
 
-  /* ================= 澶у浘鏌ョ湅 ================= */
+  /* ================= 大图查看 ================= */
   .lightbox {
     position: fixed;
     inset: 0;
@@ -642,7 +642,7 @@
 
   .lightbox-close:hover { background: rgba(255, 255, 255, .3); }
 
-  /* ================= 椤佃剼 ================= */
+  /* ================= 页脚 ================= */
   footer {
     width: min(1120px, calc(100% - 32px));
     margin: 0 auto;
@@ -665,7 +665,7 @@
   footer a { color: var(--ink-2); text-decoration: none; border-bottom: 1px dashed var(--ink-3); }
   footer a:hover { color: var(--green-d); }
 
-  /* ================= 鍝嶅簲寮?================= */
+  /* ================= 响应式 ================= */
   @media (max-width: 760px) {
     .nav-inner { height: 44px; }
     .brand { font-size: 12.5px; gap: 6px; }
@@ -726,7 +726,7 @@
     * { transition: none !important; }
   }
 
-  /* ===== 瀵艰埅鍥炬爣锛堜笌鏉垮潡鍗＄墖鍚屼竴濂楋細24 缃戞牸 / stroke 1.7 / 鍦嗚锛?===== */
+  /* ===== 导航图标（与板块卡片同一套：24 网格 / stroke 1.7 / 圆角） ===== */
   .nav-links a, .nav-auth { display: inline-flex; align-items: center; gap: 5px; }
   .nav-ico, .nav-auth-ico { display: inline-flex; align-items: center; }
   .nav-ico svg, .nav-auth-ico svg { width: 15px; height: 15px; display: block; }
@@ -740,7 +740,7 @@
   }
   .nav-auth:hover { background: rgba(128, 128, 128, .26); border-color: rgba(128, 128, 128, .4); }
   @media (max-width: 760px) {
-    /* 鎵嬫満绔細鍙湁褰撳墠鍒嗗尯鏄剧ず鏂囧瓧锛屽叾浣欏彧鐣欏浘鏍?*/
+    /* 手机端：只有当前分区显示文字，其余只留图标 */
     .nav-links a .nav-txt {
       display: inline-block;
       max-width: 0;
@@ -760,7 +760,7 @@
   }
   .xsb-links, .nav-links { --pill-bg: rgba(59, 51, 39, .55); }
 
-  /* ===== 瀵艰埅閫変腑鑳跺泭锛氬崟鐙竴涓厓绱犲湪鍚勯」涔嬮棿婊戝姩锛屼笉鍐嶆暣鍧楁贰鍏ユ贰鍑?===== */
+  /* ===== 导航选中胶囊：单独一个元素在各项之间滑动，不再整块淡入淡出 ===== */
   .nav-pill { display: none; }
   @media (max-width: 760px) {
     .xsb-links, .nav-links { position: relative; }
@@ -778,7 +778,7 @@
                   width .3s cubic-bezier(.4, 0, .2, 1),
                   top .2s ease, height .2s ease, opacity .16s ease;
     }
-    /* 閫変腑椤硅嚜宸变笉鍐嶇敾搴曡壊锛屼氦缁欒兌鍥?*/
+    /* 选中项自己不再画底色，交给胶囊 */
     .xsb-links a.is-active, .nav-links a.active { background: transparent !important; }
     .xsb-links a, .nav-links a { z-index: 1; }
   }
@@ -788,80 +788,80 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="brand" href="#top" aria-label="鍥炲埌椤堕儴">
+    <a class="brand" href="#top" aria-label="回到顶部">
       <span class="brand-badge" aria-hidden="true"><img src="assets/family-icon.png" alt="" width="60" height="60" /></span>
-      <span class="word">鏂版墜淇濇姢鑱旂洘</span>
+      <span class="word">新手保护联盟</span>
     </a>
-    <nav class="nav-links" aria-label="椤甸潰瀵艰埅">
+    <nav class="nav-links" aria-label="页面导航">
       <span class="nav-pill" aria-hidden="true"></span>
-      <a href="#apply"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="nav-txt">鐢宠鍏ヤ細</span></a>
-      <a href="#tools"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="nav-txt">宸ュ叿</span></a>
-      <a href="#rules"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="nav-txt">杩滃緛瑙勫垯</span></a>
-      <a href="#about" class="only-pc"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="nav-txt">鍏充簬鎴戜滑</span></a>
+      <a href="#apply"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="nav-txt">申请入会</span></a>
+      <a href="#tools"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="nav-txt">工具</span></a>
+      <a href="#rules"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="nav-txt">远征规则</span></a>
+      <a href="#about" class="only-pc"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="nav-txt">关于我们</span></a>
     </nav>
-    <a href="account/index.html" class="nav-auth" aria-label="璐﹀彿">
+    <a href="account/index.html" class="nav-auth" aria-label="账号">
       <span class="nav-auth-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-      <span class="nav-auth-txt">鐧诲綍</span>
+      <span class="nav-auth-txt">登录</span>
     </a>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- ==================== 妯箙 ==================== -->
-  <section class="hero" aria-label="鏂版墜淇濇姢鑱旂洘">
+  <!-- ==================== 横幅 ==================== -->
+  <section class="hero" aria-label="新手保护联盟">
     <div class="hero-media">
       <picture>
         <source srcset="assets/banner.webp" type="image/webp" />
         <img src="assets/banner.jpg" width="1600" height="678" fetchpriority="high"
-             alt="鏂版墜淇濇姢鑱旂洘 WingsMS 妯箙" />
+             alt="新手保护联盟 WingsMS 横幅" />
       </picture>
     </div>
     <div class="hero-copy">
-      <p class="eyebrow">WINGSMS 路 瀹舵棌瀹樼綉</p>
-      <h1>瀹堟姢姣忎竴浣嶆柊鎵嬶紝涓€璧疯蛋寰楁洿杩?/h1>
-      <p class="lead">鏂版墜淇濇姢鑱旂洘鏄湪 WingsMS 鏈嶅姟鍣ㄨ嚧鍔涗簬淇濇姢鏂版墜鐨勫鏃忚仈鐩熴€傛垜浠粍缁囪繙寰佷竴鏉￠緳浠ュ強鍚勭鍓湰锛屽埗瀹氬叕骞崇殑鍒嗛厤涓庡缃氳鍒欙紝涔熺敤鍏ヤ細闈㈣瘯璁よ瘑姣忎竴浣嶆柊浼欎即銆?/p>
+      <p class="eyebrow">WINGSMS · 家族官网</p>
+      <h1>守护每一位新手，一起走得更远</h1>
+      <p class="lead">新手保护联盟是在 WingsMS 服务器致力于保护新手的家族联盟。我们组织远征一条龙以及各种副本，制定公平的分配与处罚规则，也用入会面试认识每一位新伙伴。</p>
       <div class="hero-badges">
-        <button type="button" class="hero-badge" data-copy="956341484">QQ缇?956341484</button>
+        <button type="button" class="hero-badge" data-copy="956341484">QQ群 956341484</button>
         <button type="button" class="hero-badge" data-copy="47625960">KOOK ID 47625960</button>
       </div>
     </div>
   </section>
 
-  <!-- ==================== 鐢宠鍏ヤ細 ==================== -->
+  <!-- ==================== 申请入会 ==================== -->
   <section class="group" id="apply">
     <div class="group-head">
       <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></div>
       <div>
-        <h2>鐢宠鍏ヤ細</h2>
-        <p>鎯虫垚涓鸿仈鐩熺殑涓€鍛橈紵鍏堝畬鎴愬叆浼氱敵璇烽潰璇曘€?/p>
+        <h2>申请入会</h2>
+        <p>想成为联盟的一员？先完成入会申请面试。</p>
       </div>
     </div>
 
     <div class="cards">
       <a class="card card-feature" href="apply/index.html" style="--accent:#2f7d4f;--accent-soft:#e7f4e1">
         <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span>
-        <h3 class="feature-title">鍏ヤ細鐢宠闈㈣瘯</h3>
+        <h3 class="feature-title">入会申请面试</h3>
         <div class="feature-body">
-          <p>濉啓娓告垙鏄电О鍚庡紑濮嬬瓟棰橈紝姣忔闅忔満鎶藉彇 20 閬撻锛岄鐩笌閫夐」椤哄簭閮戒細鎵撲贡銆傛弧鍒?100 鍒嗭紝80 鍒嗗強浠ヤ笂鍚堟牸锛屾彁浜ゅ悗鑷姩璇勫垎锛屽苟鍙繚瀛樼粨鏋滄埅鍥俱€?/p>
+          <p>填写游戏昵称后开始答题，每次随机抽取 20 道题，题目与选项顺序都会打乱。满分 100 分，80 分及以上合格，提交后自动评分，并可保存结果截图。</p>
           <div class="feature-meta">
             <span class="chip">v1.0.25</span>
-            <span class="chip">20 棰橀殢鏈?/span>
-            <span class="chip">棰樺簱鏇存柊 2026-11-17</span>
+            <span class="chip">20 题随机</span>
+            <span class="chip">题库更新 2026-11-17</span>
           </div>
         </div>
-        <span class="feature-go">寮€濮嬮潰璇?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        <span class="feature-go">开始面试 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
       </a>
     </div>
   </section>
 
-  <!-- ==================== 宸ュ叿 ==================== -->
+  <!-- ==================== 工具 ==================== -->
   <section class="group" id="tools">
     <div class="group-head">
       <div class="group-icon" aria-hidden="true" style="--accent:#3e8fc1;--accent-soft:#e9f3fb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></div>
       <div>
-        <h2>宸ュ叿</h2>
-        <p>鑱旂洘鍐呴儴宸ュ叿锛屽甫闃熷拰鎶ヤ环鏃堕兘鑳界敤涓娿€?/p>
+        <h2>工具</h2>
+        <p>联盟内部工具，带队和报价时都能用上。</p>
       </div>
     </div>
 
@@ -871,10 +871,10 @@
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>
           <span class="card-tag">v1.0.3</span>
         </div>
-        <h3>瀹炰範鍥㈤暱妫€鏌ユ竻鍗?/h3>
-        <p>涓€鏉￠緳銆佹墡鏄嗐€丳B銆丣JB 鍏ㄦ祦绋嬫鏌ヨ〃锛屼粠闆嗗悎鍓嶅埌閬撳叿鍒嗛厤鍏?9 涓樁娈点€?1 椤规鏌ョ偣锛屾敮鎸侀€愰」鎵撳嬀涓庝竴閿埅鍥句繚瀛樸€?/p>
+        <h3>实习团长检查清单</h3>
+        <p>一条龙、扎昆、PB、JJB 全流程检查表，从集合前到道具分配共 9 个阶段、31 项检查点，支持逐项打勾与一键截图保存。</p>
         <div class="card-foot">
-          <span class="card-meta">9 涓樁娈?路 31 椤规鏌ョ偣</span>
+          <span class="card-meta">9 个阶段 · 31 项检查点</span>
           <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
@@ -884,10 +884,10 @@
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg></span>
           <span class="card-tag">v1.0.1</span>
         </div>
-        <h3>鍟嗗簵浠锋牸瑙勮寖鍣?/h3>
-        <p>杈撳叆鏁板€煎嵆鏃跺埛鏂板崈鍒嗕綅鏄剧ず涓庛€屼竾銆嶇瓑涓枃鍗曚綅锛屾爣浠枫€佹姤浠锋椂蹇€熸牳瀵癸紝鏀寔涓€閿鍒剁粨鏋溿€?/p>
+        <h3>商店价格规范器</h3>
+        <p>输入数值即时刷新千分位显示与「万」等中文单位，标价、报价时快速核对，支持一键复制结果。</p>
         <div class="card-foot">
-          <span class="card-meta">鍗冨垎浣?路 涓枃鍗曚綅</span>
+          <span class="card-meta">千分位 · 中文单位</span>
           <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
@@ -897,23 +897,23 @@
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
           <span class="card-tag">v1.4.1</span>
         </div>
-        <h3>璐よ€呰础鍝?路 鍥涜薄绁潧</h3>
-        <p>瀹跺姟璐″搧鍏冲崱鐨勮瘯鐜╃粌涔狅細缁欏洓浣嶈搐鑰呮憜鏀惧叺娉曞嵎杞淬€佸媷鐚涘媼绔犮€佽泧閰掑拰杩囨湡椋熺墿锛屾寜銆屾弧鎰?/ 涓嶆弧鎰?/ 璁や笉鍑恒€嶇殑鎻愮ず鎺掗櫎缁勫悎锛? 娆℃満浼氬唴鐚滃嚭姝ｇ‘鎽嗘硶銆傛墜鍔ㄧ粌涔犻€氬叧鍚庡彲璁″叆鎺掕姒溿€?/p>
+        <h3>贤者贡品 · 四象祭坛</h3>
+        <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
         <div class="card-foot">
-          <span class="card-meta">7 娆℃満浼?路 4 浣嶈搐鑰?路 鎺掕姒?/span>
+          <span class="card-meta">7 次机会 · 4 位贤者 · 排行榜</span>
           <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
     </div>
   </section>
 
-  <!-- ==================== 杩滃緛瑙勫垯 ==================== -->
+  <!-- ==================== 远征规则 ==================== -->
   <section class="group" id="rules">
     <div class="group-head">
       <div class="group-icon" aria-hidden="true" style="--accent:#b8861e;--accent-soft:#fbf2dd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></div>
       <div>
-        <h2>杩滃緛瑙勫垯</h2>
-        <p>鍑哄彂鍓嶅厛鐪嬭鍒欙紝灏戣俯鍧戙€佸皯缃氭銆?/p>
+        <h2>远征规则</h2>
+        <p>出发前先看规则，少踩坑、少罚款。</p>
       </div>
     </div>
 
@@ -921,12 +921,12 @@
       <a class="card" href="rules/one-dragon.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span>
-          <span class="card-tag">杩滃緛</span>
+          <span class="card-tag">远征</span>
         </div>
-        <h3>杩滃緛涓€鏉￠緳瑙勫垯</h3>
-        <p>鎵庢槅銆丣JB / PB 涓€鏉￠緳鐨?KOOK 璇煶瑕佹眰銆佽溅闃熶簩缁寸爜銆佹帀钀藉垎閰嶃€佸ザ琛ヤ笌璇崱缃氭鏍囧噯锛屽叏閮ㄦ暣鐞嗗湪涓€椤点€?/p>
+        <h3>远征一条龙规则</h3>
+        <p>扎昆、JJB / PB 一条龙的 KOOK 语音要求、车队二维码、掉落分配、奶补与误捡罚款标准，全部整理在一页。</p>
         <div class="card-foot">
-          <span class="card-meta">鍚?KOOK 璇煶棰戦亾涓庤溅闃熶簩缁寸爜</span>
+          <span class="card-meta">含 KOOK 语音频道与车队二维码</span>
           <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
@@ -934,48 +934,48 @@
       <a class="card" href="rules/tayza.html" style="--accent:#b8861e;--accent-soft:#fbf2dd">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <span class="card-tag">鍓湰</span>
+          <span class="card-tag">副本</span>
         </div>
-        <h3>娉版墡鍓湰瑙勫垯</h3>
-        <p>娉版墡鎶ュ悕涓庡紑鍥㈡椂闂淬€並OOK 璇煶銆佷富鍔涢槦闂ㄦ涓庤亴涓氳姹傘€佸垎绾㈠拰璇崱缃氭瑙勫垯锛屽紑鍥㈠墠寤鸿閫氳涓€閬嶃€?/p>
+        <h3>泰扎副本规则</h3>
+        <p>泰扎报名与开团时间、KOOK 语音、主力队门槛与职业要求、分红和误捡罚款规则，开团前建议通读一遍。</p>
         <div class="card-foot">
-          <span class="card-meta">鎶ュ悕 路 闂ㄦ 路 鍒嗙孩 路 缃氭</span>
+          <span class="card-meta">报名 · 门槛 · 分红 · 罚款</span>
           <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
     </div>
   </section>
 
-    <!-- ==================== 鍏充簬鎴戜滑 ==================== -->
+    <!-- ==================== 关于我们 ==================== -->
   <section class="group" id="about">
     <div class="group-head">
       <div class="group-icon" aria-hidden="true" style="--accent:#2f7d4f;--accent-soft:#e7f4e1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
       <div>
-        <h2>鍏充簬鎴戜滑</h2>
-        <p>涓€缇ゅ湪 WingsMS 鏈嶅姟鍣ㄤ竴璧峰啋闄╃殑浼欎即銆?/p>
+        <h2>关于我们</h2>
+        <p>一群在 WingsMS 服务器一起冒险的伙伴。</p>
       </div>
     </div>
 
     <div class="about-panel">
-      <p class="about-copy">鏂版墜淇濇姢鑱旂洘鏄?WingsMS 鏈嶅姟鍣ㄧ殑鏂版墜瀹舵棌銆傛垜浠钩鏃朵竴璧峰紑杩滃緛銆佹墦鍓湰锛屼篃浼氱粍缁囧鏃忔椿鍔ㄣ€傚笇鏈涙瘡涓垰鍏ュ潙鐨勬柊鎵嬮兘鏈変汉甯︺€佹湁瑙勫垯鍙緷锛屼篃鑳藉湪杩欓噷鎵惧埌涓€璧风帺涓嬪幓鐨勪紮浼淬€?/p>
+      <p class="about-copy">新手保护联盟是 WingsMS 服务器的新手家族。我们平时一起开远征、打副本，也会组织家族活动。希望每个刚入坑的新手都有人带、有规则可依，也能在这里找到一起玩下去的伙伴。</p>
       <div class="about-photos">
         <figure>
           <a class="photo-link" href="assets/activity-1.jpg" data-lightbox>
             <picture>
               <source srcset="assets/activity-1.webp" type="image/webp" />
-              <img src="assets/activity-1.jpg" width="1200" height="675" loading="lazy" alt="绗竴灞婃椿鍔ㄥ悎褰? />
+              <img src="assets/activity-1.jpg" width="1200" height="675" loading="lazy" alt="第一届活动合影" />
             </picture>
           </a>
-          <figcaption>绗竴灞婃椿鍔ㄥ悎褰?/figcaption>
+          <figcaption>第一届活动合影</figcaption>
         </figure>
         <figure>
           <a class="photo-link" href="assets/activity-2.jpg" data-lightbox>
             <picture>
               <source srcset="assets/activity-2.webp" type="image/webp" />
-              <img src="assets/activity-2.jpg" width="1200" height="675" loading="lazy" alt="绗簩灞婃椿鍔ㄥ悎褰? />
+              <img src="assets/activity-2.jpg" width="1200" height="675" loading="lazy" alt="第二届活动合影" />
             </picture>
           </a>
-          <figcaption>绗簩灞婃椿鍔ㄥ悎褰?/figcaption>
+          <figcaption>第二届活动合影</figcaption>
         </figure>
       </div>
     </div>
@@ -984,8 +984,8 @@
 </main>
 
 <footer>
-  <p class="foot-title">WINGSMS 路 鏂版墜淇濇姢鑱旂洘</p>
-  <p>WingsMS 鏈嶅姟鍣?路 瀹堟姢姣忎竴浣嶆柊鎵?/p>
+  <p class="foot-title">WINGSMS · 新手保护联盟</p>
+  <p>WingsMS 服务器 · 守护每一位新手</p>
 </footer>
 
 <script>
@@ -1014,8 +1014,8 @@
     function update() {
       ticking = false;
       var current = null;
-      // 鍒ゅ畾绾挎斁鍦ㄨ鍙ｄ笂閮ㄧ害 1/3锛氭澘鍧楁爣棰樻粴杩涜繖涓綅缃氨绠楀綋鍓嶏紝涓嶅繀绛夊畠椤跺埌鏈€涓婇潰銆?
-      // 鏉垮潡杈冪煯锛堝銆岃繙寰佽鍒欍€?87px锛夋椂涔熻兘绋冲畾閫変腑銆?
+      // 判定线放在视口上部约 1/3：板块标题滚进这个位置就算当前，不必等它顶到最上面。
+      // 板块较矮（如「远征规则」387px）时也能稳定选中。
       var line = Math.max(120, window.innerHeight * 0.35);
       sections.forEach(function (s) {
         if (s.getBoundingClientRect().top <= line) current = s;
@@ -1035,8 +1035,8 @@
 
     window.addEventListener('scroll', requestUpdate, { passive: true });
     window.addEventListener('resize', requestUpdate);
-    // 浠庡瓙椤甸潰璺冲埌 index.html#rules 杩欑被閿氱偣鏃讹紝娴忚鍣ㄧ洿鎺ュ畾浣嶃€佷笉涓€瀹氳Е鍙?scroll 浜嬩欢锛?
-    // 杩欓噷鍦ㄥ姞杞藉畬鎴愬拰 hash 鍙樺寲鏃跺悇琛ヤ竴娆★紝淇濊瘉楂樹寒鑳藉涓娿€?
+    // 从子页面跳到 index.html#rules 这类锚点时，浏览器直接定位、不一定触发 scroll 事件，
+    // 这里在加载完成和 hash 变化时各补一次，保证高亮能对上。
     window.addEventListener('hashchange', requestUpdate);
     window.addEventListener('load', function () {
       requestUpdate();
@@ -1053,8 +1053,8 @@
     box.className = 'lightbox';
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-modal', 'true');
-    box.setAttribute('aria-label', '鏌ョ湅澶у浘');
-    box.innerHTML = '<button type="button" class="lightbox-close" aria-label="鍏抽棴">脳</button><div class="lightbox-stage"></div>';
+    box.setAttribute('aria-label', '查看大图');
+    box.innerHTML = '<button type="button" class="lightbox-close" aria-label="关闭">×</button><div class="lightbox-stage"></div>';
     document.body.appendChild(box);
 
     var stage = box.querySelector('.lightbox-stage');
@@ -1068,7 +1068,7 @@
       var fullSrc = link.getAttribute('href');
       var placeholder = thumb ? (thumb.currentSrc || thumb.src) : '';
 
-      // 姣忔鎵撳紑閮芥柊寤?img锛屽交搴曢伩鍏嶅鐢ㄦ棫鍏冪礌閫犳垚涓插浘
+      // 每次打开都新建 img，彻底避免复用旧元素造成串图
       var next = document.createElement('img');
       next.alt = thumb ? thumb.alt : '';
       if (placeholder) next.src = placeholder;
@@ -1080,7 +1080,7 @@
         stage.appendChild(next);
       }
 
-      // 棰勫姞杞藉ぇ鍥撅紝瀹屾垚鍚庢浛鎹紙涓㈠純杩囨湡璇锋眰锛岄槻姝㈠揩閫熷垏鎹㈡椂涓插浘锛?
+      // 预加载大图，完成后替换（丢弃过期请求，防止快速切换时串图）
       var full = new Image();
       full.onload = function () {
         if (token !== loadToken) return;
@@ -1121,7 +1121,7 @@
     var btns = Array.prototype.slice.call(document.querySelectorAll('[data-copy]'));
     if (!btns.length) return;
 
-    // execCommand 鍚屾鎵ц锛屽湪绉诲姩绔紙鍚井淇″唴缃祻瑙堝櫒锛夊吋瀹规€ф渶濂?
+    // execCommand 同步执行，在移动端（含微信内置浏览器）兼容性最好
     function legacyCopy(text) {
       var ta = document.createElement('textarea');
       ta.value = text;
@@ -1154,12 +1154,12 @@
         copyText(btn.getAttribute('data-copy')).then(function (ok) {
           clearTimeout(btn._copyTimer);
           if (!ok) {
-            btn.textContent = '澶嶅埗澶辫触锛岃闀挎寜閫夋嫨';
+            btn.textContent = '复制失败，请长按选择';
             btn._copyTimer = setTimeout(function () { btn.textContent = original; }, 1800);
             return;
           }
           if (btn.dataset.orig === undefined) btn.dataset.orig = original;
-          btn.textContent = '宸插鍒?鉁?;
+          btn.textContent = '已复制 ✓';
           btn.classList.add('is-copied');
           btn._copyTimer = setTimeout(function () {
             btn.textContent = btn.dataset.orig;
@@ -1171,7 +1171,7 @@
   })();
 </script>
 
-<!-- 宸茬櫥褰曟椂鎶婂鑸浘鏍囩偣浜紙璐﹀彿椤佃嚜宸变細澶勭悊锛岃繖閲屽彧缁欏叾浣欓〉闈㈢敤锛?-->
+<!-- 已登录时把导航图标点亮（账号页自己会处理，这里只给其余页面用） -->
 <script>
 (function () {
   try {
@@ -1179,13 +1179,13 @@
     var a = document.querySelector('.xsb-auth, .nav-auth');
     if (!a) return;
     var t = a.querySelector('.xsb-auth-txt, .nav-auth-txt');
-    if (t) t.textContent = '宸茬櫥褰?;
+    if (t) t.textContent = '已登录';
     a.classList.add('is-on');
   } catch (e) {}
 })();
 </script>
 
-<!-- 璁╅€変腑鐨勮兌鍥婃粦鍔ㄥ埌褰撳墠椤癸紙绉诲姩绔級 -->
+<!-- 让选中的胶囊滑动到当前项（移动端） -->
 <script>
 (function () {
   function init() {
@@ -1199,7 +1199,7 @@
       raf = 0;
       var active = nav.querySelector('a.is-active, a.active');
 
-      // 娌℃湁閫変腑椤癸紙姣斿棣栭〉鍋滃湪鏈€椤朵笂锛夛細鎶婅兌鍥婃敹璧锋潵锛屽苟璁颁綇銆岃繖娆℃槸浠庢棤鍒版湁銆?
+      // 没有选中项（比如首页停在最顶上）：把胶囊收起来，并记住「这次是从无到有」
       if (!active) {
         pill.style.opacity = '0';
         pill.style.width = '0px';
@@ -1210,7 +1210,7 @@
       var nr = nav.getBoundingClientRect();
       var ar = active.getBoundingClientRect();
 
-      // 鏂囧瓧鍙兘杩樺湪 max-width 杩囨浮涓紱鐢?scrollWidth 琛ュ嚭瀹冩渶缁堣鍗犵殑瀹藉害
+      // 文字可能还在 max-width 过渡中；用 scrollWidth 补出它最终要占的宽度
       var txt = active.querySelector('.xsb-txt, .nav-txt');
       var extra = 0;
       if (txt) {
@@ -1218,8 +1218,8 @@
         extra = Math.max(0, txt.scrollWidth - tr.width);
       }
 
-      // 鏃ч€変腑椤规鍦ㄦ妸鏂囧瓧鏀跺洖鍘伙紝瀹冨彉绐勪細璁╁彸杈圭殑椤规暣浣撳乏绉汇€?
-      // 鍙粺璁′綅浜庣洰鏍囧乏渚х殑閭ｄ簺锛堝彸杈圭殑涓嶅奖鍝嶇洰鏍囦綅缃級
+      // 旧选中项正在把文字收回去，它变窄会让右边的项整体左移。
+      // 只统计位于目标左侧的那些（右边的不影响目标位置）
       var shift = 0;
       var items = nav.querySelectorAll('a');
       for (var i = 0; i < items.length; i++) {
@@ -1234,8 +1234,8 @@
 
       var targetLeft = (ar.left - nr.left - shift) + 'px';
 
-      // 銆屼粠鏃犲埌鏈夈€嶇殑閭ｄ竴娆★細鍏堢灛绉诲埌鐩爣浣嶇疆锛堜笉鍋?left 杩囨浮锛夛紝
-      // 鍐嶆妸瀹藉害浠?0 灞曞紑銆傜湅璧锋潵灏辨槸鍘熷湴浠庡浘鏍囬噷闀垮嚭鏉ワ紝鑰屼笉鏄粠鏃佽竟妯潃婊戣繃鏉ャ€?
+      // 「从无到有」的那一次：先瞬移到目标位置（不做 left 过渡），
+      // 再把宽度从 0 展开。看起来就是原地从图标里长出来，而不是从旁边横着滑过来。
       if (!hadActive) {
         pill.style.transition = 'none';
         pill.style.left = targetLeft;
@@ -1256,7 +1256,7 @@
 
     function schedule() {
       if (!raf) raf = requestAnimationFrame(place);
-      // 杩囨浮璧板畬銆佸竷灞€绋冲畾鍚庡啀瀵逛竴娆★紝闃叉閲忓埌涓棿鎬?
+      // 过渡走完、布局稳定后再对一次，防止量到中间态
       setTimeout(place, 420);
     }
 
