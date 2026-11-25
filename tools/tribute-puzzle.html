@@ -3276,9 +3276,23 @@
         syncBestFromRows(rows);
       } catch (e) {
         if (!cached) {
-          listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响</div>';
+          listEl.innerHTML = '<div class="rank-empty">排行榜暂时连不上，练习不受影响' + rankErrHint(e) + '</div>';
         }
       }
+    }
+
+    // 出问题时光给一句「连不上」没法排查，把具体原因带上（手机上看不到控制台）
+    function rankErrHint(e) {
+      const m = (e && e.message) || '未知错误';
+      const debug = /[?&]debug\b/.test(location.search);
+      if (debug) {
+        return '<br><span style="font-size:.7rem;opacity:.75">' + escapeHtml(m) + '</span>';
+      }
+      // 网络层失败（多半是运营商或 DNS 拦了 supabase.co）
+      if (/Failed to fetch|NetworkError|Load failed|network/i.test(m)) {
+        return '<br><span style="font-size:.7rem;opacity:.75">网络请求发不出去，可能是当前网络屏蔽了 supabase.co</span>';
+      }
+      return '';
     }
 
     const historyFoldBtn = document.getElementById('historyFold');
@@ -3362,7 +3376,7 @@
         renderTotalRank(await fetchTotalRank());
       } catch (e) {
         if (!listEl.dataset.loaded) {
-          listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上</div>';
+          listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上' + rankErrHint(e) + '</div>';
         }
       }
     }
