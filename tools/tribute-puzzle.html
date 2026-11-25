@@ -929,6 +929,46 @@
       border-radius: .7rem;
     }
     .rank-submit[hidden] { display: none; }
+    .rank-tabs {
+      display: flex;
+      gap: .3rem;
+      margin-left: auto;
+    }
+    .rank-tab {
+      padding: .24rem .6rem;
+      font-size: .72rem;
+      font-family: inherit;
+      font-weight: 600;
+      color: #7b6a50;
+      background: rgba(139, 110, 60, .10);
+      border: 1px solid rgba(139, 110, 60, .25);
+      border-radius: .45rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .rank-tab.is-active {
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border-color: transparent;
+    }
+    .rank-subline {
+      font-size: .72rem;
+      color: #9a8a6c;
+      margin: -.05rem 0 .55rem;
+    }
+    .rank-list[hidden] { display: none; }
+    .rank-badge-acct {
+      display: inline-block;
+      margin-left: .22rem;
+      padding: 0 .22rem;
+      font-size: .6rem;
+      font-style: normal;
+      font-weight: 700;
+      color: #2f6b46;
+      background: rgba(47, 107, 70, .13);
+      border-radius: .25rem;
+      vertical-align: middle;
+    }
     .rank-result {
       font-size: .85rem;
       color: #4e3b21;
@@ -1323,10 +1363,14 @@
   <div class="rank-panel play-only">
     <div class="rank-head">
       <span class="rank-title">排行榜</span>
+      <div class="rank-tabs" id="rankTabs">
+        <button type="button" class="rank-tab is-active" data-tab="single">单局榜</button>
+        <button type="button" class="rank-tab" data-tab="total">总分榜</button>
+      </div>
       <button type="button" class="rank-info" id="rankInfoBtn" aria-label="分数说明" title="分数怎么算" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></button>
-      <span class="rank-sub">手动练习 · 分数高者在前</span>
       <button type="button" class="rank-refresh" id="rankRefreshBtn" aria-label="刷新排行榜" title="刷新排行榜"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
     </div>
+    <div class="rank-subline" id="rankSub">手动练习 · 分数高者在前</div>
     <div class="rank-help" id="rankHelp" hidden>
       <p><b>分数怎么算</b></p>
       <p>综合<strong>题型复杂度</strong>、<strong>轮数</strong>、<strong>秒数</strong>算出：题型越复杂、轮数越少、秒数越少，分数越高。</p>
@@ -1347,6 +1391,9 @@
       </div>
     </div>
     <div class="rank-list" id="rankList">
+      <div class="rank-loading">正在载入…</div>
+    </div>
+    <div class="rank-list" id="totalList" hidden>
       <div class="rank-loading">正在载入…</div>
     </div>
   </div>
@@ -1526,7 +1573,11 @@
       'unrecognized': 3
     };
 
-    let secret = [];
+    // 答案不是页面加载时就准备好的：要等玩家真的开始摆放（开局）那一刻才生成。
+    // 这样「先开控制台看答案，觉得难就刷新」这条路就走不通了——想看答案必须先开局，
+    // 而开局会在服务器留一条「进行中」的记录，刷新页面就等于放弃这一局。
+    let secret = null;
+    let gameId = null;
     let attemptsLeft = MAX_ATTEMPTS;
     let gameOver = false;
     let currentGuess = ['', '', '', ''];
@@ -1545,7 +1596,9 @@
     }
 
     function resetGame() {
-      secret = generateSecret();
+      // 答案在这里「不」生成，等玩家第一次摆放贡品时才生成（见 ensureGame）
+      secret = null;
+      gameId = null;
       attemptsLeft = MAX_ATTEMPTS;
       gameOver = false;
       currentGuess = ['', '', '', ''];
@@ -1560,6 +1613,14 @@
       feedbackDiv.innerHTML = '<div class="feedback-line">⚡ 摆放供品，询问贤者...</div>';
       historyList.innerHTML = '';
       enableControls(true);
+    }
+
+    // 开局：生成答案 + 给这一局一个编号 + 让服务器知道「有人开了一局」
+    function ensureGame() {
+      if (secret) return;
+      secret = generateSecret();
+      gameId = makeUuid();
+      registerRun(gameId);
       // 只在地址栏带 ?debug 时才打印答案，普通玩家打开控制台看不到
       if (/[?&]debug\b/.test(location.search)) {
         console.log('答案(调试):', secret.join(''));
@@ -1604,8 +1665,11 @@
         feedbackDiv.innerHTML = '<div class="feedback-line">⛔ 游戏已经结束，请重置答案。</div>'; 
         return; 
       }
-      // 第一次摆放贡品时开始计时
-      if (!roundStartAt) roundStartAt = Date.now();
+      // 第一次摆放贡品时算作「开局」：生成答案、登记这一局、开始计时
+      if (!roundStartAt) {
+        roundStartAt = Date.now();
+        ensureGame();
+      }
       // 记下这一次点击的时间点（第一次点击记为 0）
       clickTimes.push(Date.now() - roundStartAt);
       for (let i = 0; i < CODE_LENGTH; i++) {
@@ -2332,7 +2396,34 @@
       return res.json();
     }
 
-    async function postScore(nickname, pattern, rounds, durationMs, trace) {
+    // 开局登记：让服务器知道「这一局开始了」。
+    // 之后如果一直没有任何通关提交，这局就会被算作放弃（超时 10 分钟）。
+    // 玩家看答案后刷新页面、或者直接关掉，都逃不掉——记录已经在服务器上了。
+    async function registerRun(gid) {
+      let nick = '无名贤者';
+      try { nick = localStorage.getItem(LB_NICK_KEY) || '无名贤者'; } catch (e) {}
+      const chars = Array.from(nick);
+      if (chars.length > 12) nick = chars.slice(0, 12).join('');
+      if (!nick) nick = '无名贤者';
+      try {
+        await fetch(LB_URL + '/rest/v1/runs', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), {
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          }),
+          body: JSON.stringify({
+            game_id: gid,
+            player_id: getPlayerId(),
+            nickname: nick
+          })
+        });
+      } catch (e) {
+        // 登记失败不影响玩，只是这一局不会计入总分榜
+      }
+    }
+
+    async function postScore(nickname, pattern, rounds, durationMs, trace, gid) {
       // 后面必须带 ?select=score：trace 列对匿名用户是「无权限」，而
       // Prefer: return=representation 默认要求 RETURNING *（所有列），
       // 一旦碰到 trace 整条插入就会被 42501 拒掉。限定只回传 score 就没问题。
@@ -2348,6 +2439,7 @@
           pattern: pattern,
           rounds: rounds,
           duration_ms: durationMs,
+          game_id: gid || null,
           trace: trace || null
         })
       });
@@ -2472,6 +2564,93 @@
       });
     }
 
+    // ==================== 总分榜 ====================
+    let currentTab = 'single';
+
+    function fmtNum(n) {
+      n = Number(n) || 0;
+      if (n >= 100000000) return (n / 100000000).toFixed(1).replace(/\.0$/, '') + '亿';
+      if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + '万';
+      return n.toLocaleString('en-US');
+    }
+
+    async function fetchTotalRank() {
+      const q = 'total_rank?select=nickname,games,wins,abandons,win_rate,total_score,is_account' +
+                '&order=total_score.desc,win_rate.desc&limit=' + LB_LIMIT;
+      const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    function renderTotalRank(rows) {
+      const listEl = document.getElementById('totalList');
+      if (!listEl) return;
+      if (!rows || !rows.length) {
+        listEl.innerHTML = '<div class="rank-empty">还没有人打完第一局</div>';
+        return;
+      }
+      // 一台电脑一台手机会各自算一条，昵称相同时加序号区分（注册账号后会自动合并）
+      const nameCount = {};
+      listEl.innerHTML = rows.map(function (r, i) {
+        const no = i + 1;
+        const base = r.nickname || '无名贤者';
+        nameCount[base] = (nameCount[base] || 0) + 1;
+        const shown = nameCount[base] > 1 ? base + '（' + nameCount[base] + '）' : base;
+        const cls = ['rank-row'];
+        if (no <= 3) cls.push('is-top' + no);
+        return '<div class="' + cls.join(' ') + '">' +
+                 '<span class="rank-no">' + no + '</span>' +
+                 '<span class="rank-name">' + escapeHtml(shown) +
+                   (r.is_account ? '<i class="rank-badge-acct" title="已绑定账号">✓</i>' : '') +
+                 '</span>' +
+                 '<span class="rank-score">' + fmtNum(r.total_score) + '<small>分</small></span>' +
+                 '<span class="rank-meta"><b>' + r.games + '</b> 局 · 胜率 <b>' + r.win_rate + '%</b>' +
+                   (Number(r.abandons) > 0 ? ' · 放弃 <b>' + r.abandons + '</b>' : '') +
+                 '</span>' +
+               '</div>';
+      }).join('');
+      listEl.dataset.loaded = '1';
+    }
+
+    async function loadTotalRank() {
+      const listEl = document.getElementById('totalList');
+      if (!listEl) return;
+      try {
+        renderTotalRank(await fetchTotalRank());
+      } catch (e) {
+        if (!listEl.dataset.loaded) {
+          listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上</div>';
+        }
+      }
+    }
+
+    const rankTabsEl = document.getElementById('rankTabs');
+    if (rankTabsEl) {
+      rankTabsEl.addEventListener('click', function (e) {
+        const btn = e.target.closest('.rank-tab');
+        if (!btn) return;
+        const tab = btn.dataset.tab;
+        if (!tab || tab === currentTab) return;
+        currentTab = tab;
+
+        rankTabsEl.querySelectorAll('.rank-tab').forEach(function (b) {
+          b.classList.toggle('is-active', b.dataset.tab === tab);
+        });
+        const single = document.getElementById('rankList');
+        const total = document.getElementById('totalList');
+        if (single) single.hidden = tab !== 'single';
+        if (total) total.hidden = tab !== 'total';
+
+        const sub = document.getElementById('rankSub');
+        if (sub) {
+          sub.textContent = tab === 'single'
+            ? '手动练习 · 分数高者在前'
+            : '累计总分 · 每放弃一局扣 1000 分';
+        }
+        if (tab === 'total') loadTotalRank();
+      });
+    }
+
     const rankRefreshBtn = document.getElementById('rankRefreshBtn');
     if (rankRefreshBtn) {
       rankRefreshBtn.addEventListener('click', async function () {
@@ -2480,7 +2659,7 @@
         rankRefreshBtn.disabled = true;
         rankRefreshBtn.classList.add('is-busy');
         clearRankCache();
-        await loadRank(true);
+        await (currentTab === 'total' ? loadTotalRank() : loadRank(true));
         rankRefreshBtn.classList.remove('is-busy');
         // 最小间隔：防手滑连点（服务端没有限频，这一层只能靠前端自觉）
         const remain = Math.max(0, LB_REFRESH_GAP - (Date.now() - startedAt));
@@ -2653,6 +2832,7 @@
         durationMs: durationMs,
         pattern: pattern,
         score: score,
+        gameId: gameId,
         // 紧凑格式：Q/W/E/R 映射成 0/1/2/3，时间用毫秒数
         // { s: 答案, t: 每轮时间点, g: 每轮猜测, f: 每轮 [bulls, cows] }
         trace: {
@@ -2812,7 +2992,7 @@
         }
         // 提交前先记住「当时的最好成绩」，用来区分「分数确实不够」和「分数够了但被服务端判异常」
         const bestBefore = readBest();
-        const accepted = await postScore(nick, submitted.pattern, submitted.rounds, submitted.durationMs, submitted.trace);
+        const accepted = await postScore(nick, submitted.pattern, submitted.rounds, submitted.durationMs, submitted.trace, submitted.gameId);
         const shouldHaveWon = !bestBefore || submitted.score > bestBefore.score;
         try {
           localStorage.setItem(LB_NICK_KEY, nick);
@@ -2836,6 +3016,7 @@
         pendingScore = null;
         clearRankCache();
         await loadRank(true);
+        if (currentTab === 'total') loadTotalRank();
         flashMyRow();
       } catch (e) {
         rankSubmitBtn.disabled = false;
