@@ -2611,6 +2611,22 @@
     let authEmail = '';
     let authUid = '';
 
+    // 从 access_token 里解出 user id（token 的 sub 字段就是它）。
+    // 直接读本地存的 uid 有个坑：某些情况下 uid 丢了但 token 还在，
+    // 结果提交时 user_id 传 null，记录就变成匿名的，排行榜上会裂成两条。
+    function uidFromToken(tok) {
+      try {
+        const part = String(tok || '').split('.')[1];
+        if (!part) return '';
+        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+        const json = JSON.parse(atob(b64 + pad));
+        return json.sub || '';
+      } catch (e) {
+        return '';
+      }
+    }
+
     function loadAuth() {
       try {
         authToken = localStorage.getItem(LB_TOKEN_KEY) || '';
@@ -2618,6 +2634,14 @@
         authEmail = localStorage.getItem(LB_EMAIL_KEY) || '';
         authUid = localStorage.getItem(LB_UID_KEY) || '';
       } catch (e) {}
+      // 兜底：uid 缺失或和 token 对不上时，以 token 为准
+      if (authToken) {
+        const fromTok = uidFromToken(authToken);
+        if (fromTok && fromTok !== authUid) {
+          authUid = fromTok;
+          try { localStorage.setItem(LB_UID_KEY, authUid); } catch (e) {}
+        }
+      }
     }
 
     function saveAuth(data) {
@@ -2994,6 +3018,8 @@
           body: JSON.stringify({
             game_id: gid,
             player_id: getPlayerId(),
+            // 开局时就带上账号，这样即使登录后不再单独认领，总分榜也能正确归属
+            user_id: authUid || null,
             nickname: nick
           })
         });
