@@ -1111,6 +1111,50 @@
       border-color: #b8860b;
       box-shadow: 0 0 0 3px rgba(184, 134, 30, .18);
     }
+    /* 未登录时用「锁定展示块」代替输入框，看上去就得是不可编辑的 */
+    .rank-locked {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+      padding: .75rem .85rem;
+      background: rgba(184, 134, 30, .07);
+      border: 1px dashed rgba(184, 134, 30, .5);
+      border-radius: .55rem;
+    }
+    .rank-locked[hidden] { display: none; }
+    .rank-locked-head {
+      display: flex;
+      align-items: baseline;
+      gap: .45rem;
+      flex-wrap: wrap;
+    }
+    .rank-locked-tag {
+      flex: none;
+      padding: .1rem .4rem;
+      font-size: .65rem;
+      font-weight: 700;
+      color: #8a6a1e;
+      background: rgba(184, 134, 30, .16);
+      border-radius: .25rem;
+    }
+    .rank-locked-head b {
+      font-size: .95rem;
+      color: #4e3b21;
+      letter-spacing: .02em;
+    }
+    .rank-locked-tip {
+      margin: 0;
+      font-size: .74rem;
+      line-height: 1.55;
+      color: #7b6a50;
+    }
+    .rank-locked-tip b { color: #a8321e; }
+    .rank-locked-btn {
+      align-self: flex-start;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      color: #fff8e6;
+      border: none;
+    }
     .rank-btn {
       flex: none;
       padding: .48rem .9rem;
@@ -1605,6 +1649,18 @@
     </div>
     <div class="rank-submit" id="rankSubmit" hidden>
       <div class="rank-result" id="rankResult"></div>
+      <!-- 未登录：名字是系统给的，不可编辑 -->
+      <div class="rank-locked" id="rankLocked" hidden>
+        <div class="rank-locked-head">
+          <span class="rank-locked-tag">游客临时名字</span>
+          <b id="rankLockedNick">无名冒险家#0000</b>
+        </div>
+        <p class="rank-locked-tip">
+          <b>不能修改</b>——注册登录后才能自己取名。
+          分数也会跟着账号走，换手机不会丢。
+        </p>
+        <button type="button" class="rank-btn rank-locked-btn" id="rankLockedRegister">注册 / 登录，用我自己的名字</button>
+      </div>
       <div class="rank-form" id="rankForm">
         <input type="text" id="rankNick" class="rank-nick" maxlength="12" placeholder="留空记为「无名贤者」" autocomplete="off" spellcheck="false">
         <button type="button" id="rankSubmitBtn" class="rank-btn">计入排行榜</button>
@@ -3499,32 +3555,53 @@
       if (brokeRecord) iconRain();
       if (canSubmit) fillRankEstimate(score);
       if (form) form.style.display = canSubmit ? '' : 'none';
+
+      // 未登录：把输入框藏掉，换成看得懂「不能改」的展示块
+      const locked = document.getElementById('rankLocked');
+      const lockedNick = document.getElementById('rankLockedNick');
+      if (canSubmit) {
+        if (authEmail) {
+          if (locked) locked.hidden = true;
+          if (nick) nick.style.display = '';
+        } else {
+          if (locked) locked.hidden = false;
+          if (lockedNick) lockedNick.textContent = anonNickname();
+          if (nick) nick.style.display = 'none';
+        }
+      } else {
+        if (locked) locked.hidden = true;
+      }
+
       if (msg) { msg.textContent = ''; msg.className = 'rank-msg'; }
       if (btn) { btn.disabled = false; btn.textContent = '计入排行榜'; }
-      if (canSubmit && nick) {
-        // 未登录只能拿「无名冒险家#四位数字」，登录了才用账号昵称
-        if (authEmail) {
-          let n = '';
-          try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
-          if (n && n !== '无名贤者') {
-            nick.value = n;
-          } else {
-            nick.value = '';
-            if (!nick.value.trim()) autofillNickname();
-          }
-          nick.readOnly = false;
+      if (canSubmit && nick && authEmail) {
+        let n = '';
+        try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
+        if (n && n !== '无名贤者') {
+          nick.value = n;
         } else {
-          nick.value = anonNickname();
-          nick.readOnly = true;
-          nick.title = '登录后才能自己取名';
+          nick.value = '';
+          if (!nick.value.trim()) autofillNickname();
         }
+        nick.readOnly = false;
       }
       box.hidden = false;
 
-      // 一局打完，默认给玩家看「累计总分」——单局榜只有破纪录才需要看，
-      // 而且现在这一局无论破没破都会计入总分，切过去更有意义
-      setRankTab('total');
-      if (currentTab === 'total') loadTotalRank();
+      // 破纪录 → 看单局榜（自己刚上榜）；没破纪录 → 看总分榜（这一局已计入总分）
+      setRankTab(brokeRecord ? 'single' : 'total');
+      if (currentTab === 'single') loadRank(true);
+      else loadTotalRank();
+
+      // 「注册 / 登录」：直接展开旁边的内嵌表单
+      const regBtn = document.getElementById('rankLockedRegister');
+      if (regBtn) {
+        regBtn.onclick = function () {
+          const af = document.getElementById('authForm');
+          if (!af) return;
+          af.hidden = false;
+          try { af.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        };
+      }
 
       // 破纪录就把贡品记录收起来，让「结果 + 提交 + 榜单」尽量挤进一屏
       setHistoryFolded(brokeRecord, rounds);
