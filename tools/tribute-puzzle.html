@@ -1632,7 +1632,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.2</div>
+  <div class="page-ver" id="pageVer">v1.6.4</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -3013,6 +3013,25 @@
       return h;
     }
 
+    // 读榜单。令牌过期时 PostgREST 会返回 401，而令牌可能已经在本地躺了很久
+    // （Safari 尤其容易留着），此时把令牌丢掉、用匿名身份重试一次——
+    // 榜单本来就是公开数据，不该因为一个过期令牌就整个看不了。
+    async function lbRead(path) {
+      let res = await fetch(LB_URL + path, { headers: lbHeaders() });
+      if (res.status === 401 && authToken) {
+        try { console.warn('[榜单] 令牌已失效，改用匿名身份重试'); } catch (e) {}
+        try {
+          localStorage.removeItem(LB_TOKEN_KEY);
+          localStorage.removeItem(LB_REFRESH_KEY);
+        } catch (e) {}
+        authToken = '';
+        authRefresh = '';
+        renderAuthBar();
+        res = await fetch(LB_URL + path, { headers: lbHeaders() });
+      }
+      return res;
+    }
+
     function makeUuid() {
       if (window.crypto && typeof crypto.randomUUID === 'function') {
         return crypto.randomUUID();
@@ -3115,7 +3134,7 @@
     async function fetchRank() {
       const q = LB_VIEW + '?select=nickname,pattern,rounds,duration_ms,score,flagged,is_account' +
                 '&order=score.desc,duration_ms.asc,created_at.asc&limit=' + LB_LIMIT;
-      const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+      const res = await lbRead('/rest/v1/' + q);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     }
@@ -3328,7 +3347,7 @@
       // 这样「胜率 100% 但只打 5 局」压不过打了上百局的老玩家，0 分的人也不会永远并列
       const q = 'total_rank?select=nickname,games,wins,losses,win_rate,total_score,is_account,rate_band' +
                 '&order=rate_band.desc,total_score.desc,games.desc,win_rate.desc.nullslast&limit=' + LB_LIMIT;
-      const res = await fetch(LB_URL + '/rest/v1/' + q, { headers: lbHeaders() });
+      const res = await lbRead('/rest/v1/' + q);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
     }
