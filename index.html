@@ -762,7 +762,7 @@
       <a href="#rules"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="nav-txt">远征规则</span></a>
       <a href="#about" class="only-pc"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="nav-txt">关于我们</span></a>
     </nav>
-    <a href="tools/tribute-puzzle.html" class="nav-auth" aria-label="登录或注册">
+    <a href="account/index.html" class="nav-auth" aria-label="账号">
       <span class="nav-auth-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span class="nav-auth-txt">登录</span>
     </a>
@@ -858,7 +858,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.2.4</span>
+          <span class="card-tag">v1.2.5</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
@@ -1134,5 +1134,18 @@
   })();
 </script>
 
+<!-- 已登录时把导航图标点亮（账号页自己会处理，这里只给其余页面用） -->
+<script>
+(function () {
+  try {
+    if (!localStorage.getItem('xsbhxh_email')) return;
+    var a = document.querySelector('.xsb-auth, .nav-auth');
+    if (!a) return;
+    var t = a.querySelector('.xsb-auth-txt, .nav-auth-txt');
+    if (t) t.textContent = '已登录';
+    a.classList.add('is-on');
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

@@ -1244,7 +1244,7 @@
       <a href="../index.html#rules"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="xsb-txt">远征规则</span></a>
       <a href="../index.html#about" class="xsb-only-pc"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="xsb-txt">关于我们</span></a>
     </nav>
-    <a href="#" class="xsb-auth" id="navAuth" role="button" aria-label="登录或注册">
+    <a href="../account/index.html" class="xsb-auth" id="navAuth" aria-label="账号">
       <span class="xsb-auth-ico" id="navAuthIco" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
       <span class="xsb-auth-txt" id="navAuthTxt">登录</span>
     </a>
@@ -2566,6 +2566,7 @@
       if (form && authEmail) form.hidden = true;
 
       // 导航栏右上角那个入口也要跟着变（图标保持 SVG 不动，只换文字和配色）
+      // 注意：它是个真链接，指向独立的账号页，这里不再拦截点击
       const navTxt = document.getElementById('navAuthTxt');
       const navBtn = document.getElementById('navAuth');
       if (navTxt) navTxt.textContent = authEmail ? '已登录' : '登录';
@@ -2651,21 +2652,9 @@
           if (currentTab === 'total') loadTotalRank();
         });
       }
-      // 导航栏上的入口：没登录就展开表单，登录了就滚到账号那一栏
-      const navAuthBtn = document.getElementById('navAuth');
-      if (navAuthBtn) {
-        navAuthBtn.addEventListener('click', function (e) {
-          e.preventDefault();
-          if (authEmail) {
-            const bar = document.getElementById('authBar');
-            if (bar) {
-              try { bar.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
-            }
-          } else {
-            openAuthForm();
-          }
-        });
-      }
+      // 导航栏上的登录入口现在是真链接（指向独立账号页），这里不再接管点击，
+      // 否则会 preventDefault 掉跳转。游戏内的内嵌表单只服务于「提交成绩时登录」。
+
       if (submitEl) {
         submitEl.addEventListener('click', async function () {
           if (msgEl) { msgEl.textContent = ''; msgEl.className = 'auth-msg'; }

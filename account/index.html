@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>账号 · 新手保护联盟</title>
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <meta name="description" content="新手保护联盟账号：邮箱当用户名，一个账号在多台设备上共用同一份榜单成绩。" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #f7efdd 0%, #efe2c9 100%);
+      color: #4e3e2b;
+      font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+      padding-top: 60px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ===== 导航（与其他页面同一套） ===== */
+    .xsb-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 900;
+      background: rgba(250, 242, 224, .72);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
+      backdrop-filter: blur(24px) saturate(1.8);
+      border-bottom: 1px solid rgba(110, 94, 62, .28);
+    }
+    .xsb-nav-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      height: 60px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .xsb-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: none;
+      color: #4e3e2b;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .xsb-badge { display: inline-flex; }
+    .xsb-badge img {
+      width: 26px; height: 26px;
+      display: block;
+      image-rendering: pixelated;
+      border-radius: 6px;
+    }
+    .xsb-links { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+    .xsb-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      color: #7b6a50;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color .18s ease, background .18s ease;
+    }
+    .xsb-links a:hover { color: #4e3e2b; background: rgba(120, 98, 64, .14); }
+    .xsb-ico { display: inline-flex; align-items: center; }
+    .xsb-ico svg { width: 15px; height: 15px; display: block; }
+
+    .xsb-auth {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex: none;
+      margin-left: 8px;
+      height: 26px;
+      padding: 0 11px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #4e3e2b;
+      background: rgba(47, 125, 79, .18);
+      border: 1px solid rgba(47, 125, 79, .4);
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .xsb-auth-ico { display: inline-flex; align-items: center; }
+    .xsb-auth-ico svg { width: 15px; height: 15px; display: block; }
+
+    @media (max-width: 760px) {
+      body { padding-top: 56px; }
+      .xsb-nav-inner { height: 44px; padding: 0 12px; gap: 6px; }
+      .xsb-brand { font-size: 12.5px; gap: 6px; }
+      .xsb-badge img { width: 22px; height: 22px; }
+      .xsb-links a { padding: 4px 8px; font-size: 12px; }
+      .xsb-links a .xsb-txt { display: none; }
+      .xsb-auth { margin-left: 4px; padding: 0 8px; }
+      .xsb-auth-txt { display: none; }
+    }
+
+    /* ===== 账号卡片 ===== */
+    .acct-wrap {
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 34px 16px 60px;
+    }
+    .acct-card {
+      padding: 26px 22px 22px;
+      background: #fffaf0;
+      border: 1px solid rgba(139, 110, 60, .28);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(90, 70, 40, .1);
+    }
+    .acct-title {
+      font-size: 20px;
+      color: #3f3122;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+    .acct-sub {
+      font-size: 13px;
+      color: #8b7a5e;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .acct-modes { display: flex; gap: 6px; margin-bottom: 14px; }
+    .acct-mode {
+      padding: 5px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #7b6a50;
+      background: transparent;
+      border: 1px solid rgba(139, 110, 60, .3);
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .acct-mode.is-active {
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border-color: transparent;
+    }
+    .acct-input {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 11px 13px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #4e3b21;
+      background: #fff;
+      border: 1px solid rgba(139, 110, 60, .35);
+      border-radius: 10px;
+      outline: none;
+    }
+    .acct-input[hidden] { display: none; }
+    .acct-input:focus {
+      border-color: #b8860b;
+      box-shadow: 0 0 0 3px rgba(184, 134, 30, .16);
+    }
+    .acct-msg { min-height: 1.2em; margin-bottom: 10px; font-size: 12.5px; color: #7b6a50; }
+    .acct-msg.is-err { color: #b0361e; }
+    .acct-msg.is-ok { color: #2f6b46; }
+    .acct-submit {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 700;
+      color: #fff8e6;
+      background: linear-gradient(145deg, #b8860b, #96690a);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .acct-submit:disabled { opacity: .55; }
+    .acct-note {
+      margin-top: 14px;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #9a8a6c;
+    }
+    .acct-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      font-size: 13px;
+      color: #8b7a5e;
+      border-bottom: 1px dashed rgba(139, 110, 60, .22);
+    }
+    .acct-row b { color: #3f3122; font-size: 13.5px; text-align: right; word-break: break-all; }
+    .acct-logout {
+      width: 100%;
+      margin-top: 18px;
+      padding: 11px;
+      font-size: 13.5px;
+      font-family: inherit;
+      font-weight: 700;
+      color: #8a2a17;
+      background: rgba(176, 58, 46, .09);
+      border: 1px solid rgba(176, 58, 46, .28);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .acct-back {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12.5px;
+    }
+    .acct-back a { color: #8b7a5e; text-decoration: none; }
+    .acct-back a:hover { color: #4e3e2b; }
+    .acct-hint {
+      margin-top: 16px;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #7b6a50;
+      background: rgba(139, 110, 60, .07);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="xsb-nav">
+  <div class="xsb-nav-inner">
+    <a class="xsb-brand" href="../index.html" aria-label="返回官网首页">
+      <span class="xsb-badge" aria-hidden="true"><img src="../assets/family-icon.png" alt="" width="60" height="60" /></span>
+      <span class="xsb-word">新手保护联盟</span>
+    </a>
+    <nav class="xsb-links" aria-label="官网导航">
+      <a href="../index.html#apply"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="xsb-txt">申请入会</span></a>
+      <a href="../index.html#tools"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="xsb-txt">工具</span></a>
+      <a href="../index.html#rules"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="xsb-txt">远征规则</span></a>
+      <a href="../index.html#about" class="xsb-only-pc"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="xsb-txt">关于我们</span></a>
+    </nav>
+    <a href="#" class="xsb-auth" aria-label="当前页面：账号">
+      <span class="xsb-auth-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <span class="xsb-auth-txt">账号</span>
+    </a>
+  </div>
+</header>
+
+<main class="acct-wrap">
+  <section class="acct-card">
+    <h1 class="acct-title">账号</h1>
+    <p class="acct-sub">一个账号，换手机、换电脑都能接着用同一份成绩。</p>
+
+    <div id="viewGuest">
+      <div class="acct-modes">
+        <button type="button" class="acct-mode is-active" data-mode="login">登录</button>
+        <button type="button" class="acct-mode" data-mode="signup">注册</button>
+      </div>
+      <input type="email" id="acctEmail" class="acct-input" placeholder="邮箱（当用户名用）" autocomplete="email" spellcheck="false">
+      <input type="email" id="acctEmail2" class="acct-input" placeholder="再输一次邮箱" autocomplete="email" spellcheck="false" hidden>
+      <input type="password" id="acctPass" class="acct-input" placeholder="密码（至少 6 位）" autocomplete="current-password">
+      <div class="acct-msg" id="acctMsg"></div>
+      <button type="button" class="acct-submit" id="acctSubmit">登录</button>
+      <p class="acct-note">不发验证邮件。邮箱只当用户名用，忘记密码找群主重置。</p>
+    </div>
+
+    <div id="viewUser" hidden>
+      <div class="acct-row"><span>邮箱</span><b id="acctWho">—</b></div>
+      <div class="acct-row"><span>这台设备的成绩</span><b id="acctScores">—</b></div>
+      <div class="acct-row"><span>合并状态</span><b id="acctClaim">—</b></div>
+      <button type="button" class="acct-logout" id="acctLogout">退出登录</button>
+      <p class="acct-note">退出只是让这台设备变回未登录，榜上的成绩不会消失。</p>
+    </div>
+
+    <div class="acct-hint" id="acctHint">
+      账号用来把多台设备的成绩合到一起。没有账号也能玩，只是换设备后分数不会自动接上。
+    </div>
+  </section>
+
+  <p class="acct-back"><a href="../index.html">← 返回首页</a></p>
+</main>
+
+<script>
+(function () {
+  var LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
+  var LB_KEY = 'sb_publishable_uDRHXpUMaX9Wa2WJrqefrA_cK27Qqxl';
+
+  var K_TOKEN = 'xsbhxh_token';
+  var K_REFRESH = 'xsbhxh_refresh';
+  var K_EMAIL = 'xsbhxh_email';
+  var K_UID = 'xsbhxh_uid';
+  var K_PID = 'xsbhxh_player_id_v1';
+
+  var authToken = '';
+  var authRefresh = '';
+  var authEmail = '';
+  var authUid = '';
+
+  function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  function loadAuth() {
+    authToken = lsGet(K_TOKEN);
+    authRefresh = lsGet(K_REFRESH);
+    authEmail = lsGet(K_EMAIL);
+    authUid = lsGet(K_UID);
+  }
+
+  function saveAuth(data) {
+    authToken = (data && data.access_token) || '';
+    authRefresh = (data && data.refresh_token) || authRefresh;
+    authUid = (data && data.user && data.user.id) || authUid;
+    authEmail = (data && data.user && data.user.email) || authEmail;
+    if (authToken) lsSet(K_TOKEN, authToken);
+    if (authRefresh) lsSet(K_REFRESH, authRefresh);
+    if (authUid) lsSet(K_UID, authUid);
+    if (authEmail) lsSet(K_EMAIL, authEmail);
+  }
+
+  function clearAuth() {
+    authToken = ''; authRefresh = ''; authEmail = ''; authUid = '';
+    lsDel(K_TOKEN); lsDel(K_REFRESH); lsDel(K_EMAIL); lsDel(K_UID);
+  }
+
+  function makeUuid() {
+    if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+    var b = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(b);
+    else for (var i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    var h = Array.from(b, function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+
+  function getPlayerId() {
+    var id = lsGet(K_PID);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      id = makeUuid();
+      lsSet(K_PID, id);
+    }
+    return id;
+  }
+
+  function headers() {
+    var h = { 'apikey': LB_KEY, 'Content-Type': 'application/json' };
+    if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+    return h;
+  }
+
+  function postJson(path, body) {
+    return fetch(LB_URL + path, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(body)
+    });
+  }
+
+  function authRequest(path, body) {
+    return fetch(LB_URL + path, {
+      method: 'POST',
+      headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.text().then(function (txt) {
+        var data = {};
+        try { data = JSON.parse(txt); } catch (e) {}
+        if (!res.ok) {
+          var m = data.msg || data.error_description || data.message || ('HTTP ' + res.status);
+          throw new Error(m);
+        }
+        return data;
+      });
+    });
+  }
+
+  function claimRecords() {
+    if (!authToken) return Promise.resolve(0);
+    return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId() })
+      .then(function (res) {
+        if (!res.ok) return 0;
+        return res.json();
+      })
+      .catch(function () { return 0; });
+  }
+
+  function fetchMyScores() {
+    return postJson('/rest/v1/rpc/my_scores', { p_player: getPlayerId() })
+      .then(function (res) { return res.ok ? res.json() : []; })
+      .catch(function () { return []; });
+  }
+
+  var msgEl = document.getElementById('acctMsg');
+  var emailEl = document.getElementById('acctEmail');
+  var email2El = document.getElementById('acctEmail2');
+  var passEl = document.getElementById('acctPass');
+  var submitEl = document.getElementById('acctSubmit');
+  var guestView = document.getElementById('viewGuest');
+  var userView = document.getElementById('viewUser');
+  var whoEl = document.getElementById('acctWho');
+  var scoresEl = document.getElementById('acctScores');
+  var claimEl = document.getElementById('acctClaim');
+  var mode = 'login';
+
+  function setMsg(text, cls) {
+    if (!msgEl) return;
+    msgEl.textContent = text || '';
+    msgEl.className = 'acct-msg' + (cls ? ' ' + cls : '');
+  }
+
+  function setMode(m) {
+    mode = m;
+    var btns = document.querySelectorAll('.acct-mode');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('is-active', btns[i].getAttribute('data-mode') === m);
+    }
+    if (email2El) email2El.hidden = m !== 'signup';
+    if (submitEl) submitEl.textContent = m === 'signup' ? '注册' : '登录';
+    setMsg('');
+  }
+
+  function render() {
+    if (authEmail) {
+      guestView.hidden = true;
+      userView.hidden = false;
+      whoEl.textContent = authEmail;
+      claimEl.textContent = '已登录';
+      scoresEl.textContent = '读取中…';
+      fetchMyScores().then(function (rows) {
+        if (!rows || !rows.length) { scoresEl.textContent = '这台设备还没有成绩'; return; }
+        scoresEl.textContent = rows.map(function (r) {
+          return (r.nickname || '无名贤者') + ' ' + r.score + ' 分';
+        }).join(' / ');
+      });
+    } else {
+      guestView.hidden = false;
+      userView.hidden = true;
+    }
+  }
+
+  var modes = document.querySelectorAll('.acct-mode');
+  for (var i = 0; i < modes.length; i++) {
+    modes[i].addEventListener('click', function () { setMode(this.getAttribute('data-mode')); });
+  }
+
+  submitEl.addEventListener('click', function () {
+    setMsg('');
+    var email = (emailEl.value || '').trim();
+    var pass = passEl.value || '';
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg('邮箱格式不对', 'is-err'); return; }
+    if (mode === 'signup' && (email2El.value || '').trim() !== email) {
+      setMsg('两次输入的邮箱不一致', 'is-err'); return;
+    }
+    if (pass.length < 6) { setMsg('密码至少 6 位', 'is-err'); return; }
+
+    submitEl.disabled = true;
+    submitEl.textContent = '处理中…';
+
+    var req = mode === 'signup'
+      ? authRequest('/auth/v1/signup', { email: email, password: pass })
+      : authRequest('/auth/v1/token?grant_type=password', { email: email, password: pass });
+
+    req.then(function (data) {
+      if (!data.access_token) throw new Error('这个邮箱可能已经注册过了，切到「登录」再试');
+      saveAuth(data);
+      setMsg('已登录，正在合并这台设备上的成绩…', 'is-ok');
+      return claimRecords().then(function (n) {
+        render();
+        setMsg('登录成功' + (n > 0 ? '，合并了 ' + n + ' 条成绩' : ''), 'is-ok');
+      });
+    }).catch(function (e) {
+      setMsg(e.message || '操作失败', 'is-err');
+    }).then(function () {
+      submitEl.disabled = false;
+      submitEl.textContent = mode === 'signup' ? '注册' : '登录';
+    });
+  });
+
+  document.getElementById('acctLogout').addEventListener('click', function () {
+    clearAuth();
+    emailEl.value = '';
+    passEl.value = '';
+    email2El.value = '';
+    setMode('login');
+    render();
+  });
+
+  document.querySelectorAll('.xsb-links a, .xsb-auth').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      if (a.getAttribute('href') === '#') e.preventDefault();
+    });
+  });
+
+  loadAuth();
+  render();
+  getPlayerId();
+})();
+</script>
+</body>
+</html>
