@@ -1676,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.10</div>
+  <div class="page-ver" id="pageVer">v1.6.11</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -2210,8 +2210,8 @@
         type: 'unrecognized',
         count: wrong,
         label: '认不出',
-        note: '材料错、位置错',
-        text: `❓ ${wrong}数量贤者完全认不出他的贡品（材料不正确，位置不正确）`
+        note: '材料错',
+        text: `❓ ${wrong}数量贤者完全认不出他的贡品（材料不正确）`
       });
 
       allCandidates.sort((a, b) => HINT_PRIORITY[a.type] - HINT_PRIORITY[b.type]);
