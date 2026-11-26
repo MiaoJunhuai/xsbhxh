@@ -1676,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.13</div>
+  <div class="page-ver" id="pageVer">v1.6.14</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -2842,24 +2842,49 @@
       } catch (e) {}
     }
 
+    // 令牌是否还有效（过期了就别再显示「已登录」，否则会误以为成绩在记到账号上）
+    function tokenAlive() {
+      if (!authToken) return false;
+      let exp = 0;
+      try {
+        const part = String(authToken).split('.')[1];
+        if (!part) return false;
+        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+        const payload = JSON.parse(atob(b64 + pad));
+        exp = (payload.exp || 0) * 1000;
+      } catch (e) { return false; }
+      return !exp || exp > Date.now();
+    }
+
+    // 三种状态：未登录 / 已登录 / 登录已过期（令牌失效又续不上）
+    function authState() {
+      if (!authEmail) return 'off';
+      return tokenAlive() ? 'on' : 'expired';
+    }
+
     function renderAuthBar() {
       const who = document.getElementById('authWho');
       const toggle = document.getElementById('authToggle');
       const logout = document.getElementById('authLogout');
       const form = document.getElementById('authForm');
+      const state = authState();
       if (who) {
         // 这一行是截图高发区，只显示昵称，不显示邮箱
-        if (authEmail) {
+        if (state === 'on') {
           let nick = '';
           try { nick = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
           who.textContent = '已登录' + (nick && nick !== '无名贤者' ? '：' + nick : '');
+        } else if (state === 'expired') {
+          who.textContent = '登录已过期 · 成绩暂时记成游客，重新登录即可恢复';
         } else {
           who.textContent = '未登录 · 换设备后分数不会同步';
         }
       }
-      if (toggle) toggle.hidden = !!authEmail;
-      if (logout) logout.hidden = !authEmail;
-      if (form && authEmail) form.hidden = true;
+      // 过期时也显示登录入口，让玩家能立刻重新登
+      if (toggle) toggle.hidden = state === 'on';
+      if (logout) logout.hidden = state !== 'on';
+      if (form && state === 'on') form.hidden = true;
 
       // 导航栏右上角那个入口也要跟着变（图标保持 SVG 不动，只换文字和配色）
       // 注意：它是个真链接，指向独立的账号页，这里不再拦截点击
@@ -2913,9 +2938,37 @@
       if (currentTab === 'total') loadTotalRank();
     }
 
+    // 把账号昵称同步到本地（提交框和排行榜都靠它显示名字）
+    async function loadProfileIntoCache() {
+      if (!authToken) return;
+      try {
+        const res = await fetch(LB_URL + '/rest/v1/rpc/my_profile', {
+          method: 'POST',
+          headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+          body: '{}'
+        });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows[0] && rows[0].nickname) {
+          try { localStorage.setItem(LB_NICK_KEY, rows[0].nickname); } catch (e) {}
+          renderAuthBar();
+        }
+      } catch (e) {}
+    }
+
     function initAuthUI() {
       loadAuth();
       renderAuthBar();
+
+      // 令牌过期了就先悄悄续一次，续不上再标成「登录已过期」
+      if (authEmail && !tokenAlive()) {
+        tryRefreshAuth().then(function (ok) {
+          renderAuthBar();
+          if (ok) loadProfileIntoCache();
+        }).catch(function () { renderAuthBar(); });
+      } else if (authState() === 'on') {
+        loadProfileIntoCache();
+      }
 
       const form = document.getElementById('authForm');
       const toggle = document.getElementById('authToggle');
@@ -3151,9 +3204,9 @@
       return '无名冒险家#' + String(h % 10000).padStart(4, '0');
     }
 
-    // 当前该用哪个昵称：登录了用账号昵称，否则用自动昵称
+    // 当前该用哪个昵称：登录有效才用账号昵称，否则用自动昵称
     function currentNickname() {
-      if (authEmail) {
+      if (authState() === 'on') {
         let n = '';
         try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
         if (n && n !== '无名贤者') return n;
