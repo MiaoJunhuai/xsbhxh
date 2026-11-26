@@ -349,48 +349,43 @@
   <p class="acct-back"><a href="../index.html">← 返回首页</a></p>
 </main>
 
+<!-- 登录状态：判断逻辑全站唯一一份（导航栏、贡品页都用它） -->
+<script src="../assets/auth-state.js"></script>
+
 <script>
 (function () {
   var LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
   var LB_KEY = 'sb_publishable_uDRHXpUMaX9Wa2WJrqefrA_cK27Qqxl';
 
-  var K_TOKEN = 'xsbhxh_token';
-  var K_REFRESH = 'xsbhxh_refresh';
-  var K_EMAIL = 'xsbhxh_email';
-  var K_UID = 'xsbhxh_uid';
+  // 登录状态（判断、续期、存删）统一在 assets/auth-state.js，这里只保留渲染用的快照
+  var AUTH = window.XSB_AUTH;
   var K_PID = 'xsbhxh_player_id_v1';
 
   var authToken = '';
-  var authRefresh = '';
   var authEmail = '';
   var authUid = '';
 
   function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
   function loadAuth() {
-    authToken = lsGet(K_TOKEN);
-    authRefresh = lsGet(K_REFRESH);
-    authEmail = lsGet(K_EMAIL);
-    authUid = lsGet(K_UID);
+    authToken = AUTH.token();
+    authEmail = AUTH.email();
+    authUid = authToken ? AUTH.uid() : '';
   }
 
   function saveAuth(data) {
-    authToken = (data && data.access_token) || '';
-    authRefresh = (data && data.refresh_token) || authRefresh;
-    authUid = (data && data.user && data.user.id) || authUid;
-    authEmail = (data && data.user && data.user.email) || authEmail;
-    if (authToken) lsSet(K_TOKEN, authToken);
-    if (authRefresh) lsSet(K_REFRESH, authRefresh);
-    if (authUid) lsSet(K_UID, authUid);
-    if (authEmail) lsSet(K_EMAIL, authEmail);
+    AUTH.save(data);
+    loadAuth();
   }
 
   function clearAuth() {
-    authToken = ''; authRefresh = ''; authEmail = ''; authUid = '';
-    lsDel(K_TOKEN); lsDel(K_REFRESH); lsDel(K_EMAIL); lsDel(K_UID);
+    AUTH.clear();
+    loadAuth();
   }
+
+  // 续期成功 / 退出登录后同步内存里的快照
+  AUTH.onChange(function () { loadAuth(); });
 
   function makeUuid() {
     if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -552,41 +547,9 @@
       .catch(function () {});
   }
 
-  // 令牌是否还有效。邮箱是登录时写进本地的，令牌过期了它还在，
-  // 光看邮箱会把「登录已过期」错显示成「已登录」。
-  function tokenAlive() {
-    if (!authToken) return false;
-    var exp = 0;
-    try {
-      var part = String(authToken).split('.')[1];
-      if (!part) return false;
-      var b64 = part.replace(/-/g, '+').replace(/_/g, '/');
-      var pad = b64.length % 4 ? new Array(5 - (b64.length % 4)).join('=') : '';
-      var payload = JSON.parse(atob(b64 + pad));
-      exp = (payload.exp || 0) * 1000;
-    } catch (e) { return false; }
-    return !exp || exp > Date.now();
-  }
-
-  // 令牌 1 小时就过期，用 refresh_token 换一个新的，免得玩家一小时后被静默登出
-  function tryRefreshAuth() {
-    if (!authRefresh) return Promise.resolve(false);
-    return fetch(LB_URL + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: authRefresh })
-    }).then(function (res) {
-      if (!res.ok) return false;
-      return res.json().then(function (data) {
-        if (!data || !data.access_token) return false;
-        saveAuth(data);
-        return true;
-      });
-    }).catch(function () { return false; });
-  }
-
+  // 令牌判断和续期都在 assets/auth-state.js，这里不再各写一份
   function render() {
-    var state = !authEmail ? 'off' : (tokenAlive() ? 'on' : 'expired');
+    var state = AUTH.state();
     if (state === 'on') {
       guestView.hidden = true;
       userView.hidden = false;
@@ -729,8 +692,8 @@
   getPlayerId();
   // 先按现有状态渲染一次，令牌过期就先悄悄续期再刷新界面
   render();
-  if (authEmail && !tokenAlive()) {
-    tryRefreshAuth().then(function (ok) {
+  if (AUTH.state() === 'expired') {
+    AUTH.refresh().then(function (ok) {
       if (ok) render();
       else setMsg('登录已过期，请重新登录', 'is-err');
     });

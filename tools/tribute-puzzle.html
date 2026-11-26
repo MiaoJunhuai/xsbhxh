@@ -1676,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.17</div>
+  <div class="page-ver" id="pageVer">v1.6.18</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -1888,6 +1888,9 @@
     </div>
   </section>
 </div>
+
+<!-- 登录状态：判断逻辑全站唯一一份，账号栏和导航栏都读它 -->
+<script src="../assets/auth-state.js"></script>
 
 <script>
   (function() {
@@ -2776,99 +2779,43 @@
 
     // ==================== 排行榜 ====================
     // ==================== 账号（不发邮件，邮箱只当账户名）====================
-    const LB_TOKEN_KEY = 'xsbhxh_token';
-    const LB_REFRESH_KEY = 'xsbhxh_refresh';
-    const LB_EMAIL_KEY = 'xsbhxh_email';
-    const LB_UID_KEY = 'xsbhxh_uid';
+    // 判断「登没登录、令牌过没过期」的逻辑在 assets/auth-state.js（全站唯一一份）。
+    // 这里只保留渲染用的快照，状态一变由 onChange 同步过来。
+    const AUTH = window.XSB_AUTH;
     const LB_SUBS_KEY = 'xsbhxh_subs';
 
     let authToken = '';
-    let authRefresh = '';
     let authEmail = '';
     let authUid = '';
 
-    // 从 access_token 里解出 user id（token 的 sub 字段就是它）。
-    // 直接读本地存的 uid 有个坑：某些情况下 uid 丢了但 token 还在，
-    // 结果提交时 user_id 传 null，记录就变成匿名的，排行榜上会裂成两条。
-    function uidFromToken(tok) {
-      try {
-        const part = String(tok || '').split('.')[1];
-        if (!part) return '';
-        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
-        const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
-        const json = JSON.parse(atob(b64 + pad));
-        return json.sub || '';
-      } catch (e) {
-        return '';
-      }
-    }
-
     function loadAuth() {
-      try {
-        authToken = localStorage.getItem(LB_TOKEN_KEY) || '';
-        authRefresh = localStorage.getItem(LB_REFRESH_KEY) || '';
-        authEmail = localStorage.getItem(LB_EMAIL_KEY) || '';
-        authUid = localStorage.getItem(LB_UID_KEY) || '';
-      } catch (e) {}
-      // 兜底：uid 缺失或和 token 对不上时，以 token 为准
-      if (authToken) {
-        const fromTok = uidFromToken(authToken);
-        if (fromTok && fromTok !== authUid) {
-          authUid = fromTok;
-          try { localStorage.setItem(LB_UID_KEY, authUid); } catch (e) {}
-        }
-      }
+      authToken = AUTH.token();
+      authEmail = AUTH.email();
+      authUid = authToken ? AUTH.uid() : '';
     }
 
     function saveAuth(data) {
-      authToken = (data && data.access_token) || '';
-      authRefresh = (data && data.refresh_token) || authRefresh;
-      authUid = (data && data.user && data.user.id) || authUid;
-      authEmail = (data && data.user && data.user.email) || authEmail;
-      try {
-        if (authToken) localStorage.setItem(LB_TOKEN_KEY, authToken);
-        if (authRefresh) localStorage.setItem(LB_REFRESH_KEY, authRefresh);
-        if (authUid) localStorage.setItem(LB_UID_KEY, authUid);
-        if (authEmail) localStorage.setItem(LB_EMAIL_KEY, authEmail);
-      } catch (e) {}
+      AUTH.save(data);
+      loadAuth();
     }
 
     function clearAuth() {
-      authToken = ''; authRefresh = ''; authEmail = ''; authUid = '';
-      try {
-        [LB_TOKEN_KEY, LB_REFRESH_KEY, LB_EMAIL_KEY, LB_UID_KEY].forEach(function (k) {
-          localStorage.removeItem(k);
-        });
-      } catch (e) {}
+      AUTH.clear();
+      loadAuth();
     }
 
-    // 令牌是否还有效（过期了就别再显示「已登录」，否则会误以为成绩在记到账号上）
-    function tokenAlive() {
-      if (!authToken) return false;
-      let exp = 0;
-      try {
-        const part = String(authToken).split('.')[1];
-        if (!part) return false;
-        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
-        const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
-        const payload = JSON.parse(atob(b64 + pad));
-        exp = (payload.exp || 0) * 1000;
-      } catch (e) { return false; }
-      return !exp || exp > Date.now();
-    }
-
-    // 三种状态：未登录 / 已登录 / 登录已过期（令牌失效又续不上）
-    function authState() {
-      if (!authEmail) return 'off';
-      return tokenAlive() ? 'on' : 'expired';
-    }
+    // 续期成功 / 退出登录后自动同步快照并重画账号栏
+    AUTH.onChange(function () {
+      loadAuth();
+      renderAuthBar();
+    });
 
     function renderAuthBar() {
       const who = document.getElementById('authWho');
       const toggle = document.getElementById('authToggle');
       const logout = document.getElementById('authLogout');
       const form = document.getElementById('authForm');
-      const state = authState();
+      const state = AUTH.state();
       if (who) {
         // 这一行是截图高发区，只显示昵称，不显示邮箱
         if (state === 'on') {
@@ -2961,12 +2908,12 @@
       renderAuthBar();
 
       // 令牌过期了就先悄悄续一次，续不上再标成「登录已过期」
-      if (authEmail && !tokenAlive()) {
-        tryRefreshAuth().then(function (ok) {
+      if (AUTH.state() === 'expired') {
+        AUTH.refresh().then(function (ok) {
           renderAuthBar();
           if (ok) loadProfileIntoCache();
         }).catch(function () { renderAuthBar(); });
-      } else if (authState() === 'on') {
+      } else if (AUTH.state() === 'on') {
         loadProfileIntoCache();
       }
 
@@ -3123,42 +3070,19 @@
       return h;
     }
 
-    // 用 refresh_token 换一个新的 access_token。
-    // 令牌 1 小时就过期，不做续期的话玩家一小时后就会被静默踢下线。
-    async function tryRefreshAuth() {
-      if (!authRefresh) return false;
-      try {
-        const res = await fetch(LB_URL + '/auth/v1/token?grant_type=refresh_token', {
-          method: 'POST',
-          headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh_token: authRefresh })
-        });
-        if (!res.ok) return false;
-        const data = await res.json();
-        if (!data || !data.access_token) return false;
-        saveAuth(data);
-        renderAuthBar();
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
+    // 续期交给公共模块（assets/auth-state.js），这里不再自己拼请求
 
     // 读榜单。令牌过期时 PostgREST 会返回 401：
     // 先试着用 refresh_token 续期，续不上才丢掉令牌、改用匿名身份。
     async function lbRead(path) {
       let res = await fetch(LB_URL + path, { headers: lbHeaders() });
       if (res.status === 401 && authToken) {
-        if (await tryRefreshAuth()) {
+        if (await AUTH.refresh()) {
           res = await fetch(LB_URL + path, { headers: lbHeaders() });
         } else {
           try { console.warn('[榜单] 令牌续期失败，改用匿名身份'); } catch (e) {}
-          try {
-            localStorage.removeItem(LB_TOKEN_KEY);
-            localStorage.removeItem(LB_REFRESH_KEY);
-          } catch (e) {}
-          authToken = '';
-          authRefresh = '';
+          AUTH.dropToken();
+          loadAuth();
           renderAuthBar();
           res = await fetch(LB_URL + path, { headers: lbHeaders() });
         }
@@ -3206,7 +3130,7 @@
 
     // 当前该用哪个昵称：登录有效才用账号昵称，否则用自动昵称
     function currentNickname() {
-      if (authState() === 'on') {
+      if (AUTH.state() === 'on') {
         let n = '';
         try { n = localStorage.getItem(LB_NICK_KEY) || ''; } catch (e) {}
         if (n && n !== '无名贤者') return n;
@@ -3956,19 +3880,11 @@
     // 不然玩家会在「登录着」的状态下悄悄提交成匿名记录。
     async function ensureFreshToken() {
       if (!authToken) return;
-      let exp = 0;
-      try {
-        const part = String(authToken).split('.')[1];
-        if (part) {
-          const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
-          const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
-          const payload = JSON.parse(atob(b64 + pad));
-          exp = (payload.exp || 0) * 1000;
-        }
-      } catch (e) { exp = 0; }
+      // expAt() 解的是同一个 JWT，解析逻辑在公共模块里
+      const exp = AUTH.expAt();
       // 已经过期，或 2 分钟内就要过期 → 续期
       if (exp && exp < Date.now() + 120000) {
-        await tryRefreshAuth();
+        await AUTH.refresh();
       }
     }
 
