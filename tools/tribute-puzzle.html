@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
   <link rel="manifest" href="../site.webmanifest">
+  <link rel="preconnect" href="https://xjyovpninpfztldqoddj.supabase.co" crossorigin>
   <meta name="description" content="新手保护联盟工具：贤者贡品（家务贡品关卡）试玩练习，为四位贤者摆放贡品，用四次提示在 7 次机会内找出正确组合。" />
   <style>
     * {
@@ -1676,7 +1677,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.19</div>
+  <div class="page-ver" id="pageVer">v1.6.20</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -1890,7 +1891,7 @@
 </div>
 
 <!-- 登录状态：判断逻辑全站唯一一份，账号栏和导航栏都读它 -->
-<script src="../assets/auth-state.js"></script>
+<script src="../assets/auth-state.js?v=2"></script>
 
 <script>
   (function() {
@@ -1906,6 +1907,8 @@
     const LB_VIEW = 'leaderboard';
     const LB_LIMIT = 20;
     const LB_CACHE_KEY = 'xsbhxh_rank_cache_v1';
+    const LB_TOTAL_KEY = 'xsbhxh_total_cache_v1';
+    const LB_TOTAL_VER = 1;
     // 缓存结构变了就 +1，老缓存会自动作废
     const LB_CACHE_VER = 2;
     const LB_CACHE_TTL = 5 * 60 * 1000;
@@ -2779,7 +2782,7 @@
 
     // ==================== 排行榜 ====================
     // ==================== 账号（不发邮件，邮箱只当账户名）====================
-    // 判断「登没登录、令牌过没过期」的逻辑在 assets/auth-state.js（全站唯一一份）。
+    // 判断「登没登录、令牌过没过期」的逻辑在 assets/auth-state.js?v=2（全站唯一一份）。
     // 这里只保留渲染用的快照，状态一变由 onChange 同步过来。
     const AUTH = window.XSB_AUTH;
     const LB_SUBS_KEY = 'xsbhxh_subs';
@@ -2868,8 +2871,21 @@
 
     // 登录/注册成功后，把当前设备上还没归属的旧成绩绑到这个账号。
     // 只认「上次退出登录之后」产生的那批，避免把很久以前或别人打的游客局也收进来。
-    async function claimRecords() {
+    // 同一段游客期只认领一次：账号或「退出登录时刻」变了才需要再认领
+    function claimMark() {
+      let logoutAt = '';
+      try { logoutAt = localStorage.getItem('xsbhxh_logout_at') || ''; } catch (e) {}
+      return AUTH.uid() + '|' + logoutAt;
+    }
+
+    async function claimRecords(force) {
       if (!authToken) return;
+      // 打开页面时不要每次都认领：上一次已经认领过这段游客期就直接跳过
+      if (!force) {
+        try {
+          if (localStorage.getItem('xsbhxh_claim_mark') === claimMark()) return;
+        } catch (e) {}
+      }
       await ensureFreshToken();
       let since = null;
       try {
@@ -2880,18 +2896,21 @@
         const res = await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
           method: 'POST',
           headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ p_player: getPlayerId(), p_since: since })
+          body: JSON.stringify({ p_player: getPlayerId(), p_since: since, p_key: AUTH.deviceKey() })
         });
         // 以前失败是静默吞掉的，导致「登录了却没合并」很难发现
         if (!res.ok) {
           try { console.warn('[账号] 认领旧成绩失败:', res.status, await res.text()); } catch (e) {}
+        } else {
+          try { localStorage.setItem('xsbhxh_claim_mark', claimMark()); } catch (e) {}
         }
       } catch (e) {
         try { console.warn('[账号] 认领旧成绩异常:', e && e.message); } catch (err) {}
       }
       clearRankCache();
+      clearTotalCache();
       await loadRank(true);
-      if (currentTab === 'total') loadTotalRank();
+      if (currentTab === 'total') loadTotalRank(true);
     }
 
     // 把账号昵称同步到本地（提交框和排行榜都靠它显示名字）
@@ -2967,7 +2986,8 @@
           clearAuth();
           renderAuthBar();
           loadRank(true);
-          if (currentTab === 'total') loadTotalRank();
+          clearTotalCache();
+          if (currentTab === 'total') loadTotalRank(true);
         });
       }
       // 导航栏上的登录入口现在是真链接（指向独立账号页），这里不再接管点击，
@@ -3077,13 +3097,16 @@
     }
 
     function lbHeaders() {
+      // deviceKey 兜底：万一浏览器还缓存着旧版 auth-state.js，不让整页崩掉
+      const dk = (AUTH && typeof AUTH.deviceKey === 'function') ? AUTH.deviceKey() : '';
       const h = { 'apikey': LB_KEY, 'Accept': 'application/json' };
+      if (dk) h['x-device-key'] = dk;
       // 登录后带上用户令牌，服务端才会把这一行记到账号名下
       if (authToken) h['Authorization'] = 'Bearer ' + authToken;
       return h;
     }
 
-    // 续期交给公共模块（assets/auth-state.js），这里不再自己拼请求
+    // 续期交给公共模块（assets/auth-state.js?v=2），这里不再自己拼请求
 
     // 读榜单。令牌过期时 PostgREST 会返回 401：
     // 先试着用 refresh_token 续期，续不上才丢掉令牌、改用匿名身份。
@@ -3349,6 +3372,27 @@
       try { sessionStorage.removeItem(LB_CACHE_KEY); } catch (e) {}
     }
 
+    // 总分榜也缓存 5 分钟：它是默认标签页，以前每次进页面都会请求一次
+    function readTotalCache() {
+      try {
+        const raw = sessionStorage.getItem(LB_TOTAL_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (!obj || !Array.isArray(obj.rows) || obj.v !== LB_TOTAL_VER) return null;
+        return obj;
+      } catch (e) { return null; }
+    }
+
+    function writeTotalCache(rows) {
+      try {
+        sessionStorage.setItem(LB_TOTAL_KEY, JSON.stringify({ v: LB_TOTAL_VER, at: Date.now(), rows: rows }));
+      } catch (e) {}
+    }
+
+    function clearTotalCache() {
+      try { sessionStorage.removeItem(LB_TOTAL_KEY); } catch (e) {}
+    }
+
     async function loadRank(force) {
       const listEl = document.getElementById('rankList');
       if (!listEl) return;
@@ -3464,25 +3508,35 @@
       listEl.dataset.loaded = '1';
     }
 
-    async function loadTotalRank() {
+    async function loadTotalRank(force) {
       const listEl = document.getElementById('totalList');
       if (!listEl) return;
+      const cached = readTotalCache();
+      // 先用缓存立刻画出来，避免默认标签页每次打开都空一下
+      if (cached && !force) renderTotalRank(cached.rows);
       try {
-        let rows = await fetchTotalRank();
+        let rows;
+        if (cached && !force && Date.now() - cached.at < LB_CACHE_TTL) {
+          rows = cached.rows;
+        } else {
+          rows = await fetchTotalRank();
+          writeTotalCache(rows);
+        }
 
         // 榜上过滤掉了「一局没赢过」的人，但自己还是应该能看到自己的成绩
         const myNick = currentNickname();
         const onBoard = rows.some(function (r) { return r.nickname === myNick; });
+        let merged = rows;
         if (!onBoard) {
           try {
             const mine = await fetchMyTotalRank();
             if (mine) {
               mine.is_me = true;
-              rows = rows.concat([mine]);
+              merged = rows.concat([mine]);
             }
           } catch (e) {}
         }
-        renderTotalRank(rows);
+        renderTotalRank(merged);
       } catch (e) {
         if (!listEl.dataset.loaded) {
           listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上' + rankErrHint(e) + '</div>';
@@ -3495,7 +3549,7 @@
       const res = await fetch(LB_URL + '/rest/v1/rpc/my_total_rank', {
         method: 'POST',
         headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ p_player: getPlayerId() })
+        body: JSON.stringify({ p_player: getPlayerId(), p_key: AUTH.deviceKey() })
       });
       if (!res.ok) return null;
       const rows = await res.json();
@@ -3557,7 +3611,8 @@
         rankRefreshBtn.disabled = true;
         rankRefreshBtn.classList.add('is-busy');
         clearRankCache();
-        await (currentTab === 'total' ? loadTotalRank() : loadRank(true));
+        clearTotalCache();
+        await (currentTab === 'total' ? loadTotalRank(true) : loadRank(true));
         rankRefreshBtn.classList.remove('is-busy');
         // 最小间隔：防手滑连点（服务端没有限频，这一层只能靠前端自觉）
         const remain = Math.max(0, LB_REFRESH_GAP - (Date.now() - startedAt));
@@ -3722,7 +3777,8 @@
         await postScore(nick, s.pattern, s.rounds, s.durationMs, s.trace, s.gameId);
       } catch (e) {}
       clearRankCache();
-      if (currentTab === 'total') loadTotalRank();
+      clearTotalCache();
+      if (currentTab === 'total') loadTotalRank(true);
     }
 
     function showRankSubmit(rounds, durationMs, pattern) {
@@ -3794,7 +3850,7 @@
       // 破纪录 → 看单局榜（自己刚上榜）；没破纪录 → 看总分榜（这一局已计入总分）
       setRankTab(brokeRecord ? 'single' : 'total');
       if (currentTab === 'single') loadRank(true);
-      else loadTotalRank();
+      else loadTotalRank(true);
 
       // 不用点按钮了：一打完就自动交卷
       if (brokeRecord) {
@@ -3847,7 +3903,7 @@
         const res = await fetch(LB_URL + '/rest/v1/rpc/my_scores', {
           method: 'POST',
           headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ p_player: getPlayerId() })
+          body: JSON.stringify({ p_player: getPlayerId(), p_key: AUTH.deviceKey() })
         });
         if (!res.ok) return [];
         const rows = await res.json();
@@ -3974,8 +4030,9 @@
         }
         pendingScore = null;
         clearRankCache();
+        clearTotalCache();
         await loadRank(true);
-        if (currentTab === 'total') loadTotalRank();
+        if (currentTab === 'total') loadTotalRank(true);
         flashMyRow();
       } catch (e) {
         // 具体原因（HTTP 码 + 数据库报错）一定打到控制台，方便排查；

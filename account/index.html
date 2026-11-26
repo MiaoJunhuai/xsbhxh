@@ -9,6 +9,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
   <link rel="manifest" href="../site.webmanifest">
+  <link rel="preconnect" href="https://xjyovpninpfztldqoddj.supabase.co" crossorigin>
   <meta name="description" content="新手保护联盟通用账号：登录后可跨设备使用站内各项功能。" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -350,14 +351,14 @@
 </main>
 
 <!-- 登录状态：判断逻辑全站唯一一份（导航栏、贡品页都用它） -->
-<script src="../assets/auth-state.js"></script>
+<script src="../assets/auth-state.js?v=2"></script>
 
 <script>
 (function () {
   var LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
   var LB_KEY = 'sb_publishable_uDRHXpUMaX9Wa2WJrqefrA_cK27Qqxl';
 
-  // 登录状态（判断、续期、存删）统一在 assets/auth-state.js，这里只保留渲染用的快照
+  // 登录状态（判断、续期、存删）统一在 assets/auth-state.js?v=2，这里只保留渲染用的快照
   var AUTH = window.XSB_AUTH;
   var K_PID = 'xsbhxh_player_id_v1';
 
@@ -411,6 +412,7 @@
 
   function headers() {
     var h = { 'apikey': LB_KEY, 'Content-Type': 'application/json' };
+    if (AUTH && typeof AUTH.deviceKey === 'function') h['x-device-key'] = AUTH.deviceKey();
     if (authToken) h['Authorization'] = 'Bearer ' + authToken;
     return h;
   }
@@ -445,7 +447,7 @@
     if (!authToken) return Promise.resolve(0);
     var since = '';
     try { since = lsGet('xsbhxh_logout_at') || ''; } catch (e) {}
-    return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId(), p_since: since || null })
+    return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId(), p_since: since || null, p_key: AUTH.deviceKey() })
       .then(function (res) {
         if (!res.ok) {
           // 以前失败静默吞掉，导致「登录了却没合并」很难发现
@@ -460,7 +462,7 @@
   }
 
   function fetchMyScores() {
-    return postJson('/rest/v1/rpc/my_scores', { p_player: getPlayerId() })
+    return postJson('/rest/v1/rpc/my_scores', { p_player: getPlayerId(), p_key: AUTH.deviceKey() })
       .then(function (res) { return res.ok ? res.json() : []; })
       .catch(function () { return []; });
   }
@@ -551,7 +553,7 @@
       .catch(function () {});
   }
 
-  // 令牌判断和续期都在 assets/auth-state.js，这里不再各写一份
+  // 令牌判断和续期都在 assets/auth-state.js?v=2，这里不再各写一份
   function render() {
     var state = AUTH.state();
     if (state === 'on') {

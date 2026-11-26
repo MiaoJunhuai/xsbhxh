@@ -24,6 +24,7 @@ window.XSB_AUTH = (function () {
   var K_REFRESH = 'xsbhxh_refresh';
   var K_EMAIL = 'xsbhxh_email';
   var K_UID = 'xsbhxh_uid';
+  var K_DEVICE = 'xsbhxh_device_key';
 
   var LB_URL = 'https://xjyovpninpfztldqoddj.supabase.co';
   var LB_KEY = 'sb_publishable_uDRHXpUMaX9Wa2WJrqefrA_cK27Qqxl';
@@ -57,6 +58,23 @@ window.XSB_AUTH = (function () {
   function token() { return get(K_TOKEN); }
   function refreshToken() { return get(K_REFRESH); }
   function email() { return get(K_EMAIL); }
+
+  // 这台设备的密钥：第一次生成后固定不变，换浏览器才变。
+  // 服务端用它证明「认领/查询的确实是这台设备」，光知道 player_id 不够。
+  function deviceKey() {
+    var k = get(K_DEVICE);
+    if (k && /^[0-9a-f]{32}$/.test(k)) return k;
+    var b = new Uint8Array(16);
+    try {
+      crypto.getRandomValues(b);
+    } catch (e) {
+      for (var i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+    }
+    var s = '';
+    for (var j = 0; j < 16; j++) s += ('0' + b[j].toString(16)).slice(-2);
+    set(K_DEVICE, s);
+    return s;
+  }
 
   // 过期时刻（毫秒）。没有 exp 的令牌返回 0，按「不会过期」处理，和旧逻辑一致。
   function expAt() {
@@ -165,6 +183,7 @@ window.XSB_AUTH = (function () {
     refreshToken: refreshToken,
     email: email,
     uid: uid,
+    deviceKey: deviceKey,
     expAt: expAt,
     tokenAlive: tokenAlive,
     state: state,
@@ -178,6 +197,7 @@ window.XSB_AUTH = (function () {
     K_TOKEN: K_TOKEN,
     K_REFRESH: K_REFRESH,
     K_EMAIL: K_EMAIL,
-    K_UID: K_UID
+    K_UID: K_UID,
+    K_DEVICE: K_DEVICE
   };
 })();

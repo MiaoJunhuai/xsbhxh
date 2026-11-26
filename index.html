@@ -15,6 +15,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
 <link rel="manifest" href="site.webmanifest" />
+<link rel="preconnect" href="https://xjyovpninpfztldqoddj.supabase.co" crossorigin>
 <style>
   :root {
     --paper: #fbf4e3;
@@ -812,7 +813,10 @@
   <section class="hero" aria-label="新手保护联盟">
     <div class="hero-media">
       <picture>
-        <source srcset="assets/banner.webp" type="image/webp" />
+        <source
+          srcset="assets/banner-480.webp 480w, assets/banner-800.webp 800w, assets/banner-1280.webp 1280w, assets/banner.webp 1600w"
+          sizes="(max-width: 1120px) 100vw, 1120px"
+          type="image/webp" />
         <img src="assets/banner.jpg" width="1600" height="678" fetchpriority="high"
              alt="新手保护联盟 WingsMS 横幅" />
       </picture>
@@ -895,7 +899,7 @@
       <a class="card" href="tools/tribute-puzzle.html" style="--accent:#3e8fc1;--accent-soft:#e9f3fb">
         <div class="card-top">
           <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 5H4l8-5Z"/><path d="M5 21h14"/><path d="M7 18v-6M11 18v-6M13 18v-6M17 18v-6"/><path d="M4 18h16"/></svg></span>
-          <span class="card-tag">v1.6.19</span>
+          <span class="card-tag">v1.6.20</span>
         </div>
         <h3>贤者贡品 · 四象祭坛</h3>
         <p>家务贡品关卡的试玩练习：给四位贤者摆放兵法卷轴、勇猛勋章、蛇酒和过期食物，按「满意 / 不满意 / 认不出」的提示排除组合，7 次机会内猜出正确摆法。手动练习通关后可计入排行榜。</p>
@@ -960,7 +964,7 @@
       <p class="about-copy">新手保护联盟是 WingsMS 服务器的新手家族。我们平时一起开远征、打副本，也会组织家族活动。希望每个刚入坑的新手都有人带、有规则可依，也能在这里找到一起玩下去的伙伴。</p>
       <div class="about-photos">
         <figure>
-          <a class="photo-link" href="assets/activity-1.jpg" data-lightbox>
+          <a class="photo-link" href="assets/activity-1.webp" data-lightbox>
             <picture>
               <source srcset="assets/activity-1.webp" type="image/webp" />
               <img src="assets/activity-1.jpg" width="1200" height="675" loading="lazy" alt="第一届活动合影" />
@@ -969,7 +973,7 @@
           <figcaption>第一届活动合影</figcaption>
         </figure>
         <figure>
-          <a class="photo-link" href="assets/activity-2.jpg" data-lightbox>
+          <a class="photo-link" href="assets/activity-2.webp" data-lightbox>
             <picture>
               <source srcset="assets/activity-2.webp" type="image/webp" />
               <img src="assets/activity-2.jpg" width="1200" height="675" loading="lazy" alt="第二届活动合影" />
@@ -1176,9 +1180,9 @@
   })();
 </script>
 
-<!-- 登录状态：判断逻辑全站只有一份（assets/auth-state.js），这里只负责点亮导航栏图标 -->
-<script src="assets/auth-state.js"></script>
-<script src="assets/nav-auth.js"></script>
+<!-- 登录状态：判断逻辑全站只有一份（assets/auth-state.js?v=2），这里只负责点亮导航栏图标 -->
+<script src="assets/auth-state.js?v=2"></script>
+<script src="assets/nav-auth.js?v=2"></script>
 
 <!-- 让选中的胶囊滑动到当前项（移动端） -->
 <script>
