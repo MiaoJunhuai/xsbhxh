@@ -598,7 +598,7 @@
       guestView.hidden = false;
       userView.hidden = true;
       if (state === 'expired') {
-        setMsg('登录已过期，请重新登录（账号里的东西都还在）', 'is-err');
+        setMsg('登录已过期，请重新登录', 'is-err');
       }
     }
   }
@@ -732,7 +732,7 @@
   if (authEmail && !tokenAlive()) {
     tryRefreshAuth().then(function (ok) {
       if (ok) render();
-      else setMsg('登录已过期，请重新登录（账号里的东西都还在）', 'is-err');
+      else setMsg('登录已过期，请重新登录', 'is-err');
     });
   }
 })();
