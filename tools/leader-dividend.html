@@ -389,6 +389,11 @@
             font-size: 0.78rem; font-weight: 600; color: #64748b; cursor: pointer; font-family: inherit;
         }
         .pay-opt.active { background: #fff; color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+        .view-switch { background: #eef2f7; }
+        .view-switch-label { display: inline-flex; align-items: center; color: #94a3b8; margin-right: -6px; }
+        .view-switch-label svg { width: 15px; height: 15px; }
+        .view-switch .pay-opt { font-size: 0.72rem; padding: 4px 10px; color: #64748b; }
+        .view-switch .pay-opt.active { background: #0f766e; color: #fff; box-shadow: none; }
         .pay-from { font-size: 0.62rem; margin-right: 4px; font-weight: 500; }
         .pay-from.pay-leader { color: #b45309; }
         .pay-from.pay-member { color: #2563eb; }
@@ -867,7 +872,10 @@
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <span class="general-hint" id="generalHint">团长直接付给每个人（含奶补）</span>
+                    <span class="view-switch-label" title="过滤" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z"/></svg></span><div class="pay-mode-switch view-switch" id="peopleViewSwitch" title="显示所有人 / 只显示有金额的人">
+                        <button type="button" class="pay-opt active" data-view="all">所有人</button>
+                        <button type="button" class="pay-opt" data-view="paid">有金额</button>
+                    </div>
                     <button type="button" class="btn btn-secondary" id="pasteGeneralPeopleBtn" style="padding:6px 14px;"><span data-icon="userPlus" data-color="#636e72"></span>一键粘贴人员</button>
                 </div>
             </div>
@@ -1219,6 +1227,7 @@
         // ===== 模式切换 & 通用模式 =====
         const GENERAL_JOBS = ['黑骑士', '英雄', '圣骑士', '主教', '龙神', '火毒魔导师', '冰雷魔导师', '神射手', '箭神', '侠盗', '隐士', '冲锋队长', '船长'];
         let payMode = 'direct'; // direct: 一人付所有；team: 团长付队长、队长付队员
+        let showAllPeople = true; // 纯奶补模式下默认显示所有人
         const houseArea = document.getElementById('houseArea');
         const generalArea = document.getElementById('generalArea');
         const generalPeopleBody = document.getElementById('generalPeopleBody');
@@ -2524,45 +2533,50 @@
             people.forEach(p => {
                 p.tr.classList.toggle('leader-row', teamMode && p.leader);
                 const cell = p.tr.querySelector('.g-team-cell');
+                let showG = 0;
+                let showR = 0;
                 if (!hasGeneralPool) {
-                    // 纯奶补：只显示奶妈
-                    p.tr.style.display = p.isPriest ? '' : 'none';
+                    // 纯奶补：只有奶妈有金额
                     if (cell) cell.innerHTML = p.isPriest ? '<span class="leader-tag">奶妈</span>' : '';
-                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
-                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
-                    return;
-                }
-                p.tr.style.display = '';
-                if (!teamMode) {
+                    if (p.isPriest) {
+                        showG = p.gold;
+                        showR = hasRmb ? p.rmb : 0;
+                        p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
+                        p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
+                    } else {
+                        p.tr.querySelector('.g-gold-cell').innerHTML = '—';
+                        p.tr.querySelector('.g-rmb-cell').innerHTML = '—';
+                    }
+                } else if (!teamMode) {
                     // 一人付所有：不需要队伍信息
                     if (cell) cell.innerHTML = '';
+                    showG = p.gold;
+                    showR = hasRmb ? p.rmb : 0;
                     p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
                     p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
-                    return;
+                } else {
+                    if (cell) {
+                        const isHead = firstOfTeam[p.team] === p;
+                        let label = isHead ? `<span class="team-no">${p.team} 队</span>` : '└';
+                        if (p.leader) label += ' <span class="leader-tag">队长</span>';
+                        cell.innerHTML = label;
+                    }
+                    const payFrom = p.leader ? '找团长' : '找队长';
+                    const payClass = p.leader ? 'pay-leader' : 'pay-member';
+                    // 队长从团长领的是税前队总额（面对面交易时再扣税），队员领的是扣税后队总额按权重分的
+                    showG = p.leader ? (p.teamTotalG || 0) : p.gold;
+                    showR = hasRmb ? (p.leader ? (p.teamTotalR || 0) : p.rmb) : 0;
+                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from ${payClass}">${payFrom}</span>${showG.toFixed(2)}`;
+                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from ${payClass}">${payFrom}</span>¥${showR.toFixed(2)}` : '—';
                 }
-                if (cell) {
-                    const isHead = firstOfTeam[p.team] === p;
-                    let label = isHead ? `<span class="team-no">${p.team} 队</span>` : '└';
-                    if (p.leader) label += ' <span class="leader-tag">队长</span>';
-                    cell.innerHTML = label;
-                }
-                const payFrom = p.leader ? '找团长' : '找队长';
-                const payClass = p.leader ? 'pay-leader' : 'pay-member';
-                // 队长从团长领的是税前队总额（面对面交易时再扣税），队员领的是扣税后队总额按权重分的
-                const showG = p.leader ? (p.teamTotalG || 0) : p.gold;
-                const showR = p.leader ? (p.teamTotalR || 0) : p.rmb;
-                p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from ${payClass}">${payFrom}</span>${showG.toFixed(2)}`;
-                p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from ${payClass}">${payFrom}</span>¥${showR.toFixed(2)}` : '—';
+                // 只看有金额 / 显示所有
+                const visible = showAllPeople || showG > 0.005 || showR > 0.005;
+                p.tr.style.display = visible ? '' : 'none';
             });
 
             if (typeof openTeamBtn !== 'undefined' && openTeamBtn) openTeamBtn.style.display = (hasGeneralPool && teamMode) ? '' : 'none';
-
-            const hintEl = document.getElementById('generalHint');
-            if (hintEl) {
-                hintEl.textContent = !hasGeneralPool
-                    ? (rows.length ? '只有奶补物品：团长直接给奶妈，不经过队长' : '团长直接付给每个人（含奶补）')
-                    : (teamMode ? '队长行 = 从团长领（税前队总额，含奶补）；队员行 = 从队长领（税后）' : '团长直接付给每个人（含奶补）');
-            }
+            const viewSwitch = document.getElementById('peopleViewSwitch');
+            if (viewSwitch) viewSwitch.style.display = '';
 
             const netGold = totalGold - goldTaxTotal;
             const netRmb = totalRmb;
@@ -3303,10 +3317,18 @@
         document.querySelectorAll('.mode-btn').forEach(el => {
             el.addEventListener('click', () => setMode(el.dataset.mode));
         });
-        document.querySelectorAll('.pay-opt').forEach(btn => {
+        document.querySelectorAll('#payModeSwitch .pay-opt').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (!btn.dataset.pay) return;
                 payMode = btn.dataset.pay;
-                document.querySelectorAll('.pay-opt').forEach(b => b.classList.toggle('active', b === btn));
+                document.querySelectorAll('#payModeSwitch .pay-opt').forEach(b => b.classList.toggle('active', b === btn));
+                calculateGeneral();
+            });
+        });
+        document.querySelectorAll('#peopleViewSwitch .pay-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showAllPeople = btn.dataset.view === 'all';
+                document.querySelectorAll('#peopleViewSwitch .pay-opt').forEach(b => b.classList.toggle('active', b === btn));
                 calculateGeneral();
             });
         });
