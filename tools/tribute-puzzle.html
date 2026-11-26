@@ -2915,6 +2915,10 @@
         }).catch(function () { renderAuthBar(); });
       } else if (AUTH.state() === 'on') {
         loadProfileIntoCache();
+        // 每次打开页面都顺手认领一次：
+        // 登录过期期间玩的局会被记成匿名，光等「重新登录」那个时机不够，
+        // 玩家只要开着页面、令牌自动续期着，就永远不会触发登录流程。
+        claimRecords();
       }
 
       const form = document.getElementById('authForm');

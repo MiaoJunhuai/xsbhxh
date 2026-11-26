@@ -694,9 +694,12 @@
   render();
   if (AUTH.state() === 'expired') {
     AUTH.refresh().then(function (ok) {
-      if (ok) render();
+      if (ok) { render(); claimRecords(); }
       else setMsg('登录已过期，请重新登录', 'is-err');
     });
+  } else if (AUTH.state() === 'on') {
+    // 进账号页也顺手认领一次，把「登录过期期间」留下的匿名局绑回来
+    claimRecords();
   }
 })();
 </script>
