@@ -1676,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.14</div>
+  <div class="page-ver" id="pageVer">v1.6.15</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -2890,8 +2890,8 @@
       // 注意：它是个真链接，指向独立的账号页，这里不再拦截点击
       const navTxt = document.getElementById('navAuthTxt');
       const navBtn = document.getElementById('navAuth');
-      if (navTxt) navTxt.textContent = authEmail ? '已登录' : '登录';
-      if (navBtn) navBtn.classList.toggle('is-on', !!authEmail);
+      if (navTxt) navTxt.textContent = state === 'on' ? '已登录' : '登录';
+      if (navBtn) navBtn.classList.toggle('is-on', state === 'on');
     }
 
     function openAuthForm() {

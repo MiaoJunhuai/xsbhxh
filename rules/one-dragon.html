@@ -1452,6 +1452,21 @@ roll点纪律：只能为自己roll点，roll完只能自己捡，不允许代ro
 (function () {
   try {
     if (!localStorage.getItem('xsbhxh_email')) return;
+    // 光有邮箱不够：令牌过期了就不算登录，否则图标会一直亮着「已登录」
+    var tok = localStorage.getItem('xsbhxh_token') || '';
+    var alive = false;
+    try {
+      var part = tok.split('.')[1];
+      if (part) {
+        var b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        var pad = b64.length % 4 ? new Array(5 - (b64.length % 4)).join('=') : '';
+        var payload = JSON.parse(atob(b64 + pad));
+        var exp = (payload.exp || 0) * 1000;
+        alive = !exp || exp > Date.now();
+      }
+    } catch (e) { alive = false; }
+    if (!alive) return;
+
     var a = document.querySelector('.xsb-auth, .nav-auth');
     if (!a) return;
     var t = a.querySelector('.xsb-auth-txt, .nav-auth-txt');
