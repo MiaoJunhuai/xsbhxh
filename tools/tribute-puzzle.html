@@ -1072,6 +1072,29 @@
     }
 
     /* 只给游客加标记：注册用户是「正常态」，不需要额外符号 */
+    .rank-badge-me {
+      display: inline-block;
+      margin-left: .28rem;
+      padding: 0 .26rem;
+      font-size: .6rem;
+      font-style: normal;
+      font-weight: 700;
+      color: #8a6a1e;
+      background: rgba(184, 134, 30, .14);
+      border: 1px solid rgba(184, 134, 30, .3);
+      border-radius: .25rem;
+      vertical-align: middle;
+    }
+    /* 自己那行（没进榜时补在底部）稍微压暗，跟真榜区分开 */
+    .rank-row.is-mine {
+      background: rgba(184, 134, 30, .06);
+      border-radius: .45rem;
+    }
+    .rank-row.is-mine .rank-no {
+      font-size: .72rem;
+      font-weight: 700;
+      color: #96690a;
+    }
     .rank-badge-guest {
       display: inline-block;
       margin-left: .28rem;
@@ -1632,7 +1655,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.4</div>
+  <div class="page-ver" id="pageVer">v1.6.5</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -3367,16 +3390,19 @@
         nameCount[base] = (nameCount[base] || 0) + 1;
         const shown = nameCount[base] > 1 ? base + '（' + nameCount[base] + '）' : base;
         const cls = ['rank-row'];
-        if (no <= 3) cls.push('is-top' + no);
+        if (no <= 3 && !r.is_me) cls.push('is-top' + no);
+        // 自己那行（没进榜时补在最后）：不高亮排名、标个「你」
+        if (r.is_me) cls.push('is-mine');
         // 历史数据不计入胜率；新规则下不足 5 局的先不显示，避免榜上全是 100%
         const hasRate = !(r.win_rate === null || r.win_rate === undefined);
         const rateTxt = hasRate
           ? '<button type="button" class="rate-btn" data-idx="' + i + '">胜率 <b>' + r.win_rate + '%</b></button>'
           : '胜率 <b>--</b>';
         return '<div class="' + cls.join(' ') + '">' +
-                 '<span class="rank-no">' + no + '</span>' +
+                 '<span class="rank-no">' + (r.is_me ? '你' : no) + '</span>' +
                  '<span class="rank-name">' + escapeHtml(shown) +
                    (r.is_account ? '' : '<i class="rank-badge-guest">游客</i>') +
+                   (r.is_me ? '<i class="rank-badge-me">还没进榜</i>' : '') +
                  '</span>' +
                  '<span class="rank-score">' + fmtNum(r.total_score) + '<small>分</small></span>' +
                  '<span class="rank-meta"><b>' + r.games + '</b> 局 · ' + rateTxt + '</span>' +
@@ -3392,12 +3418,38 @@
       const listEl = document.getElementById('totalList');
       if (!listEl) return;
       try {
-        renderTotalRank(await fetchTotalRank());
+        let rows = await fetchTotalRank();
+
+        // 榜上过滤掉了「一局没赢过」的人，但自己还是应该能看到自己的成绩
+        const myNick = currentNickname();
+        const onBoard = rows.some(function (r) { return r.nickname === myNick; });
+        if (!onBoard) {
+          try {
+            const mine = await fetchMyTotalRank();
+            if (mine) {
+              mine.is_me = true;
+              rows = rows.concat([mine]);
+            }
+          } catch (e) {}
+        }
+        renderTotalRank(rows);
       } catch (e) {
         if (!listEl.dataset.loaded) {
           listEl.innerHTML = '<div class="rank-empty">总分榜暂时连不上' + rankErrHint(e) + '</div>';
         }
       }
+    }
+
+    // 读「我自己」这一行（即使没进榜、0 分，也要能看到）
+    async function fetchMyTotalRank() {
+      const res = await fetch(LB_URL + '/rest/v1/rpc/my_total_rank', {
+        method: 'POST',
+        headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ p_player: getPlayerId() })
+      });
+      if (!res.ok) return null;
+      const rows = await res.json();
+      return (Array.isArray(rows) && rows.length) ? rows[0] : null;
     }
 
     // 点胜率展开/收起「胜利 X 局 · 失败 Y 局」
