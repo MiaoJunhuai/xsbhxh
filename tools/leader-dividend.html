@@ -1,0 +1,3454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团长结账工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card-bg: #ffffff;
+            --primary: #6c5ce7;
+            --primary-hover: #5a4bd1;
+            --text: #2d3436;
+            --text-secondary: #636e72;
+            --border: #e0e4e8;
+            --highlight-bg: #fef9e7;
+            --highlight-text: #b45309;
+            --danger-bg: #ffeaea;
+            --danger-text: #b91c1c;
+            --gray-light: #f8fafc;
+            --shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 32px;
+            max-width: 980px;
+            width: 100%;
+            position: relative;
+        }
+        h2 {
+            margin-top: 0;
+            font-weight: 700;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 140px;
+        }
+        label {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            transition: 0.2s;
+            box-sizing: border-box;
+            background: #fff;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108,92,231,0.15);
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--gray-light); color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #e9ecef; }
+        .action-btn {
+            background: var(--gray-light); color: var(--text-secondary); border: 1px solid var(--border);
+            padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .action-btn:hover { background: #e9ecef; color: var(--primary); border-color: var(--primary); }
+        .items-section {
+            background: var(--gray-light); border-radius: 14px; padding: 18px; margin: 18px 0; border: 1px solid var(--border);
+        }
+        .items-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .items-header h4 { margin: 0; font-weight: 600; color: var(--text); }
+        .items-count {
+            font-size: 0.75rem; color: var(--text-secondary); background: #eef2f7;
+            border-radius: 999px; padding: 2px 10px; font-weight: 500;
+        }
+        .items-table-wrap {
+            border: 1px solid var(--border); border-radius: 12px; background: #fff;
+            overflow: visible;
+        }
+        .items-table-wrap::-webkit-scrollbar { height: 8px; }
+        .items-table-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .items-table-wrap::-webkit-scrollbar-track { background: transparent; }
+        .scroll-hint { display: none; font-size: 0.72rem; color: var(--text-secondary); text-align: center; margin-top: 6px; }
+        @media (max-width: 1060px) {
+            .items-table-wrap { overflow-x: auto; }
+            .scroll-hint { display: block; }
+        }
+        .items-table { width: 100%; min-width: 900px; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+        .items-table thead th {
+            position: sticky; top: 0; z-index: 5;
+            padding: 9px 8px; text-align: left; font-size: 0.74rem; font-weight: 600;
+            color: var(--text-secondary); background: #f8fafc; white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+        }
+        .items-table thead th:first-child { padding-left: 12px; border-top-left-radius: 11px; }
+        .items-table thead th:last-child { border-top-right-radius: 11px; }
+        .items-table thead th.num { text-align: right; padding-right: 10px; }
+        .items-table tbody td { padding: 7px 8px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; background: #fff; }
+        .items-table tbody tr:last-child td { border-bottom: none; }
+        .items-table tbody tr:last-child td:first-child { border-bottom-left-radius: 11px; }
+        .items-table tbody tr:last-child td:last-child { border-bottom-right-radius: 11px; }
+        /* 斑马纹 + 勾选列分组底色（勾选列独立成带，方便对列） */
+        .items-table tbody tr:nth-child(even) td { background: #fbfcfe; }
+        .items-table tbody tr td.td-check { background: #f5f8fc; }
+        .items-table tbody tr:hover td { background: #f4f6ff; }
+        .items-table tbody tr:hover td.td-check { background: #e9edff; }
+        /* 勾选组：外侧虚线分组，内部每列一条细线，让三列各自独立可辨 */
+        .items-table th:nth-child(5), .items-table td:nth-child(5) { border-left: 1px dashed #cfd9e6; }
+        .items-table th:nth-child(6), .items-table td:nth-child(6),
+        .items-table th:nth-child(7), .items-table td:nth-child(7) { border-left: 1px dashed #dbe4f0; }
+        .items-table th:nth-child(7), .items-table td:nth-child(7) { border-right: 1px dashed #cfd9e6; }
+        .item-row .td-name { padding-left: 12px; }
+        .item-row select, .item-row input[type=text], .item-row input[type=number] {
+            width: 100%; padding: 5px 8px; font-size: 0.82rem; border-radius: 7px;
+            border: 1px solid var(--border); background: #fff; box-sizing: border-box;
+            font-family: inherit;
+        }
+        .item-row select:focus, .item-row input:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 2px rgba(108,92,231,0.12); outline: none;
+        }
+        .item-row input[type=number] { text-align: right; }
+        .item-row .td-check { text-align: center; }
+        .item-row .td-check input[type=checkbox] { width: 15px; height: 15px; margin: 0; cursor: pointer; }
+        .item-row input[type=checkbox], .th-check input[type=checkbox] { accent-color: var(--primary); }
+        /* 物品名称：可输入的下拉（combobox） */
+        .combo { position: relative; }
+        .combo .item-name-input { padding-right: 26px; }
+        .combo-arrow {
+            position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+            pointer-events: none; display: inline-flex; align-items: center; color: #94a3b8;
+        }
+        .combo-panel {
+            position: fixed; z-index: 1000; display: none; background: #fff;
+            border: 1px solid var(--border); border-radius: 10px; padding: 4px;
+            box-shadow: 0 14px 34px rgba(15,23,42,0.16); max-height: 262px; overflow-y: auto;
+        }
+        .combo-panel.show { display: block; }
+        .combo-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 7px 9px; border-radius: 7px; cursor: pointer; font-size: 0.82rem;
+        }
+        .combo-item .combo-name { color: var(--text); }
+        .combo-item .combo-meta { color: var(--text-secondary); font-size: 0.74rem; white-space: nowrap; }
+        .combo-item:hover { background: #f6f7ff; }
+        .combo-item.active { background: #eef2ff; }
+        .combo-item.active .combo-name { color: var(--primary); font-weight: 600; }
+        .combo-empty { padding: 9px 10px; font-size: 0.78rem; color: var(--text-secondary); }
+        .tax-lines {
+            display: flex; flex-direction: column; gap: 1px; font-size: 0.66rem; line-height: 1.45;
+            color: var(--text-secondary);
+        }
+        .tax-lines .gold-tax { color: var(--highlight-text); font-weight: 600; }
+        .tax-lines .union-tax, .tax-lines .rmb-tax { color: #64748b; }
+        .td-del { text-align: center; }
+        .icon-btn {
+            width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+            background: #fff; color: var(--text-secondary); display: inline-flex;
+            align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: 0.15s;
+        }
+        .icon-btn:hover { background: var(--danger-bg); border-color: #fecaca; color: var(--danger-text); }
+        .th-check { text-align: center; user-select: none; }
+        .th-check label {
+            display: inline-flex; align-items: center; gap: 5px;
+            cursor: pointer; font-weight: 600; font-size: 0.74rem; margin-bottom: 0;
+        }
+        .th-check label:hover span { color: var(--primary); }
+        .th-check input[type=checkbox] { width: 15px; height: 15px; margin: 0; cursor: pointer; }
+        .th-check.disabled label { cursor: default; color: #94a3b8; }
+        .items-empty { padding: 24px 10px; text-align: center; font-size: 0.82rem; color: var(--text-secondary); }
+        .items-actions {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; margin-top: 12px; flex-wrap: wrap;
+        }
+        .items-actions-left { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-danger {
+            background: var(--danger-bg); color: var(--danger-text); border: 1px solid #fecaca;
+        }
+        .btn-danger:hover { background: #fecaca; color: var(--danger-text); }
+        .tax-help-btn {
+            background: none; border: 1px solid var(--border); color: var(--text-secondary); font-weight: bold;
+            width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; cursor: pointer; margin-left: 6px; padding: 0;
+        }
+        .tax-help-btn:hover { background: #f0f0f0; }
+        .tax-popover {
+            display: none; position: absolute; background: white; border: 1px solid var(--border);
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); padding: 14px; z-index: 100; width: 250px; top: 30px; left: 0; font-size: 0.8rem;
+        }
+        .tax-popover.show { display: block; }
+        .tax-popover table { width: 100%; border-collapse: collapse; }
+        .tax-popover th, .tax-popover td { padding: 4px 6px; border-bottom: 1px solid #f0f0f0; text-align: left; }
+        .tax-popover th { font-weight: 600; color: var(--text-secondary); }
+        .tax-popover .close-btn { position: absolute; top: 6px; right: 10px; cursor: pointer; font-weight: bold; color: #aaa; }
+        .paste-window {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 200; justify-content: center; align-items: center;
+        }
+        .paste-window.show { display: flex; }
+        .paste-content { background: white; border-radius: 16px; padding: 24px; width: 450px; max-width: 90%; }
+        .paste-content textarea { height: 200px; margin-bottom: 16px; }
+        .result-card { background: #f9fbfd; border-radius: 14px; padding: 20px; margin-top: 20px; border: 1px solid var(--border); }
+        .add-person-wrap { margin-top: 12px; }
+        .add-person-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border: 1px dashed var(--border); border-radius: 9px;
+            background: #fff; color: var(--text-secondary); font-size: 0.85rem;
+            font-weight: 500; cursor: pointer; transition: 0.15s;
+        }
+        .add-person-btn:hover { border-color: var(--primary); color: var(--primary); background: #f7f6ff; }
+        .unified-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .unified-table th {
+            background: #f1f5f9; color: var(--text-secondary); font-weight: 600; font-size: 0.8rem; padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border);
+        }
+        .unified-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 0.9rem; text-align: left; }
+        .unified-table tbody tr:nth-child(even) { background-color: #ffffff; }
+        .unified-table tbody tr:nth-child(odd) { background-color: #f9fbfd; }
+        .unified-table input.weight-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; font-weight: 500; }
+        .unified-table input.person-name-input {
+            width: 100%;
+            min-width: 90px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        .tax-summary {
+            background: #fef9e7; border-radius: 12px; margin-bottom: 16px; padding: 10px 12px;
+            position: relative;
+        }
+        .tax-summary-head { display: flex; align-items: center; gap: 10px; }
+        .tax-chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+        .tax-chip {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: #fff; border: 1px solid #fde68a; border-radius: 9px;
+            padding: 6px 11px; font-size: 0.8rem; color: #b45309; white-space: nowrap;
+        }
+        .tax-chip .chip-value { font-weight: 700; color: #92400e; }
+        .tax-chip.net { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+        .tax-chip.net .chip-value { color: #166534; }
+        .tax-chip.warning {
+            background: #ffeaea; border-color: #fecaca; color: var(--danger-text); font-weight: 600;
+        }
+        .tax-chip.warning .chip-value { color: var(--danger-text); }
+        .tax-info-wrap { position: relative; flex: 0 0 auto; }
+        .tax-info-btn {
+            width: 24px; height: 24px; border-radius: 50%; border: 1px solid #fcd34d;
+            background: #fff; display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; padding: 0; transition: 0.15s;
+        }
+        .tax-info-btn:hover { background: #fffbeb; border-color: #f59e0b; }
+        .tax-info-popover {
+            display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 60;
+            width: 360px; max-width: 82vw; box-sizing: border-box;
+            max-height: 70vh; overflow-y: auto;
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; box-shadow: 0 16px 40px rgba(15,23,42,0.16);
+            padding: 14px 16px; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.65;
+        }
+        .tax-info-popover.show { display: block; }
+        #payModeInfoPopover { left: 0; right: auto; }
+        .tax-info-popover.up { top: auto; bottom: calc(100% + 8px); }
+        .tax-info-popover h5 { margin: 0 0 8px; font-size: 0.86rem; color: var(--text); }
+        .tax-info-popover table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; }
+        .tax-info-popover th, .tax-info-popover td {
+            padding: 3px 6px; border-bottom: 1px solid #f1f5f9; text-align: left; font-weight: 400;
+        }
+        .tax-info-popover th { color: var(--text-secondary); font-weight: 600; background: #f8fafc; }
+        .tax-info-popover p { margin: 7px 0; }
+        .tax-info-popover p:last-child { margin-bottom: 0; }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+        .note { font-size: 0.8rem; color: var(--text-secondary); margin-top: 16px; text-align: center; }
+        .paste-hint { font-size: 0.8rem; color: var(--text-secondary); margin-left: 0; padding-bottom: 12px; align-self: flex-end; }
+        .people-row { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .people-count-group { flex: 0 1 460px; }
+        .count-controls { display: flex; align-items: stretch; gap: 8px; }
+        .count-controls input { flex: 1; min-width: 110px; }
+        .count-controls .btn { flex: 0 0 auto; white-space: nowrap; padding: 0 16px; }
+        /* ===== SVG 图标系统 ===== */
+        [data-icon] { display: inline-flex; align-items: center; justify-content: center; line-height: 0; vertical-align: -0.16em; }
+        .ico { display: inline-block; vertical-align: -0.16em; flex: 0 0 auto; }
+        label { gap: 6px; }
+        .items-header h4 { display: inline-flex; align-items: center; gap: 6px; }
+        .paste-hint { display: inline-flex; align-items: center; gap: 6px; }
+        kbd {
+            background: #eef2f7; border: 1px solid var(--border); border-radius: 4px;
+            padding: 0 4px; margin: 0 2px; font-family: inherit; font-size: 0.75rem; color: var(--text-secondary);
+        }
+        code {
+            background: #eef2f7; border-radius: 4px; padding: 1px 5px;
+            font-family: inherit; font-size: 0.95em; color: var(--primary);
+        }
+        /* ===== 模式切换 ===== */
+        .mode-switch {
+            display: inline-flex; background: #f1f5f9; border-radius: 10px;
+            padding: 3px; gap: 3px; margin: -6px 0 20px;
+        }
+        .mode-btn {
+            border: none; background: transparent; padding: 6px 18px; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
+            cursor: pointer; font-family: inherit; transition: 0.15s;
+        }
+        .mode-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        /* ===== 通用模式 ===== */
+        .milk-switch {
+            display: inline-flex; align-items: center; border: 1px solid var(--border);
+            border-radius: 999px; background: #f1f5f9; padding: 2px; cursor: pointer;
+            font-size: 0.7rem; line-height: 1; font-family: inherit;
+        }
+        .milk-switch .milk-opt { padding: 4px 6px; border-radius: 999px; color: var(--text-secondary); transition: 0.15s; font-size: 0.68rem; }
+        .milk-switch[data-milk="0"] .milk-general,
+        .milk-switch[data-milk="1"] .milk-milk {
+            background: #fff; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+        .milk-switch[data-milk="0"] .milk-general { color: var(--primary); }
+        .milk-switch[data-milk="1"] .milk-milk { color: #0f766e; }
+        .milk-switch[data-milk="mixed"] { background: #e2e8f0; }
+        .milk-switch[data-milk="mixed"] .milk-opt { color: #94a3b8; }
+        body.mode-general .rmb-tax { display: none; }
+        .th-milk { text-align: center; }
+        .th-general { display: none; }
+        .general-table { table-layout: fixed; }
+        .fixed-table { table-layout: fixed; }
+        .general-table .td-job, .fixed-table .td-job { display: flex; align-items: center; gap: 6px; }
+        .general-table .g-job-select, .fixed-table .f-job-select { flex: 1; width: auto; min-width: 0; }
+        .general-table .g-name-input { width: 100%; }
+        .general-table .g-weight-input { width: 84px; text-align: right; }
+        .general-table .g-gold-cell, .general-table .g-rmb-cell { text-align: right; font-weight: 600; }
+        .num-th { text-align: right !important; }
+        .beta-badge {
+            display: inline-block; margin-left: 10px; padding: 2px 9px; border-radius: 999px;
+            background: #fff7e0; border: 1px solid #f0d9a8; color: #a8730f;
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.3px; vertical-align: middle;
+        }
+        .pay-mode-switch { display: inline-flex; background: #f1f5f9; border-radius: 9px; padding: 3px; gap: 3px; }
+        .pay-opt {
+            border: none; background: transparent; padding: 5px 12px; border-radius: 7px;
+            font-size: 0.78rem; font-weight: 600; color: #64748b; cursor: pointer; font-family: inherit;
+        }
+        .pay-opt.active { background: #fff; color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+        .pay-from { font-size: 0.62rem; margin-right: 4px; font-weight: 500; }
+        .pay-from.pay-leader { color: #b45309; }
+        .pay-from.pay-member { color: #2563eb; }
+        .fixed-table td { padding: 5px 8px; }
+        .fixed-table th { padding: 7px 8px; }
+        .fixed-table .f-job-select, .fixed-table .f-name-input, .fixed-table .f-gold-input, .fixed-table .f-rmb-input, .fixed-table .f-note-input {
+            padding: 4px 7px; font-size: 0.82rem;
+        }
+        .leader-badge {
+            border: 1px solid var(--border); background: #f8fafc; color: #94a3b8;
+            border-radius: 999px; font-size: 0.62rem; padding: 2px 5px; cursor: pointer;
+            margin-left: 4px; font-weight: 600; white-space: nowrap;
+        }
+        .leader-badge.on { border-color: #fcd34d; background: #fffbeb; color: #b45309; }
+        .fixed-hint { font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 10px; line-height: 1.6; }
+        .list-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 10px; flex-wrap: wrap; }
+        .list-actions-right { display: flex; gap: 8px; }
+        .btn.small { padding: 6px 12px; font-size: 0.8rem; }
+        .g-team-cell { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; }
+        .general-table tr.g-person-row td:first-child { color: #cbd5e1; padding-left: 18px; font-size: 0.9rem; }
+        .team-head-row .team-head-cell { padding: 7px 10px; background: #f8fafc; border-top: 1px solid var(--border); border-bottom: 1px solid #eef2f7; }
+        .team-head-row .team-no { font-weight: 700; color: var(--text); margin-right: 12px; }
+        .team-head-row .team-leader { color: #b45309; font-weight: 600; margin-right: 12px; }
+        .team-head-row .team-amount { color: var(--text-secondary); font-size: 0.78rem; }
+        .th-milk-switch { font-size: 0.64rem; }
+        .general-hint { font-size: 0.74rem; color: var(--text-secondary); }
+        .team-window-content { width: 880px; max-width: 94%; height: 92vh; display: flex; flex-direction: column; }
+        .team-window-content .team-list { flex: 1; max-height: none; }
+        .split-btn {
+            border: 1px solid var(--border); background: #f8fafc; color: var(--text-secondary);
+            border-radius: 6px; font-size: 0.74rem; padding: 3px 8px; cursor: pointer; font-family: inherit;
+        }
+        .split-btn.on { background: #eef2ff; border-color: #c7d2fe; color: var(--primary); font-weight: 600; }
+        .team-divider-row td { padding: 3px 10px; background: #eef2ff; border-top: 1px dashed #c7d2fe; border-bottom: 1px dashed #c7d2fe; cursor: grab; user-select: none; }
+        .team-divider-row.dragging td { background: #e0e7ff; cursor: grabbing; }
+        .divider-handle { color: var(--primary); font-weight: 700; margin-right: 6px; letter-spacing: 1px; }
+        .divider-name { font-size: 0.72rem; color: var(--text-secondary); }
+        .divider-remove { border: 1px solid #c7d2fe; background: #fff; color: #b91c1c; border-radius: 6px; font-size: 0.72rem; padding: 0 7px; cursor: pointer; margin-left: 8px; line-height: 1.6; }
+        .divider-ghost { position: fixed; height: 3px; background: var(--primary); border-radius: 2px; z-index: 3000; pointer-events: none; display: none; box-shadow: 0 0 0 2px rgba(108,92,231,0.2); }
+        .general-table tr.leader-row td { background: #fffbeb; border-top: 2px solid #fcd34d; }
+        .general-table tr.leader-row .g-team-cell { font-weight: 600; color: #b45309; }
+        .general-table .g-team-cell .team-no { font-weight: 700; color: var(--text); }
+        .team-del-btn { border: 1px solid var(--border); background: #fff; color: #94a3b8; border-radius: 6px; font-size: 0.72rem; padding: 1px 7px; cursor: pointer; line-height: 1.5; }
+        .team-del-btn:hover { color: #b91c1c; border-color: #fecaca; }
+        .team-list tr.team-start td { border-top: 2px solid #e2e8f0; }
+        .leader-tag {
+            display: inline-block; margin-left: 4px; font-size: 0.62rem; color: #b45309;
+            background: #fffbeb; border: 1px solid #fcd34d; border-radius: 999px; padding: 1px 5px;
+        }
+        .team-list { max-height: 420px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; }
+        .team-list table { width: 100%; border-collapse: collapse; }
+        .team-list th, .team-list td { padding: 6px 8px; font-size: 0.82rem; border-bottom: 1px solid #f1f5f9; text-align: left; }
+        .team-list th { background: #f8fafc; color: var(--text-secondary); font-weight: 600; position: sticky; top: 0; z-index: 1; }
+        .team-list .team-select { padding: 3px 6px; font-size: 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
+        .team-captain-btn {
+            border: 1px solid var(--border); background: #f8fafc; color: var(--text-secondary);
+            border-radius: 6px; font-size: 0.74rem; padding: 3px 8px; cursor: pointer; font-family: inherit;
+        }
+        .team-captain-btn.on { background: #fffbeb; border-color: #fcd34d; color: #b45309; font-weight: 600; }
+        .general-table td { padding: 5px 8px; }
+        .general-table th { padding: 7px 8px; }
+        .general-table .g-job-select, .general-table .g-name-input, .general-table .g-weight-input {
+            padding: 4px 7px; font-size: 0.82rem;
+        }
+        .fixed-table .f-gold-input, .fixed-table .f-rmb-input { width: 100%; text-align: right; }
+        .fixed-table .f-note-input { width: 100%; }
+        .general-summary { margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<!-- ===== 官网导航（子页面统一） ===== -->
+<header class="xsb-nav" id="xsbNav">
+  <div class="xsb-nav-inner">
+    <a class="xsb-brand" href="../index.html" aria-label="返回官网首页">
+      <span class="xsb-badge" aria-hidden="true"><img src="../assets/family-icon.png" alt="" width="60" height="60" /></span>
+      <span class="xsb-word">新手保护联盟</span>
+    </a>
+    <nav class="xsb-links" aria-label="官网导航">
+      <span class="nav-pill" aria-hidden="true"></span>
+      <a href="../index.html#apply"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg></span><span class="xsb-txt">申请入会</span></a>
+      <a href="../index.html#tools" class="is-active"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg></span><span class="xsb-txt">工具</span></a>
+      <a href="../index.html#rules"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z"/><path d="M9 3v16"/><path d="M15 5v16"/></svg></span><span class="xsb-txt">远征规则</span></a>
+      <a href="../index.html#about" class="xsb-only-pc"><span class="xsb-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-4.5"/><path d="M12 8h.01"/></svg></span><span class="xsb-txt">关于我们</span></a>
+    </nav>
+    <a href="../account/index.html" class="xsb-auth" aria-label="账号">
+      <span class="xsb-auth-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <span class="xsb-auth-txt">登录</span>
+    </a>
+  </div>
+</header>
+<style>
+  html { overflow-x: hidden !important; }
+  body { padding-top: 60px !important; overflow-x: hidden !important; }
+
+  .xsb-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: rgba(255, 255, 255, .42);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    backdrop-filter: blur(24px) saturate(1.8);
+    border-bottom: 1px solid rgba(120, 98, 64, .1);
+    transition: transform .28s ease;
+    will-change: transform;
+  }
+
+  .xsb-nav.is-hidden { transform: translateY(-100%); }
+
+  .xsb-nav-inner {
+    width: min(1120px, calc(100% - 32px));
+    height: 48px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+
+  .xsb-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    color: #3b3327;
+    font-weight: 700;
+    font-size: 13.5px;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+
+  .xsb-badge {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+  }
+
+  .xsb-badge img {
+    display: block;
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+  }
+
+  .xsb-links { display: flex; align-items: center; gap: 2px; }
+
+  .xsb-links a {
+    padding: 5px 11px;
+    border-radius: 999px;
+    color: #6f6353;
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    transition: color .24s ease, background .24s ease;
+  }
+
+  .xsb-links a:hover { color: #3b3327; background: rgba(59, 51, 39, .08); }
+  .xsb-links a.is-active { color: #fffdf8; background: rgba(59, 51, 39, .60); }
+
+  @media (max-width: 760px) {
+    body { padding-top: 56px !important; overflow-x: hidden !important; }
+    .xsb-nav-inner { height: 44px; }
+    .xsb-brand { font-size: 12.5px; gap: 6px; }
+    .xsb-badge { width: 22px; height: 22px; }
+    .xsb-badge img { width: 22px; height: 22px; }
+    .xsb-links a { padding: 4px 8px; font-size: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    .xsb-brand { font-size: 12px; gap: 5px; }
+    .xsb-badge { width: 20px; height: 20px; }
+    .xsb-badge img { width: 20px; height: 20px; }
+    .xsb-links a { padding: 4px 5px; font-size: 11.5px; }
+  }
+
+  @media (max-width: 360px) {
+    .xsb-badge { display: none; }
+    .xsb-links a { padding: 4px 4px; font-size: 11px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xsb-nav { transition: none; }
+  }
+
+  /* ===== 导航图标（与首页板块图标同一套：24 网格 / stroke 1.7 / 圆角） ===== */
+  .xsb-links a, .xsb-auth { display: inline-flex; align-items: center; gap: 5px; }
+  .xsb-ico, .xsb-auth-ico { display: inline-flex; align-items: center; }
+  .xsb-ico svg, .xsb-auth-ico svg { width: 15px; height: 15px; display: block; }
+  .xsb-auth {
+    flex: none; margin-left: 8px; height: 26px; padding: 0 11px;
+    font-size: 12.5px; font-weight: 700;
+    color: inherit; background: rgba(128, 128, 128, .16);
+    border: 1px solid rgba(128, 128, 128, .26);
+    border-radius: 999px; text-decoration: none; white-space: nowrap;
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .xsb-auth:hover { background: rgba(128, 128, 128, .26); border-color: rgba(128, 128, 128, .4); }
+  .xsb-auth.is-on { background: rgba(47, 125, 79, .2); border-color: rgba(47, 125, 79, .45); }
+  @media (max-width: 760px) {
+    /* 手机端：只有当前这一页显示文字，其余只留图标，省下的宽度都归它 */
+    .xsb-links a .xsb-txt {
+      display: inline-block;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      vertical-align: bottom;
+      transition: max-width .15s ease, opacity .1s ease;
+    }
+    .xsb-links a.is-active .xsb-txt {
+      max-width: 8em;
+      opacity: 1;
+      transition: max-width .3s cubic-bezier(.4, 0, .2, 1), opacity .3s ease-in;
+    }
+    .xsb-auth-txt { display: none; }
+    .xsb-auth { margin-left: 4px; padding: 0 8px; }
+  }
+  .xsb-links, .nav-links { --pill-bg: rgba(59, 51, 39, .55); }
+
+  /* ===== 导航选中胶囊：单独一个元素在各项之间滑动，不再整块淡入淡出 ===== */
+  .nav-pill { display: none; }
+  @media (max-width: 760px) {
+    .xsb-links, .nav-links { position: relative; }
+    .nav-pill {
+      display: block;
+      position: absolute;
+      left: 0; top: 0;
+      width: 0; height: 0;
+      border-radius: 999px;
+      background: var(--pill-bg, rgba(59, 51, 39, .55));
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition: left .3s cubic-bezier(.4, 0, .2, 1),
+                  width .3s cubic-bezier(.4, 0, .2, 1),
+                  top .2s ease, height .2s ease, opacity .16s ease;
+    }
+    /* 选中项自己不再画底色，交给胶囊 */
+    .xsb-links a.is-active, .nav-links a.active { background: transparent !important; }
+    .xsb-links a, .nav-links a { z-index: 1; }
+  }
+</style>
+<script>
+  (function () {
+    var nav = document.getElementById('xsbNav');
+    if (!nav) return;
+
+    var lastY = window.pageYOffset || 0;
+    var ticking = false;
+    var mq = window.matchMedia('(max-width: 760px)');
+
+    function update() {
+      ticking = false;
+      var y = window.pageYOffset || 0;
+
+      if (!mq.matches) {
+        nav.classList.remove('is-hidden');
+        lastY = y;
+        return;
+      }
+
+      var delta = y - lastY;
+      if (delta > 6 && y > 72) {
+        nav.classList.add('is-hidden');
+      } else if (delta < -6) {
+        nav.classList.remove('is-hidden');
+      }
+      lastY = y;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', function () {
+      if (!mq.matches) nav.classList.remove('is-hidden');
+    });
+  })();
+</script>
+    <div class="card" id="mainCard">
+        <h2><span data-icon="handCoins" data-color="#2d3436" data-size="26"></span>团长结账工具 <span class="beta-badge">Beta · 测试中</span></h2>
+        <div class="mode-switch">
+            <button type="button" class="mode-btn active" data-mode="general">通用模式</button>
+            <button type="button" class="mode-btn" data-mode="house">家务模式</button>
+        </div>
+        <div class="form-row">
+            <div class="form-group" id="goldRateGroup">
+                <label><span data-icon="exchange" data-color="#636e72"></span>金价比例（万金币/元）</label>
+                <input type="number" id="goldRate" placeholder="例如 30" step="any" min="0.01">
+            </div>
+            <div class="form-group">
+                <label><span data-icon="calendar" data-color="#636e72"></span>日期</label>
+                <input type="date" id="missionDate">
+            </div>
+            <div class="form-group">
+                <label><span data-icon="flag" data-color="#636e72"></span>远征类型</label>
+                <div class="combo">
+                    <input type="text" class="mission-input" id="missionType" placeholder="输入或选择远征" autocomplete="off" spellcheck="false">
+                    <span class="combo-arrow" data-icon="chevronDown" data-color="#94a3b8" data-size="14"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><span data-icon="cart" data-color="#636e72"></span>摆摊税状态</label>
+                <select id="storeTaxMode">
+                    <option value="normal" selected>默认</option>
+                    <option value="off">关闭</option>
+                    <option value="double">面对面交易双倍税率</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="items-section">
+            <div class="items-header">
+                <h4><span data-icon="package" data-color="#2d3436"></span>物品</h4>
+                <span class="items-count" id="itemsCount">0 项</span>
+            </div>
+            <div class="items-table-wrap">
+                <table class="items-table" id="itemsTable">
+                    <colgroup>
+                        <col style="width:170px">
+                        <col style="width:78px">
+                        <col style="width:96px">
+                        <col style="width:96px">
+                        <col style="width:96px">
+                        <col style="width:96px">
+                        <col style="width:96px">
+                        <col style="width:190px">
+                        <col style="width:40px">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>物品</th>
+                            <th class="num">数量</th>
+                            <th class="num">金币（万）</th>
+                            <th class="num">人民币（元）</th>
+                            <th class="th-check">
+                                <div class="th-house"><label title="点击全选 / 取消全选"><input type="checkbox" id="allStoreTaxCb"><span>摆摊税</span></label></div>
+                                <div class="th-general"><button type="button" class="milk-switch th-milk-switch" id="allMilkSwitch" data-milk="0" title="全部设为均分 / 全部设为奶补"><span class="milk-opt milk-general">均分</span><span class="milk-opt milk-milk">奶补</span></button></div>
+                            </th>
+                            <th class="th-check">
+                                <div class="th-house"><label title="点击全选 / 取消全选"><input type="checkbox" id="allUnionTaxCb"><span>家族税</span></label></div>
+                                <div class="th-general"><label title="点击全选 / 取消全选"><input type="checkbox" id="allStoreTaxCbG"><span>摆摊税</span></label></div>
+                            </th>
+                            <th class="th-check"><label title="点击全选 / 取消全选"><input type="checkbox" id="allPerUnitTaxCb"><span>单价计税</span></label></th>
+                            <th>税额明细</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsContainer"></tbody>
+                </table>
+                <div class="items-empty" id="itemsEmpty">暂无物品，点击下方「添加物品」或「粘贴物品数据」</div>
+            </div>
+            <div class="scroll-hint">← 左右滑动查看完整表格 →</div>
+            <div class="items-actions">
+                <div class="items-actions-left">
+                    <button id="addItemBtn" class="btn btn-secondary" style="padding:6px 14px;">+ 添加物品</button>
+                    <button id="pasteItemsBtn" class="btn btn-secondary" style="padding:6px 14px;"><span data-icon="clipboard" data-color="#636e72"></span>粘贴物品数据</button>
+                    <button id="editTemplateBtn" class="btn btn-secondary" style="padding:6px 14px;"><span data-icon="clipboard" data-color="#636e72"></span>编辑模板数据</button>
+                </div>
+                <button id="clearItemsBtn" class="btn btn-danger" style="padding:6px 14px;"><span data-icon="trash" data-color="#b91c1c"></span>清空物品</button>
+            </div>
+        </div>
+
+        <div id="houseArea" style="display: none;">
+        <div class="people-row">
+            <div class="form-group people-count-group">
+                <label><span data-icon="users" data-color="#636e72"></span>分配人数</label>
+                <div class="count-controls">
+                    <input type="number" id="peopleCount" placeholder="例如 6" min="1" step="1" value="6">
+                    <button type="button" class="btn btn-secondary people-paste-btn" id="pastePeopleBtn"><span data-icon="userPlus" data-color="#636e72"></span>一键粘贴人员</button>
+                </div>
+            </div>
+            <span class="paste-hint" id="pasteHint"><span data-icon="zap" data-color="#636e72"></span>粘贴人员：点击空白处按 <kbd>Ctrl+V</kbd>，或点「一键粘贴人员」</span>
+        </div>
+
+        <div class="result-card" id="resultCard" style="display: none;">
+            <div class="tax-summary" id="taxSummary">
+                <div class="tax-summary-head">
+                    <div class="tax-chips" id="taxChips"></div>
+                    <div class="tax-info-wrap">
+                        <button type="button" class="tax-info-btn" id="taxInfoBtn" aria-label="税费计算说明" title="税费计算说明">
+                            <span data-icon="info" data-color="#b45309" data-size="15"></span>
+                        </button>
+                        <div class="tax-info-popover" id="taxInfoPopover">
+                            <h5>税费计算说明</h5>
+                            <p>摆摊税、家族税都按金币金额套用阶梯税率：</p>
+                            <table>
+                                <thead><tr><th>金额（万金币）</th><th>税率</th></tr></thead>
+                                <tbody>
+                                    <tr><td>≥ 10000</td><td>3%</td></tr>
+                                    <tr><td>≥ 2500</td><td>2.5%</td></tr>
+                                    <tr><td>≥ 1000</td><td>2%</td></tr>
+                                    <tr><td>≥ 500</td><td>1.5%</td></tr>
+                                    <tr><td>≥ 100</td><td>0.9%</td></tr>
+                                    <tr><td>≥ 10</td><td>0.4%</td></tr>
+                                    <tr><td>&lt; 10</td><td>0</td></tr>
+                                </tbody>
+                            </table>
+                            <p>· <b>单价计税</b>：先按单价套阶梯算税，再乘以数量。</p>
+                            <p>· <b>R税</b>：需同时勾选摆摊税与家族税，把人民币金额按金价折算成金币后套用同一阶梯（需填写金价比例）。</p>
+                            <p>· <b>家族税</b>：按金币金额套阶梯，与摆摊税独立计算。</p>
+                            <p>· 摆摊税状态选「面对面交易双倍税率」时，摆摊税与 R 税的税率翻倍。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="unified-table" id="resultTable">
+                <thead><tr><th>人员</th><th style="width:110px;">权重</th><th style="width:26%;"><span data-icon="coins" data-color="#636e72" data-size="15"></span> 金币（万）</th><th style="width:24%;">¥ 人民币（元）</th><th style="width:40px;"></th></tr></thead>
+                <tbody id="resultTableBody"></tbody>
+            </table>
+            <div class="add-person-wrap">
+                <button type="button" class="add-person-btn" id="addPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加人员</button>
+            </div>
+        </div>
+        </div>
+
+        <div id="generalArea" style="display: none;">
+            <div class="general-summary">
+                <div class="tax-summary">
+                    <div class="tax-summary-head">
+                        <div class="tax-chips" id="generalTaxChips"></div>
+                        <div class="tax-info-wrap">
+                            <button type="button" class="tax-info-btn" id="generalTaxInfoBtn" aria-label="税费计算说明" title="税费计算说明">
+                                <span data-icon="info" data-color="#b45309" data-size="15"></span>
+                            </button>
+                            <div class="tax-info-popover" id="generalTaxInfoPopover">
+                                <h5>通用模式税费说明</h5>
+                                <p>摆摊税按金币金额套用阶梯税率：</p>
+                                <table>
+                                    <thead><tr><th>金额（万金币）</th><th>税率</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>≥ 10000</td><td>3%</td></tr>
+                                        <tr><td>≥ 2500</td><td>2.5%</td></tr>
+                                        <tr><td>≥ 1000</td><td>2%</td></tr>
+                                        <tr><td>≥ 500</td><td>1.5%</td></tr>
+                                        <tr><td>≥ 100</td><td>0.9%</td></tr>
+                                        <tr><td>≥ 10</td><td>0.4%</td></tr>
+                                        <tr><td>&lt; 10</td><td>0</td></tr>
+                                    </tbody>
+                                </table>
+                                <p>· <b>单价计税</b>：先按单价套阶梯算税，再乘以数量。</p>
+                                <p>· <b>R税</b>：勾选摆摊税后，把人民币金额按金价折算成金币，套用同一阶梯（需填写金价比例）。</p>
+                                <p>· 通用模式没有家族税；「奶补」物品的收益只分给主教。</p>
+                                <p>· 固定金额先从「均分」总价里扣除，剩余部分再按权重分给全员。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-header" style="margin: 0 0 10px;">
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    <h4><span data-icon="users" data-color="#2d3436"></span>工资人员（按权重）</h4>
+                    <div class="pay-mode-switch" id="payModeSwitch">
+                        <button type="button" class="pay-opt active" data-pay="direct">一人付所有</button>
+                        <button type="button" class="pay-opt" data-pay="team">团长付队长</button>
+                    </div>
+                    <div class="tax-info-wrap">
+                        <button type="button" class="tax-info-btn" id="payModeInfoBtn" aria-label="支付方式说明" title="支付方式说明">
+                            <span data-icon="info" data-color="#636e72" data-size="15"></span>
+                        </button>
+                        <div class="tax-info-popover" id="payModeInfoPopover">
+                            <h5>支付方式说明</h5>
+                            <p><b>一人付所有</b>：团长直接付给每个人（含奶补），不经过队长，只扣物品的摆摊税。</p>
+                            <p><b>团长付队长</b>：团长按队把<b>税前</b>队总额面对面交给队长（交易时扣一次摆摊税），队长到手后再按权重分给队员；奶补也由队长分给奶妈。</p>
+                            <p>人民币全程不扣税。</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span class="general-hint" id="generalHint">团长直接付给每个人（含奶补）</span>
+                    <button type="button" class="btn btn-secondary" id="pasteGeneralPeopleBtn" style="padding:6px 14px;"><span data-icon="userPlus" data-color="#636e72"></span>一键粘贴人员</button>
+                </div>
+            </div>
+            <table class="unified-table general-table" id="generalTable">
+                <thead><tr><th style="width:80px;">成员</th><th style="width:160px;">职业</th><th>姓名</th><th style="width:90px;">权重</th><th style="width:20%;" class="num-th">金币（万）</th><th style="width:18%;" class="num-th">人民币（元）</th><th style="width:40px;"></th></tr></thead>
+                <tbody id="generalPeopleBody"></tbody>
+            </table>
+            <div class="list-actions">
+                <button type="button" class="add-person-btn" id="addGeneralPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加人员</button>
+                <div class="list-actions-right">
+                    <button type="button" class="btn btn-secondary small" id="openTeamBtn">调整队伍</button>
+                    <button type="button" class="btn btn-danger small" id="clearGeneralPeopleBtn">清空人员</button>
+                </div>
+            </div>
+
+            <div class="items-header" style="margin: 22px 0 8px;">
+                <h4><span data-icon="coins" data-color="#2d3436"></span>固定工资人员（不参与权重）</h4>
+            </div>
+            <p class="fixed-hint">这里的固定金额会先从「均分」物品的总价里扣除，剩下的部分再按权重分给全员；「奶补」物品的收益只分给主教。</p>
+            <table class="unified-table fixed-table" id="fixedTable">
+                <thead><tr><th style="width:180px;">职业</th><th>姓名</th><th style="width:18%;" class="num-th">固定金币（万）</th><th style="width:16%;" class="num-th">固定人民币（元）</th><th>备注</th><th style="width:40px;"></th></tr></thead>
+                <tbody id="fixedPeopleBody"></tbody>
+            </table>
+            <div class="list-actions">
+                <button type="button" class="add-person-btn" id="addFixedPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加固定人员</button>
+                <button type="button" class="btn btn-danger small" id="clearFixedPeopleBtn">清空</button>
+            </div>
+        </div>
+
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button class="action-btn" id="saveImageBtn"><span data-icon="camera" data-color="#636e72"></span>截图并复制</button>
+            <button class="action-btn" id="copyGoldBtn"><span data-icon="copy" data-color="#636e72"></span>复制金币</button>
+            <button class="action-btn" id="copyRmbBtn"><span data-icon="copy" data-color="#636e72"></span>复制人民币</button>
+        </div>
+
+        <div class="note">点击表头复选框可一键全选 / 取消；每行物品也可单独关闭「摆摊税」「家族税」「单价计税」；R税需同时开启摆摊税与家族税，且需填写金价比例。</div>
+    </div>
+
+    <!-- 模板/粘贴窗口 -->
+    <div class="paste-window" id="editTemplateWindow">
+        <div class="paste-content">
+            <h4 style="margin:0 0 12px;"><span data-icon="clipboard" data-color="#2d3436"></span> 编辑模板数据</h4>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">每行格式：[单价计税]物品名：参考价（万金币）<br>例如：[单价计税]暗杀30：10000<br><span style="color:#6c5ce7;"><span data-icon="lightbulb" data-color="#6c5ce7" data-size="14"></span> 模板修改后会自动保存到本地，下次打开依然保留。</span></p>
+            <textarea id="editTemplateData" placeholder="编辑模板数据..."></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="cancelEditTemplateBtn">取消</button>
+                <button class="btn" id="applyEditTemplateBtn">更新模板</button>
+            </div>
+        </div>
+    </div>
+    <div class="paste-window" id="pasteItemsWindow">
+        <div class="paste-content">
+            <h4 style="margin:0 0 12px;"><span data-icon="clipboard" data-color="#2d3436"></span> 粘贴物品数据</h4>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">每行格式：物品名 数量<br>例如：暗杀30 5</p>
+            <textarea id="pasteItemsData" placeholder="粘贴数据..."></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="cancelPasteItemsBtn">取消</button>
+                <button class="btn" id="applyPasteItemsBtn">添加物品</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 人员一键粘贴窗口 -->
+    <div class="paste-window" id="pastePeopleWindow">
+        <div class="paste-content">
+            <h4 style="margin:0 0 12px;"><span data-icon="userPlus" data-color="#2d3436"></span> 一键粘贴人员</h4>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">
+                每行一位人员，支持三种写法：<br>
+                <strong>姓名</strong>、<strong>姓名 权重</strong>、或只写<strong>权重</strong>（按顺序对应第 1、2、3… 人）<br>
+                例如：<code>张三 1.5</code> / <code>李四 2</code> / <code>0.8</code><br>
+                <span style="color:#6c5ce7;"><span data-icon="lightbulb" data-color="#6c5ce7" data-size="14"></span> 粘贴后会自动按行数调整分配人数并重新计算。</span>
+            </p>
+            <textarea id="pastePeopleData" placeholder="张三 1.5&#10;李四 2&#10;王五 1"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="cancelPastePeopleBtn">取消</button>
+                <button class="btn" id="applyPastePeopleBtn">应用并计算</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用模式人员一键粘贴窗口 -->
+    <div class="paste-window" id="pasteGeneralPeopleWindow">
+        <div class="paste-content">
+            <h4 style="margin:0 0 12px;"><span data-icon="userPlus" data-color="#2d3436"></span> 一键粘贴人员（通用模式）</h4>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">
+                从表格里直接复制「职业 / 姓名」两列，整段粘贴即可。<br>
+                例如：<code>主教	Blizzard</code>　<code>侠盗,团长	刀个刀</code><br>
+                职业后面带「,团长」会标记为团长；「黑骑士（队长）」会记为黑骑士队长。<br>
+                <span style="color:#6c5ce7;"><span data-icon="lightbulb" data-color="#6c5ce7" data-size="14"></span> 粘贴后按行数生成人员，权重默认 1，可以再手动调整。</span>
+            </p>
+            <textarea id="pasteGeneralPeopleData" placeholder="黑骑士（队长）	蜀营游龙&#10;主教	Blizzard&#10;侠盗,团长	刀个刀"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="cancelPasteGeneralPeopleBtn">取消</button>
+                <button class="btn" id="applyPasteGeneralPeopleBtn">应用并计算</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 队伍分配窗口 -->
+    <div class="paste-window" id="teamWindow">
+        <div class="paste-content team-window-content">
+            <h4 style="margin:0 0 8px;"><span data-icon="users" data-color="#2d3436"></span> 队伍分配</h4>
+            <p class="fixed-hint" style="margin-bottom:12px;">默认每 6 人一队、每队第一位为队长。用鼠标拖动分界线即可在成员之间调整队伍（拖动时可以先超过 6 人，点确定时会检查）；双击某位成员可在其前面插入新队伍。确定后按队伍结算：团长先把队总额面对面交易给队长（扣摆摊税），队长再按权重分给队员。</p>
+            <div class="team-list" id="teamList"></div>
+            <div style="display:flex; justify-content:space-between; margin-top:14px; gap:10px; flex-wrap:wrap;">
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn btn-secondary" id="autoTeamBtn">按 6 人一队重新分配</button>
+                    <button type="button" class="btn btn-secondary" id="addDividerBtn">增加队伍分割线</button>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn btn-secondary" id="cancelTeamBtn">取消</button>
+                    <button type="button" class="btn" id="confirmTeamBtn">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物品名称下拉面板 -->
+    <div class="combo-panel" id="comboPanel"><div class="combo-list" id="comboList"></div></div>
+    <div class="combo-panel" id="missionPanel"><div class="combo-list" id="missionList"></div></div>
+
+    <script>
+        // ===== SVG 图标库（替代原 emoji 图标，保证截图渲染一致） =====
+        const ICONS = {
+            coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+            handCoins: '<path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/>',
+            exchange: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+            cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+            package: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+            trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+            clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+            copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+            users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+            userPlus: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>',
+            zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+            camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+            lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+            check: '<path d="M20 6 9 17l-5-5"/>',
+            checkSquare: '<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+            square: '<rect width="18" height="18" x="3" y="3" rx="2"/>',
+            alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+            chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+            building: '<path d="M3 22h18"/><path d="M6 18V9"/><path d="M10 18V9"/><path d="M14 18V9"/><path d="M18 18V9"/><path d="M12 2 20 7H4Z"/>',
+            briefcase: '<rect width="20" height="14" x="2" y="6" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+            chevronDown: '<path d="m6 9 6 6 6-6"/>',
+            plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+            info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+            yen: '<path d="M12 3v18"/><path d="m7 8 5 5 5-5"/><path d="M7 13h10"/><path d="M7 17h10"/>'
+        };
+
+        function iconSvg(name, color, size) {
+            const body = ICONS[name] || '';
+            const c = color || '#636e72';
+            const s = size || 18;
+            return '<svg class="ico" viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="' + c + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + body + '</svg>';
+        }
+
+        function hydrateIcons(root) {
+            const scope = root || document;
+            scope.querySelectorAll('[data-icon]').forEach(el => {
+                if (el.dataset.iconReady === '1') return;
+                const name = el.dataset.icon;
+                if (!ICONS[name]) return;
+                el.innerHTML = iconSvg(name, el.dataset.color || '#636e72', parseInt(el.dataset.size, 10) || 18);
+                el.dataset.iconReady = '1';
+            });
+        }
+
+        function formatGoldWan(value) {
+            const v = Number(value) || 0;
+            if (Math.abs(v) >= 10000) return (v / 10000).toFixed(2) + '亿';
+            return v.toFixed(2) + '万';
+        }
+
+        function getTaxRateByAmount(amount) {
+            if (amount >= 10000) return 3;
+            if (amount >= 2500) return 2.5;
+            if (amount >= 1000) return 2;
+            if (amount >= 500) return 1.5;
+            if (amount >= 100) return 0.9;
+            if (amount >= 10) return 0.4;
+            return 0;
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        const defaultTemplateText = `[单价计税]暗杀30：10000
+[单价计税]盾牌攻击：2200
+[单价计税]盾牌魔力：2300
+[单价计税]链环闪电：1000
+[单价计税]手套攻击：600
+手套敏捷：2.8
+头盔体力：19
+头盔防御：2.4
+耳环智力：44
+全身铠甲智力：52
+全身铠甲敏捷：39
+全身铠甲运气：4
+全身铠甲防御：3
+披风智力：36
+披风敏捷：35
+披风体力：17
+披风力量：12
+披风运气：5.8
+披风魔防：2.5
+披风防御：2.3
+披风魔力：2.2
+鞋子跳跃：21
+鞋子速度：3.3
+鞋子敏捷度：2.8`;
+
+        function parseTemplates(text) {
+            const templates = [];
+            const lines = text.trim().split('\n');
+            for (const line of lines) {
+                const match = line.match(/^(\[单价计税\])?(.+?)[：:]\s*([\d.]+|[-—])\s*$/);
+                if (match) {
+                    const isPerUnit = !!match[1];
+                    const rawName = match[2].trim();
+                    const priceText = match[3];
+                    const price = (priceText === '-' || priceText === '—') ? 0 : parseFloat(priceText);
+                    if (rawName && !isNaN(price) && price >= 0) {
+                        templates.push({
+                            name: (isPerUnit ? '[单价计税]' : '') + rawName,
+                            displayName: rawName,
+                            price: price,
+                            isPerUnit: isPerUnit
+                        });
+                    }
+                }
+            }
+            return templates;
+        }
+
+        // ===== 模板本地持久化 =====
+        const STORAGE_KEY = 'earnings_distributor_templates_v1';
+
+        function loadTemplatesFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved && saved.trim()) {
+                    // 通用模式那两个模板不属于家务模式，老存储里若被合并过要剔除
+                    const parsed = parseTemplates(saved).filter(t => t.displayName !== '扎昆地板装备' && t.displayName !== '褐手');
+                    if (parsed.length > 0) {
+                        // 合并默认模板里后来新增的项（老存储也能拿到新模板）
+                        const defaults = parseTemplates(defaultTemplateText);
+                        let changed = parsed.length !== parseTemplates(saved).length;
+                        defaults.forEach(tmpl => {
+                            if (!parsed.some(t => t.displayName === tmpl.displayName)) {
+                                parsed.push(tmpl);
+                                changed = true;
+                            }
+                        });
+                        if (changed) saveTemplatesToStorage(parsed);
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.warn('读取本地模板失败:', e);
+            }
+            return parseTemplates(defaultTemplateText);
+        }
+
+        function saveTemplatesToStorage(templates) {
+            try {
+                const text = templates.map(t => `${t.name}：${t.price > 0 ? t.price : '-'}`).join('\n');
+                localStorage.setItem(STORAGE_KEY, text);
+            } catch (e) {
+                console.warn('保存模板到本地失败:', e);
+            }
+        }
+
+        let itemTemplates = loadTemplatesFromStorage();
+
+        // 通用模式默认只有这两个模板（可在「编辑模板数据」里改）
+        const GENERAL_TEMPLATE_TEXT = '扎昆地板装备：-\n褐手：-';
+        const GENERAL_TEMPLATE_KEY = 'earnings_distributor_general_templates_v1';
+        let generalTemplates = (() => {
+            try {
+                const saved = localStorage.getItem(GENERAL_TEMPLATE_KEY);
+                if (saved && saved.trim()) {
+                    const parsed = parseTemplates(saved);
+                    if (parsed.length > 0) return parsed;
+                }
+            } catch (e) { /* ignore */ }
+            return parseTemplates(GENERAL_TEMPLATE_TEXT);
+        })();
+
+        function saveGeneralTemplates(templates) {
+            try {
+                localStorage.setItem(GENERAL_TEMPLATE_KEY, templates.map(t => `${t.name}：${t.price > 0 ? t.price : '-'}`).join('\n'));
+            } catch (e) { /* ignore */ }
+        }
+
+        function getActiveTemplates() {
+            return appMode === 'general' ? generalTemplates : itemTemplates;
+        }
+
+        function buildTemplateMap() {
+            const map = {};
+            itemTemplates.forEach(tmpl => { map[tmpl.displayName] = tmpl; });
+            return map;
+        }
+
+        const goldRateInput = document.getElementById('goldRate');
+        const storeTaxModeSelect = document.getElementById('storeTaxMode');
+        const countInput = document.getElementById('peopleCount');
+        const resultCard = document.getElementById('resultCard');
+        const resultTableBody = document.getElementById('resultTableBody');
+        const addPersonBtn = document.getElementById('addPersonBtn');
+        const taxChips = document.getElementById('taxChips');
+        const taxInfoBtn = document.getElementById('taxInfoBtn');
+        const taxInfoPopover = document.getElementById('taxInfoPopover');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const clearItemsBtn = document.getElementById('clearItemsBtn');
+        const editTemplateBtn = document.getElementById('editTemplateBtn');
+        const pasteItemsBtn = document.getElementById('pasteItemsBtn');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const actionButtons = document.getElementById('actionButtons');
+        const allStoreTaxCb = document.getElementById('allStoreTaxCb');
+        const allUnionTaxCb = document.getElementById('allUnionTaxCb');
+        const allPerUnitTaxCb = document.getElementById('allPerUnitTaxCb');
+        const itemsCount = document.getElementById('itemsCount');
+        const itemsEmpty = document.getElementById('itemsEmpty');
+
+        const editTemplateWindow = document.getElementById('editTemplateWindow');
+        const editTemplateData = document.getElementById('editTemplateData');
+        const applyEditTemplateBtn = document.getElementById('applyEditTemplateBtn');
+        const cancelEditTemplateBtn = document.getElementById('cancelEditTemplateBtn');
+        const pasteItemsWindow = document.getElementById('pasteItemsWindow');
+        const pasteItemsData = document.getElementById('pasteItemsData');
+        const applyPasteItemsBtn = document.getElementById('applyPasteItemsBtn');
+        const cancelPasteItemsBtn = document.getElementById('cancelPasteItemsBtn');
+        const pastePeopleBtn = document.getElementById('pastePeopleBtn');
+        const pastePeopleWindow = document.getElementById('pastePeopleWindow');
+        const pastePeopleData = document.getElementById('pastePeopleData');
+        const applyPastePeopleBtn = document.getElementById('applyPastePeopleBtn');
+        const cancelPastePeopleBtn = document.getElementById('cancelPastePeopleBtn');
+        const comboPanel = document.getElementById('comboPanel');
+        const missionInput = document.getElementById('missionType');
+        const missionPanel = document.getElementById('missionPanel');
+        const missionList = document.getElementById('missionList');
+        const missionDate = document.getElementById('missionDate');        const comboList = document.getElementById('comboList');
+
+        // ===== 模式切换 & 通用模式 =====
+        const GENERAL_JOBS = ['黑骑士', '英雄', '圣骑士', '主教', '龙神', '火毒魔导师', '冰雷魔导师', '神射手', '箭神', '侠盗', '隐士', '冲锋队长', '船长'];
+        let payMode = 'direct'; // direct: 一人付所有；team: 团长付队长、队长付队员
+        const houseArea = document.getElementById('houseArea');
+        const generalArea = document.getElementById('generalArea');
+        const generalPeopleBody = document.getElementById('generalPeopleBody');
+        const fixedPeopleBody = document.getElementById('fixedPeopleBody');
+        const generalTaxChips = document.getElementById('generalTaxChips');
+        const addGeneralPersonBtn = document.getElementById('addGeneralPersonBtn');
+        const addFixedPersonBtn = document.getElementById('addFixedPersonBtn');
+        const clearGeneralPeopleBtn = document.getElementById('clearGeneralPeopleBtn');
+        const clearFixedPeopleBtn = document.getElementById('clearFixedPeopleBtn');
+        const openTeamBtn = document.getElementById('openTeamBtn');
+        const teamWindow = document.getElementById('teamWindow');
+        const teamList = document.getElementById('teamList');
+        const autoTeamBtn = document.getElementById('autoTeamBtn');
+        const addDividerBtn = document.getElementById('addDividerBtn');
+        const cancelTeamBtn = document.getElementById('cancelTeamBtn');
+        const confirmTeamBtn = document.getElementById('confirmTeamBtn');
+        const pasteGeneralPeopleBtn = document.getElementById('pasteGeneralPeopleBtn');
+        const pasteGeneralPeopleWindow = document.getElementById('pasteGeneralPeopleWindow');
+        const pasteGeneralPeopleData = document.getElementById('pasteGeneralPeopleData');
+        const applyPasteGeneralPeopleBtn = document.getElementById('applyPasteGeneralPeopleBtn');
+        const cancelPasteGeneralPeopleBtn = document.getElementById('cancelPasteGeneralPeopleBtn');
+        const allStoreTaxCbG = document.getElementById('allStoreTaxCbG');
+        const allMilkSwitch = document.getElementById('allMilkSwitch');
+        const generalTaxInfoBtn = document.getElementById('generalTaxInfoBtn');
+        const generalTaxInfoPopover = document.getElementById('generalTaxInfoPopover');
+        const payModeInfoBtn = document.getElementById('payModeInfoBtn');
+        const payModeInfoPopover = document.getElementById('payModeInfoPopover');
+
+        let appMode = 'general';
+        let itemsCache = [];
+        let housePeopleCache = null;
+        let generalPeopleCache = [];
+        let fixedPeopleCache = [];
+        let currentGeneralResult = null;
+
+        // ===== 物品名称：可搜索下拉（combobox） =====
+        let comboState = { input: null, row: null, items: [], active: 0, open: false };
+
+        function comboFilter(query) {
+            const q = String(query || '').trim().toLowerCase();
+            let list = getActiveTemplates().filter(t => !q || t.displayName.toLowerCase().includes(q));
+            if (q) {
+                list = list.slice().sort((a, b) => {
+                    const ap = a.displayName.toLowerCase().startsWith(q) ? 0 : 1;
+                    const bp = b.displayName.toLowerCase().startsWith(q) ? 0 : 1;
+                    return ap - bp;
+                });
+            }
+            return list;
+        }
+
+        function renderCombo() {
+            if (!comboState.items.length) {
+                comboList.innerHTML = '<div class="combo-empty">没有匹配的模板，将按自定义物品处理</div>';
+                return;
+            }
+            comboList.innerHTML = comboState.items.map((t, i) =>
+                `<div class="combo-item${i === comboState.active ? ' active' : ''}" data-idx="${i}">
+                    <span class="combo-name">${escapeHtml(t.displayName)}</span>
+                    <span class="combo-meta">${t.price > 0 ? t.price + ' 万' : '—'}${t.isPerUnit ? ' · 单价' : ''}</span>
+                </div>`).join('');
+            const activeEl = comboList.querySelector('.combo-item.active');
+            if (activeEl) {
+                const top = activeEl.offsetTop;
+                const bottom = top + activeEl.offsetHeight;
+                if (top < comboPanel.scrollTop) comboPanel.scrollTop = top;
+                else if (bottom > comboPanel.scrollTop + comboPanel.clientHeight) {
+                    comboPanel.scrollTop = bottom - comboPanel.clientHeight;
+                }
+            }
+        }
+
+        function positionCombo() {
+            if (!comboState.input) return;
+            const rect = comboState.input.getBoundingClientRect();
+            const width = Math.max(rect.width, 250);
+            let left = rect.left;
+            if (left + width > window.innerWidth - 10) left = Math.max(10, window.innerWidth - width - 10);
+            comboPanel.style.width = width + 'px';
+            comboPanel.style.left = left + 'px';
+            let top = rect.bottom + 4;
+            const panelHeight = Math.min(comboPanel.scrollHeight || 0, 262);
+            if (top + panelHeight > window.innerHeight - 10) {
+                top = Math.max(10, rect.top - panelHeight - 6);
+            }
+            comboPanel.style.top = top + 'px';
+        }
+
+        function openCombo(input, row, query) {
+            comboState.input = input;
+            comboState.row = row;
+            comboState.items = comboFilter(query);
+            comboState.active = 0;
+            comboState.open = true;
+            comboPanel.classList.add('show');
+            renderCombo();
+            positionCombo();
+        }
+
+        function closeCombo() {
+            comboState.open = false;
+            comboState.input = null;
+            comboState.row = null;
+            comboPanel.classList.remove('show');
+        }
+
+        function setComboActive(idx) {
+            if (!comboState.items.length) return;
+            comboState.active = (idx + comboState.items.length) % comboState.items.length;
+            renderCombo();
+        }
+
+        function chooseComboItem(idx) {
+            const tmpl = comboState.items[idx];
+            const input = comboState.input;
+            const row = comboState.row;
+            if (!tmpl || !input || !row) return;
+            input.value = tmpl.displayName;
+            row.dataset.templateName = tmpl.displayName;
+            const goldInput = row.querySelector('.item-gold-input');
+            if (goldInput) {
+                if (tmpl.price > 0) {
+                    goldInput.value = tmpl.price;
+                    goldInput.dataset.auto = '1';
+                } else {
+                    // 模板未定价（价格写 -）：金币留空，等用户自己填
+                    goldInput.value = '';
+                    delete goldInput.dataset.auto;
+                }
+            }
+            const perUnitCb = row.querySelector('.item-perunit-tax');
+            if (perUnitCb) perUnitCb.checked = tmpl.isPerUnit;
+            closeCombo();
+            updateItemTaxSilent(row);
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        }
+
+        // 输入的名称恰好等于某个模板名时，自动补全价格（仅当价格还是空的时候）
+        function autoFillFromName(row, input) {
+            const name = input.value.trim();
+            if (!name) return;
+            const tmpl = getActiveTemplates().find(t => t.displayName === name);
+            if (!tmpl) return;
+            const goldInput = row.querySelector('.item-gold-input');
+            if (!goldInput || goldInput.value) return;
+            if (tmpl.price <= 0) return;   // 模板未定价，不自动填
+            goldInput.value = tmpl.price;
+            goldInput.dataset.auto = '1';
+            row.dataset.templateName = tmpl.displayName;
+            const perUnitCb = row.querySelector('.item-perunit-tax');
+            if (perUnitCb) perUnitCb.checked = tmpl.isPerUnit;
+            updateItemTaxSilent(row);
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        }
+
+        comboList.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('.combo-item');
+            if (!item) return;
+            e.preventDefault();
+            chooseComboItem(parseInt(item.dataset.idx, 10));
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            if (!comboState.open) return;
+            if (comboPanel.contains(e.target)) return;
+            if (comboState.input === e.target) return;
+            closeCombo();
+        });
+
+        window.addEventListener('scroll', (e) => {
+            if (!comboState.open) return;
+            if (comboPanel.contains(e.target)) return;   // 面板自身滚动不算
+            closeCombo();
+        }, true);
+        window.addEventListener('resize', () => { if (comboState.open) closeCombo(); });
+
+        let currentGoldEarnings = [];
+        let currentRmbEarnings = [];
+        let currentWeights = [];
+        let currentPersonNames = [];
+        let currentItemDetails = [];
+        let currentStoreGoldTax = 0;
+        let currentTotalRmbTax = 0;
+        let currentUnionTax = 0;
+        let itemIndex = 0;
+        let hasRmbItems = false;
+        let goldRateValid = false;
+        let hasTaxableRmbItems = false;
+
+        function getTotalGoldIncome() {
+            let total = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const price = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                total += price * qty;
+            });
+            return total;
+        }
+
+        let calcTimeout = null;
+        function debounceCalculate() { clearTimeout(calcTimeout); calcTimeout = setTimeout(calculateDistribution, 100); }
+        function triggerAutoCalc() { debounceCalculate(); }
+
+        // ===== 结果表：人员名称可编辑 =====
+        function syncResultTableRows() {
+            const count = parseInt(countInput.value) || 1;
+            const existingRows = resultTableBody.querySelectorAll('tr');
+            const oldWeights = [];
+            const oldNames = [];
+            existingRows.forEach(row => {
+                const wInput = row.querySelector('.weight-input');
+                const nInput = row.querySelector('.person-name-input');
+                if (wInput) oldWeights.push(wInput.value);
+                if (nInput) oldNames.push(nInput.value);
+            });
+            resultTableBody.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const tr = document.createElement('tr');
+
+                // 人员名称（可编辑）
+                const nameTd = document.createElement('td');
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'person-name-input';
+                nameInput.value = (i < oldNames.length) ? oldNames[i] : `第${i+1}人`;
+                nameInput.placeholder = `第${i+1}人`;
+                nameInput.addEventListener('input', triggerAutoCalc);
+                nameTd.appendChild(nameInput);
+                tr.appendChild(nameTd);
+
+                // 权重
+                const weightTd = document.createElement('td');
+                const weightInput = document.createElement('input');
+                weightInput.type = 'number';
+                weightInput.className = 'weight-input';
+                weightInput.value = (i < oldWeights.length) ? oldWeights[i] : '1';
+                weightInput.step = 'any';
+                weightInput.min = '0';
+                weightInput.addEventListener('input', triggerAutoCalc);
+                weightTd.appendChild(weightInput);
+                tr.appendChild(weightTd);
+
+                // 金币
+                const goldTd = document.createElement('td');
+                goldTd.className = 'gold-cell';
+                goldTd.textContent = '0.00 万';
+                tr.appendChild(goldTd);
+
+                // 人民币
+                const rmbTd = document.createElement('td');
+                rmbTd.className = 'rmb-cell';
+                rmbTd.textContent = '0.00 元';
+                tr.appendChild(rmbTd);
+
+                // 删除
+                const delTd = document.createElement('td');
+                delTd.className = 'td-del-person';
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'icon-btn remove-person-btn';
+                delBtn.title = '删除该人员';
+                delBtn.innerHTML = iconSvg('trash', '#94a3b8', 15);
+                delBtn.addEventListener('click', () => {
+                    tr.remove();
+                    const remain = resultTableBody.querySelectorAll('tr').length;
+                    countInput.value = Math.max(1, remain);
+                    if (remain === 0) syncResultTableRows();
+                    triggerAutoCalc();
+                });
+                delTd.appendChild(delBtn);
+                tr.appendChild(delTd);
+
+                resultTableBody.appendChild(tr);
+            }
+            if (count > 0) { resultCard.style.display = 'block'; actionButtons.style.display = 'flex'; }
+            else { resultCard.style.display = 'none'; actionButtons.style.display = 'none'; }
+        }
+
+        countInput.addEventListener('input', () => { syncResultTableRows(); triggerAutoCalc(); });
+        goldRateInput.addEventListener('input', () => {
+            document.querySelectorAll('.item-row').forEach(row => updateItemTaxSilent(row));
+            triggerAutoCalc();
+        });
+        storeTaxModeSelect.addEventListener('change', () => {
+            document.querySelectorAll('.item-row').forEach(row => updateItemTaxSilent(row));
+            triggerAutoCalc();
+        });
+
+        // ===== 表头「全选」复选框：分别控制摆摊税、家族税、单价计税 =====
+        function syncHeaderCheckbox(headerCb, selector) {
+            if (!headerCb) return;
+            const cbs = Array.from(itemsContainer.querySelectorAll(selector));
+            if (cbs.length === 0) {
+                headerCb.checked = false;
+                headerCb.indeterminate = false;
+                headerCb.disabled = true;
+                headerCb.closest('th') && headerCb.closest('th').classList.add('disabled');
+                return;
+            }
+            headerCb.disabled = false;
+            headerCb.closest('th') && headerCb.closest('th').classList.remove('disabled');
+            const checkedCount = cbs.filter(cb => cb.checked).length;
+            headerCb.checked = checkedCount === cbs.length;
+            headerCb.indeterminate = checkedCount > 0 && checkedCount < cbs.length;
+        }
+
+        function syncTaxHeaderCheckboxes() {
+            if (appMode === 'general') {
+                syncHeaderCheckbox(allStoreTaxCbG, '.item-store-tax');
+                syncHeaderCheckbox(allPerUnitTaxCb, '.item-perunit-tax');
+                const milkBtns = Array.from(itemsContainer.querySelectorAll('.milk-switch'));
+                if (milkBtns.length === 0) {
+                    allMilkSwitch.dataset.milk = '0';
+                    allMilkSwitch.disabled = true;
+                } else {
+                    allMilkSwitch.disabled = false;
+                    const milkCount = milkBtns.filter(b => b.dataset.milk === '1').length;
+                    if (milkCount === 0) allMilkSwitch.dataset.milk = '0';
+                    else if (milkCount === milkBtns.length) allMilkSwitch.dataset.milk = '1';
+                    else allMilkSwitch.dataset.milk = 'mixed';
+                }
+            } else {
+                syncHeaderCheckbox(allStoreTaxCb, '.item-store-tax');
+                syncHeaderCheckbox(allUnionTaxCb, '.item-union-tax');
+                syncHeaderCheckbox(allPerUnitTaxCb, '.item-perunit-tax');
+            }
+            updateItemsMeta();
+        }
+
+        function updateItemsMeta() {
+            const rows = itemsContainer.querySelectorAll('.item-row');
+            if (itemsCount) itemsCount.textContent = rows.length + ' 项';
+            if (itemsEmpty) itemsEmpty.style.display = rows.length ? 'none' : 'block';
+        }
+
+        function setAllTaxBySelector(selector, checked) {
+            itemsContainer.querySelectorAll(selector).forEach(cb => { cb.checked = checked; });
+            itemsContainer.querySelectorAll('.item-row').forEach(row => updateItemTaxSilent(row));
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        }
+
+        function bindHeaderTaxCheckbox(headerCb, selector) {
+            if (!headerCb) return;
+            headerCb.addEventListener('change', () => setAllTaxBySelector(selector, headerCb.checked));
+        }
+        bindHeaderTaxCheckbox(allStoreTaxCb, '.item-store-tax');
+        bindHeaderTaxCheckbox(allUnionTaxCb, '.item-union-tax');
+        bindHeaderTaxCheckbox(allPerUnitTaxCb, '.item-perunit-tax');
+        bindHeaderTaxCheckbox(allStoreTaxCbG, '.item-store-tax');
+
+        // ===== 人员粘贴解析（支持「姓名」「姓名 权重」「纯权重」三种写法） =====
+        const WEIGHT_ONLY_RE = /^-?\d+(?:\.\d+)?$/;
+        const PEOPLE_HEADER_RE = /^(姓名|人员|名字|昵称|权重|分配人数|分配|name|weight)/i;
+
+        function parsePeopleText(raw) {
+            const text = String(raw == null ? '' : raw).replace(/\r/g, '');
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const entries = [];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // 跳过 Excel 表头行（「姓名 权重」之类）
+                if (entries.length === 0 && i === 0 && PEOPLE_HEADER_RE.test(line) && !/\d/.test(line)) continue;
+                const entry = parsePeopleLine(line);
+                if (entry) entries.push(entry);
+            }
+            return entries;
+        }
+
+        function parsePeopleLine(line) {
+            const t = line.trim();
+            if (!t) return null;
+            if (WEIGHT_ONLY_RE.test(t)) return { name: '', weight: parseFloat(t) };
+
+            // 行首序号：「1. 张三」「1、张三」「(1) 张三」「1 张三」
+            const seq = t.match(/^[（(\[【]?\s*(\d+)\s*[)）\]】.、:：]\s*(.+)$/) || t.match(/^(\d+)\s+(.+)$/);
+            if (seq) {
+                const rest = seq[2].trim();
+                if (rest && !WEIGHT_ONLY_RE.test(rest)) return parsePeopleLine(rest);
+            }
+
+            // 「姓名 权重」：分隔符可为空白、逗号、顿号、分号、冒号、等号、竖线
+            const m = t.match(/^(.+?)\s*(?:[,，、;；:：|=\t]\s*|\s+)(-?\d+(?:\.\d+)?)$/);
+            if (m) {
+                const name = cleanPersonName(m[1]);
+                if (name) return { name: name, weight: parseFloat(m[2]) };
+            }
+
+            return { name: cleanPersonName(t), weight: null };
+        }
+
+        function cleanPersonName(name) {
+            return String(name || '')
+                .replace(/[（(\[【]\s*\d+\s*[)）\]】]\s*$/, '')   // 去掉名字末尾的序号，如「张三(1)」
+                .replace(/^[□✓✔√\s]+/, '')
+                .trim();
+        }
+
+        // 应用解析结果：按行数自动调整人数，并写入姓名 / 权重
+        function applyPeopleEntries(entries) {
+            const rows = entries.filter(Boolean);
+            if (!rows.length) return false;
+            countInput.value = rows.length;
+            syncResultTableRows();
+            const nameInputs = resultTableBody.querySelectorAll('.person-name-input');
+            const weightInputs = resultTableBody.querySelectorAll('.weight-input');
+            const anyName = rows.some(r => r.name && r.name.trim());
+
+            rows.forEach((r, i) => {
+                if (nameInputs[i] && anyName) nameInputs[i].value = r.name || `第${i + 1}人`;
+                if (weightInputs[i] && r.weight !== null && r.weight !== undefined && !isNaN(r.weight)) {
+                    weightInputs[i].value = r.weight;
+                }
+            });
+            triggerAutoCalc();
+            resultCard.style.display = 'block';
+            actionButtons.style.display = 'flex';
+            return true;
+        }
+
+        function isTextInputTarget(el) {
+            if (!el) return false;
+            const tag = el.tagName;
+            if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
+            if (tag === 'INPUT') {
+                const type = (el.type || 'text').toLowerCase();
+                return ['checkbox', 'radio', 'button', 'submit', 'reset'].indexOf(type) === -1;
+            }
+            return !!el.isContentEditable;
+        }
+
+        document.addEventListener('paste', (e) => {
+            const clipboard = e.clipboardData || window.clipboardData;
+            const text = clipboard ? clipboard.getData('text') : '';
+            if (!text || !text.trim()) return;
+
+            const focused = document.activeElement;
+            const isMultiLine = /\r?\n/.test(text.trim());
+
+            // 在结果表的人员/权重输入框里粘贴多行 → 批量识别人员
+            if (focused && focused.closest && focused.closest('#resultTableBody') && isMultiLine) {
+                e.preventDefault();
+                const entries = parsePeopleText(text);
+                if (!looksLikePeopleBatch(entries)) { showPasteFeedback('未识别到人员数据', 'warn'); return; }
+                if (applyPeopleEntries(entries)) showPasteFeedback('人员已粘贴，人数已自动调整');
+                return;
+            }
+
+            // 其它输入框保持浏览器默认的单项粘贴
+            if (isTextInputTarget(focused)) return;
+
+            // 页面空白处粘贴 → 批量识别人员
+            e.preventDefault();
+            const entries = parsePeopleText(text);
+            if (!looksLikePeopleBatch(entries)) { showPasteFeedback('未识别到人员数据', 'warn'); return; }
+            if (applyPeopleEntries(entries)) showPasteFeedback('人员已粘贴，人数已自动调整');
+        });
+
+        let feedbackTimeout;
+        function resetPasteHint() {
+            const hint = document.getElementById('pasteHint');
+            hint.innerHTML = iconSvg('zap', '#636e72', 15) + ' 粘贴人员：点击空白处按 <kbd>Ctrl+V</kbd>，或点「一键粘贴人员」';
+            hint.style.color = '';
+        }
+        function showPasteFeedback(msg, kind) {
+            const hint = document.getElementById('pasteHint');
+            const icon = kind === 'warn' ? iconSvg('alert', '#b45309', 15) : iconSvg('check', '#16a34a', 15);
+            hint.innerHTML = icon + ' ' + (msg || '人员已粘贴');
+            hint.style.color = kind === 'warn' ? '#b45309' : 'var(--primary)';
+            if (feedbackTimeout) clearTimeout(feedbackTimeout);
+            feedbackTimeout = setTimeout(resetPasteHint, 2000);
+        }
+
+        // 判断一批解析结果是否像「人员名单」，避免误粘贴整段文字覆盖人员
+        function looksLikePeopleBatch(entries) {
+            if (!entries || !entries.length || entries.length > 100) return false;
+            return entries.every(e => {
+                if (e.weight !== null && (!isFinite(e.weight) || e.weight < 0)) return false;
+                return (e.name || '').length <= 24;
+            });
+        }
+
+        // 一键粘贴人员弹窗（不读剪贴板，避免浏览器权限弹窗，直接手动粘贴）
+        pastePeopleBtn.addEventListener('click', () => {
+            pastePeopleData.value = '';
+            pastePeopleWindow.classList.add('show');
+            setTimeout(() => pastePeopleData.focus(), 60);
+        });
+        cancelPastePeopleBtn.addEventListener('click', () => pastePeopleWindow.classList.remove('show'));
+        applyPastePeopleBtn.addEventListener('click', () => {
+            const entries = parsePeopleText(pastePeopleData.value);
+            if (!entries.length) { alert('没有识别到人员数据，请检查每行格式（姓名 或 姓名 权重）'); return; }
+            applyPeopleEntries(entries);
+            pastePeopleWindow.classList.remove('show');
+            showPasteFeedback('人员已粘贴，人数已自动调整');
+        });
+        pastePeopleData.addEventListener('paste', (ev) => {
+            const clipboard = ev.clipboardData || window.clipboardData;
+            const text = clipboard ? clipboard.getData('text') : '';
+            if (!text || !text.trim()) return;
+            const entries = parsePeopleText(text);
+            if (!looksLikePeopleBatch(entries)) return;   // 不像人员数据则保留默认粘贴，交由用户确认
+            ev.preventDefault();
+            applyPeopleEntries(entries);
+            pastePeopleWindow.classList.remove('show');
+            showPasteFeedback('人员已粘贴，人数已自动调整');
+        });
+
+        function getStoreTaxMultiplier() {
+            const mode = storeTaxModeSelect.value;
+            if (mode === 'off') return 0;
+            if (mode === 'double') return 2;
+            return 1;
+        }
+
+        // 物品行：摆摊税开关
+        function isStoreTaxEnabled(row) {
+            const cb = row.querySelector('.item-store-tax');
+            return cb ? cb.checked : true;
+        }
+        // 物品行：家族税开关
+        function isUnionTaxEnabled(row) {
+            const cb = row.querySelector('.item-union-tax');
+            return cb ? cb.checked : false;
+        }
+        // 物品行：单价计税开关
+        function isPerUnitTaxEnabled(row) {
+            const cb = row.querySelector('.item-perunit-tax');
+            return cb ? cb.checked : false;
+        }
+
+        function calcItemUnionTax(goldPrice, qty, isPerUnit) {
+            if (isPerUnit) {
+                const rate = getTaxRateByAmount(goldPrice);
+                return { tax: goldPrice * rate / 100 * qty, rate };
+            } else {
+                const total = goldPrice * qty;
+                const rate = getTaxRateByAmount(total);
+                return { tax: total * rate / 100, rate };
+            }
+        }
+
+        function updateItemTaxSilent(row) {
+            const goldPrice = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+            const rmbPrice = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+            const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+            const goldRate = parseFloat(goldRateInput.value) || 0;
+            const isPerUnit = isPerUnitTaxEnabled(row);
+            const mult = getStoreTaxMultiplier();
+            const storeEnabled = isStoreTaxEnabled(row);
+            const unionEnabled = isUnionTaxEnabled(row);
+
+            let goldTax = 0, goldTaxRate = 0;
+            let rmbTax = 0, rmbTaxInGold = 0, rmbTaxRate = 0;
+            let unionTax = 0, unionTaxRate = 0;
+
+            // 摆摊税（金税）+ R税
+            if (storeEnabled) {
+                if (isPerUnit) {
+                    goldTaxRate = getTaxRateByAmount(goldPrice) * mult;
+                    goldTax = goldPrice * goldTaxRate / 100 * qty;
+                } else {
+                    const totalGold = goldPrice * qty;
+                    goldTaxRate = getTaxRateByAmount(totalGold) * mult;
+                    goldTax = totalGold * goldTaxRate / 100;
+                }
+
+                // R税：仅家务模式计算（需摆摊税 + 家族税 + 金价）；通用模式人民币不扣税
+                if (appMode === 'house' && unionEnabled && goldRate > 0 && rmbPrice > 0) {
+                    if (isPerUnit) {
+                        const equiv = rmbPrice * goldRate;
+                        rmbTaxRate = getTaxRateByAmount(equiv) * mult;
+                        rmbTax = rmbPrice * rmbTaxRate / 100 * qty;
+                        rmbTaxInGold = rmbTax * goldRate;
+                    } else {
+                        const totalRmb = rmbPrice * qty;
+                        const equiv = totalRmb * goldRate;
+                        rmbTaxRate = getTaxRateByAmount(equiv) * mult;
+                        rmbTax = totalRmb * rmbTaxRate / 100;
+                        rmbTaxInGold = rmbTax * goldRate;
+                    }
+                }
+            }
+
+            // 家族税
+            if (unionEnabled) {
+                const unionResult = calcItemUnionTax(goldPrice, qty, isPerUnit);
+                unionTax = unionResult.tax;
+                unionTaxRate = unionResult.rate;
+            }
+
+            row.querySelector('.gold-tax').textContent = `金税 ${goldTax.toFixed(2)}万 (${goldTaxRate}%)`;
+            const rmbTaxOn = appMode === 'house' && storeEnabled && unionEnabled;
+            if (rmbPrice > 0 && rmbTaxOn) {
+                if (goldRate > 0) row.querySelector('.rmb-tax').textContent = `R税 ${rmbTax.toFixed(2)}元 (${rmbTaxRate}%, ≈${formatGoldWan(rmbTaxInGold)}金)`;
+                else row.querySelector('.rmb-tax').textContent = `R税（需金价）`;
+            } else {
+                row.querySelector('.rmb-tax').textContent = `R税 0元`;
+            }
+            const unionEl = row.querySelector('.union-tax');
+            if (unionEl) unionEl.textContent = `家族税 ${unionTax.toFixed(2)}万 (${unionTaxRate}%)`;
+        }
+
+        function createItemRow(index, templateName = '', name = '', goldPrice = '', rmbPrice = '', quantity = '1', isPerUnit = false) {
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.dataset.index = index;
+            const initialName = name || '';
+            row.innerHTML = `
+                <td class="td-name">
+                    <div class="combo">
+                        <input type="text" class="item-name-input" placeholder="输入或选择物品" autocomplete="off" spellcheck="false" value="${escapeHtml(initialName)}">
+                        <span class="combo-arrow">${iconSvg('chevronDown', '#94a3b8', 14)}</span>
+                    </div>
+                </td>
+                <td><input type="number" class="item-quantity-input" placeholder="1" min="1" step="1" value="${quantity}"></td>
+                <td><input type="number" class="item-gold-input" placeholder="—" step="any" min="0" value="${goldPrice}"></td>
+                <td><input type="number" class="item-rmb-input" placeholder="—" step="any" min="0" value="${rmbPrice}"></td>
+                <td class="td-check"><input type="checkbox" class="item-store-tax" checked title="摆摊税"></td>
+                <td class="td-check"><input type="checkbox" class="item-union-tax" title="家族税"></td>
+                <td class="td-check"><input type="checkbox" class="item-perunit-tax"${isPerUnit ? ' checked' : ''} title="单价计税"></td>
+                <td class="td-calc">
+                    <div class="tax-lines">
+                        <span class="gold-tax">金税 0万</span>
+                        <span class="union-tax">家族税 0万</span>
+                        <span class="rmb-tax">R税 0元</span>
+                    </div>
+                </td>
+                <td class="td-del"><button class="icon-btn remove-item-btn" type="button" title="删除该物品">${iconSvg('trash', '#94a3b8', 15)}</button></td>`;
+            const nameInput = row.querySelector('.item-name-input');
+            const goldInput = row.querySelector('.item-gold-input');
+            const rmbInput = row.querySelector('.item-rmb-input');
+            const qtyInput = row.querySelector('.item-quantity-input');
+            const storeTaxCheckbox = row.querySelector('.item-store-tax');
+            const unionTaxCheckbox = row.querySelector('.item-union-tax');
+            const perUnitTaxCheckbox = row.querySelector('.item-perunit-tax');
+
+            storeTaxCheckbox.addEventListener('change', () => {
+                updateItemTaxSilent(row);
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+            unionTaxCheckbox.addEventListener('change', () => {
+                updateItemTaxSilent(row);
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+            perUnitTaxCheckbox.addEventListener('change', () => {
+                updateItemTaxSilent(row);
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+
+            // 名称输入：聚焦展开全部模板，输入即过滤；方向键换选，回车 / 点击选中
+            nameInput.addEventListener('focus', () => {
+                const current = nameInput.value.trim();
+                const isTemplateName = getActiveTemplates().some(t => t.displayName === current);
+                openCombo(nameInput, row, isTemplateName ? '' : current);
+            });
+            // 已经聚焦时再点一下输入框，也重新展开模板列表（方便换模板）
+            nameInput.addEventListener('click', () => {
+                if (!comboState.open || comboState.input !== nameInput) {
+                    const current = nameInput.value.trim();
+                    const isTemplateName = getActiveTemplates().some(t => t.displayName === current);
+                    openCombo(nameInput, row, isTemplateName ? '' : current);
+                }
+            });
+            nameInput.addEventListener('input', () => {
+                // 名称从模板改成别的（自定义）时，清掉由模板自动带出的价格
+                if (goldInput.dataset.auto === '1' && row.dataset.templateName && nameInput.value !== row.dataset.templateName) {
+                    goldInput.value = '';
+                    delete goldInput.dataset.auto;
+                    delete row.dataset.templateName;
+                }
+                openCombo(nameInput, row, nameInput.value);
+                updateItemTaxSilent(row);
+                triggerAutoCalc();
+            });
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!comboState.open || comboState.input !== nameInput) {
+                        openCombo(nameInput, row, nameInput.value);
+                        return;
+                    }
+                    setComboActive(comboState.active + (e.key === 'ArrowDown' ? 1 : -1));
+                } else if (e.key === 'Enter') {
+                    if (comboState.open && comboState.input === nameInput) {
+                        e.preventDefault();
+                        if (comboState.items.length) chooseComboItem(comboState.active);
+                        else closeCombo();
+                    }
+                } else if (e.key === 'Escape') {
+                    closeCombo();
+                } else if (e.key === 'Tab') {
+                    closeCombo();
+                }
+            });
+            nameInput.addEventListener('blur', () => {
+                setTimeout(() => { if (comboState.input === nameInput) closeCombo(); }, 150);
+                autoFillFromName(row, nameInput);
+            });
+
+            goldInput.addEventListener('input', () => {
+                delete goldInput.dataset.auto;
+                updateItemTaxSilent(row);
+                triggerAutoCalc();
+            });
+            rmbInput.addEventListener('input', () => { updateItemTaxSilent(row); triggerAutoCalc(); });
+            qtyInput.addEventListener('input', () => { updateItemTaxSilent(row); triggerAutoCalc(); });
+            row.querySelector('.remove-item-btn').addEventListener('click', () => {
+                row.remove();
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+            updateItemTaxSilent(row);
+            return row;
+        }
+
+        function getStoreGoldTaxTotal() {
+            let total = 0;
+            const mult = getStoreTaxMultiplier();
+            document.querySelectorAll('.item-row').forEach(row => {
+                if (!isStoreTaxEnabled(row)) return;
+                const price = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                const isPerUnit = isPerUnitTaxEnabled(row);
+                if (isPerUnit) total += price * (getTaxRateByAmount(price) * mult) / 100 * qty;
+                else total += (price * qty) * (getTaxRateByAmount(price * qty) * mult) / 100;
+            });
+            return total;
+        }
+
+        function getTotalRmbTax(goldRate) {
+            if (!goldRate || goldRate <= 0) return 0;
+            const mult = getStoreTaxMultiplier();
+            let total = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                if (!isStoreTaxEnabled(row) || !isUnionTaxEnabled(row)) return;
+                const price = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                const isPerUnit = isPerUnitTaxEnabled(row);
+                if (price <= 0) return;
+                if (isPerUnit) {
+                    const equiv = price * goldRate;
+                    const rate = getTaxRateByAmount(equiv) * mult;
+                    total += price * rate / 100 * qty;
+                } else {
+                    const totalRmb = price * qty;
+                    const equiv = totalRmb * goldRate;
+                    total += totalRmb * (getTaxRateByAmount(equiv) * mult) / 100;
+                }
+            });
+            return total;
+        }
+
+        function collectItemDetails() {
+            const details = [];
+            const goldRate = parseFloat(goldRateInput.value) || 0;
+            const mult = getStoreTaxMultiplier();
+            document.querySelectorAll('.item-row').forEach(row => {
+                const name = (row.querySelector('.item-name-input').value || '').trim() || '未命名';
+                const price = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const rmbPrice = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                const isPerUnit = isPerUnitTaxEnabled(row);
+                const totalGold = price * qty;
+                const totalRmb = rmbPrice * qty;
+                const storeEnabled = isStoreTaxEnabled(row);
+                const unionEnabled = isUnionTaxEnabled(row);
+
+                let goldTax = 0, goldTaxRate = 0;
+                let rmbTax = 0, rmbTaxInGold = 0, rmbTaxRate = 0;
+                let unionTax = 0, unionTaxRate = 0;
+
+                if (storeEnabled) {
+                    if (isPerUnit) {
+                        goldTaxRate = getTaxRateByAmount(price) * mult;
+                        goldTax = price * goldTaxRate / 100 * qty;
+                    } else {
+                        goldTaxRate = getTaxRateByAmount(totalGold) * mult;
+                        goldTax = totalGold * goldTaxRate / 100;
+                    }
+
+                    if (unionEnabled && goldRate > 0 && rmbPrice > 0) {
+                        if (isPerUnit) {
+                            const equiv = rmbPrice * goldRate;
+                            rmbTaxRate = getTaxRateByAmount(equiv) * mult;
+                            rmbTax = rmbPrice * rmbTaxRate / 100 * qty;
+                            rmbTaxInGold = rmbTax * goldRate;
+                        } else {
+                            const equiv = totalRmb * goldRate;
+                            rmbTaxRate = getTaxRateByAmount(equiv) * mult;
+                            rmbTax = totalRmb * rmbTaxRate / 100;
+                            rmbTaxInGold = rmbTax * goldRate;
+                        }
+                    }
+                }
+
+                if (unionEnabled) {
+                    const unionResult = calcItemUnionTax(price, qty, isPerUnit);
+                    unionTax = unionResult.tax;
+                    unionTaxRate = unionResult.rate;
+                }
+
+                details.push({
+                    name, totalGold, totalRmb, goldTax, goldTaxRate,
+                    rmbTax, rmbTaxRate, rmbTaxInGold,
+                    unionTax, unionTaxRate,
+                    qty, isPerUnit, itemIndex: parseInt(row.dataset.index),
+                    storeEnabled, unionEnabled
+                });
+            });
+
+            const templateOrder = {};
+            getActiveTemplates().forEach((tmpl, idx) => { templateOrder[tmpl.displayName] = idx; });
+            details.sort((a, b) => {
+                const idxA = templateOrder[a.name] ?? 9999;
+                const idxB = templateOrder[b.name] ?? 9999;
+                return idxA - idxB;
+            });
+            return details;
+        }
+
+        function refreshAllItemTaxDisplay() {
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach(row => {
+                const idx = parseInt(row.dataset.index);
+                const detail = currentItemDetails.find(d => d.itemIndex === idx);
+                if (detail) {
+                    row.querySelector('.gold-tax').textContent = `金税 ${detail.goldTax.toFixed(2)}万 (${detail.goldTaxRate}%)`;
+                    const unionEl2 = row.querySelector('.union-tax');
+                    if (unionEl2) unionEl2.textContent = `家族税 ${detail.unionTax.toFixed(2)}万 (${detail.unionTaxRate}%)`;
+                    if (detail.rmbTax > 0) {
+                        row.querySelector('.rmb-tax').textContent = `R税 ${detail.rmbTax.toFixed(2)}元 (${detail.rmbTaxRate}%, ≈${formatGoldWan(detail.rmbTaxInGold)}金)`;
+                    } else {
+                        row.querySelector('.rmb-tax').textContent = 'R税 0元';
+                    }
+                }
+            });
+        }
+
+        function addItem(templateName = '', name = '', goldPrice = '', rmbPrice = '', quantity = '1', isPerUnit = false) {
+            if (appMode === 'general') {
+                const row = createGeneralItemRow({
+                    name: name, qty: quantity || '1', gold: goldPrice, rmb: rmbPrice,
+                    storeTax: true, perUnit: isPerUnit, milk: false, templateName: templateName
+                });
+                itemsContainer.appendChild(row);
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+                return;
+            }
+            const row = createItemRow(itemIndex++, templateName, name, goldPrice, rmbPrice, quantity, isPerUnit);
+            itemsContainer.appendChild(row);
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        }
+
+        function clearAllItems() {
+            itemsContainer.innerHTML = '';
+            itemIndex = 0;
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        }
+
+        function calculateDistribution() {
+            if (appMode === 'general') { calculateGeneral(); return; }
+            const totalGold = getTotalGoldIncome();
+            const goldRate = parseFloat(goldRateInput.value) || 0;
+            let itemsRmbTotal = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const price = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                itemsRmbTotal += price * qty;
+            });
+
+            // 判断是否有需要R税的物品（摆摊税 + 家族税均开启）
+            hasTaxableRmbItems = false;
+            document.querySelectorAll('.item-row').forEach(row => {
+                if (isStoreTaxEnabled(row) && isUnionTaxEnabled(row)) {
+                    const rmbPrice = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                    const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                    if (rmbPrice * qty > 0) hasTaxableRmbItems = true;
+                }
+            });
+
+            hasRmbItems = itemsRmbTotal > 0;
+            goldRateValid = goldRate > 0;
+
+            if (hasTaxableRmbItems && !goldRateValid) {
+                taxChips.innerHTML = `<div class="tax-chip warning">${iconSvg('alert', '#b91c1c', 15)}<span>请填写金价比例</span><span class="chip-value">——</span></div>`;
+                resultCard.style.display = 'block'; actionButtons.style.display = 'flex';
+                document.querySelectorAll('.gold-cell').forEach(cell => cell.textContent = '——');
+                document.querySelectorAll('.rmb-cell').forEach(cell => cell.textContent = '——');
+                document.querySelectorAll('.union-tax').forEach(span => span.textContent = '家族税 0万');
+                return;
+            }
+
+            const goldTaxTotal = getStoreGoldTaxTotal();
+            const totalRmbTax = getTotalRmbTax(goldRate);
+
+            currentItemDetails = collectItemDetails();
+            const unionTaxTotal = currentItemDetails.reduce((sum, d) => sum + d.unionTax, 0);
+            const netGold = totalGold - goldTaxTotal - unionTaxTotal;
+            const netRmb = itemsRmbTotal - totalRmbTax;
+
+            const weightInputs = resultTableBody.querySelectorAll('.weight-input');
+            if (weightInputs.length === 0) { resultCard.style.display = 'none'; actionButtons.style.display = 'none'; return; }
+            const weights = [];
+            for (let input of weightInputs) { const w = parseFloat(input.value) || 0; if (w < 0) return; weights.push(w); }
+            const totalWeight = weights.reduce((s, w) => s + w, 0);
+            if (totalWeight === 0) { resultCard.style.display = 'none'; actionButtons.style.display = 'none'; return; }
+
+            // 收集人员名称
+            const nameInputs = resultTableBody.querySelectorAll('.person-name-input');
+            currentPersonNames = Array.from(nameInputs).map((inp, i) => {
+                const v = (inp.value || '').trim();
+                return v || `第${i+1}人`;
+            });
+
+            currentWeights = weights;
+            currentGoldEarnings = weights.map(w => (netGold * w) / totalWeight);
+            currentRmbEarnings = weights.map(w => (netRmb * w) / totalWeight);
+            currentStoreGoldTax = goldTaxTotal;
+            currentTotalRmbTax = totalRmbTax;
+            currentUnionTax = unionTaxTotal;
+
+            refreshAllItemTaxDisplay();
+
+            taxChips.innerHTML = `
+                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>金币摆摊税</span><span class="chip-value">${goldTaxTotal.toFixed(2)} 万</span></div>
+                <div class="tax-chip">${iconSvg('chart', '#b45309', 15)}<span>R税</span><span class="chip-value">${totalRmbTax.toFixed(2)} 元</span></div>
+                <div class="tax-chip">${iconSvg('building', '#b45309', 15)}<span>家族税合计</span><span class="chip-value">${unionTaxTotal.toFixed(2)} 万</span></div>
+                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${netGold.toFixed(2)} 万</span></div>
+                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${netRmb.toFixed(2)} 元</span></div>`;
+
+            const goldCells = resultTableBody.querySelectorAll('.gold-cell');
+            const rmbCells = resultTableBody.querySelectorAll('.rmb-cell');
+            for (let i = 0; i < weights.length; i++) {
+                if (goldCells[i]) goldCells[i].textContent = `${currentGoldEarnings[i].toFixed(2)} 万`;
+                if (rmbCells[i]) rmbCells[i].textContent = `${currentRmbEarnings[i].toFixed(2)} 元`;
+            }
+
+            resultCard.style.display = 'block';
+            actionButtons.style.display = 'flex';
+        }
+
+        // 税费说明浮窗
+        function toggleTaxInfo() {
+            if (taxInfoPopover.classList.contains('show')) {
+                taxInfoPopover.classList.remove('show');
+                return;
+            }
+            taxInfoPopover.classList.remove('up');
+            taxInfoPopover.style.maxHeight = '';
+            taxInfoPopover.classList.add('show');
+            const btnRect = taxInfoBtn.getBoundingClientRect();
+            const panelHeight = taxInfoPopover.offsetHeight;
+            const spaceBelow = window.innerHeight - btnRect.bottom - 16;
+            const spaceAbove = btnRect.top - 16;
+            const up = panelHeight > spaceBelow && spaceAbove > spaceBelow;
+            if (up) taxInfoPopover.classList.add('up');
+            const available = Math.max(220, up ? spaceAbove : spaceBelow);
+            if (panelHeight > available) taxInfoPopover.style.maxHeight = available + 'px';
+        }
+        taxInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTaxInfo();
+        });
+        document.addEventListener('click', (e) => {
+            if (!taxInfoPopover.classList.contains('show')) return;
+            if (taxInfoPopover.contains(e.target) || taxInfoBtn.contains(e.target)) return;
+            taxInfoPopover.classList.remove('show');
+        });
+
+        // ===== 通用模式：物品行 =====
+        function createGeneralItemRow(data = {}) {
+            const row = document.createElement('tr');
+            row.className = 'item-row';
+            row.dataset.index = itemIndex++;
+            row.dataset.templateName = data.templateName || '';
+            row.innerHTML = `
+                <td class="td-name">
+                    <div class="combo">
+                        <input type="text" class="item-name-input" placeholder="输入或选择物品" autocomplete="off" spellcheck="false" value="${escapeHtml(data.name || '')}">
+                        <span class="combo-arrow">${iconSvg('chevronDown', '#94a3b8', 14)}</span>
+                    </div>
+                </td>
+                <td><input type="number" class="item-quantity-input" placeholder="1" min="1" step="1" value="${data.qty || '1'}"></td>
+                <td><input type="number" class="item-gold-input" placeholder="—" step="any" min="0" value="${data.gold || ''}"></td>
+                <td><input type="number" class="item-rmb-input" placeholder="—" step="any" min="0" value="${data.rmb || ''}"></td>
+                <td class="td-check td-milk">
+                    <button type="button" class="milk-switch" data-milk="${data.milk ? '1' : '0'}" title="点击切换：均分 / 奶补">
+                        <span class="milk-opt milk-general">均分</span>
+                        <span class="milk-opt milk-milk">奶补</span>
+                    </button>
+                </td>
+                <td class="td-check"><input type="checkbox" class="item-store-tax" ${data.storeTax !== false ? 'checked' : ''} title="摆摊税"></td>
+                <td class="td-check"><input type="checkbox" class="item-perunit-tax" ${data.perUnit ? 'checked' : ''} title="单价计税"></td>
+                <td class="td-calc">
+                    <div class="tax-lines">
+                        <span class="gold-tax">金税 0万</span>
+                        <span class="rmb-tax">R税 0元</span>
+                    </div>
+                </td>
+                <td class="td-del"><button class="icon-btn remove-item-btn" type="button" title="删除该物品">${iconSvg('trash', '#94a3b8', 15)}</button></td>`;
+            bindGeneralItemRowEvents(row);
+            updateItemTaxSilent(row);
+            return row;
+        }
+
+        function bindGeneralItemRowEvents(row) {
+            const nameInput = row.querySelector('.item-name-input');
+            const goldInput = row.querySelector('.item-gold-input');
+            const rmbInput = row.querySelector('.item-rmb-input');
+            const qtyInput = row.querySelector('.item-quantity-input');
+            const storeCb = row.querySelector('.item-store-tax');
+            const perUnitCb = row.querySelector('.item-perunit-tax');
+            const milkBtn = row.querySelector('.milk-switch');
+
+            storeCb.addEventListener('change', () => { updateItemTaxSilent(row); syncTaxHeaderCheckboxes(); triggerAutoCalc(); });
+            perUnitCb.addEventListener('change', () => { updateItemTaxSilent(row); syncTaxHeaderCheckboxes(); triggerAutoCalc(); });
+            milkBtn.addEventListener('click', () => {
+                milkBtn.dataset.milk = milkBtn.dataset.milk === '1' ? '0' : '1';
+                updateItemTaxSilent(row);
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+
+            nameInput.addEventListener('focus', () => {
+                const current = nameInput.value.trim();
+                const isTemplateName = getActiveTemplates().some(t => t.displayName === current);
+                openCombo(nameInput, row, isTemplateName ? '' : current);
+            });
+            nameInput.addEventListener('click', () => {
+                if (!comboState.open || comboState.input !== nameInput) {
+                    const current = nameInput.value.trim();
+                    const isTemplateName = getActiveTemplates().some(t => t.displayName === current);
+                    openCombo(nameInput, row, isTemplateName ? '' : current);
+                }
+            });
+            nameInput.addEventListener('input', () => {
+                if (goldInput.dataset.auto === '1' && row.dataset.templateName && nameInput.value !== row.dataset.templateName) {
+                    goldInput.value = '';
+                    delete goldInput.dataset.auto;
+                    delete row.dataset.templateName;
+                }
+                openCombo(nameInput, row, nameInput.value);
+                updateItemTaxSilent(row);
+                triggerAutoCalc();
+            });
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!comboState.open || comboState.input !== nameInput) { openCombo(nameInput, row, nameInput.value); return; }
+                    setComboActive(comboState.active + (e.key === 'ArrowDown' ? 1 : -1));
+                } else if (e.key === 'Enter') {
+                    if (comboState.open && comboState.input === nameInput) {
+                        e.preventDefault();
+                        if (comboState.items.length) chooseComboItem(comboState.active);
+                        else closeCombo();
+                    }
+                } else if (e.key === 'Escape') { closeCombo(); }
+                else if (e.key === 'Tab') { closeCombo(); }
+            });
+            nameInput.addEventListener('blur', () => {
+                setTimeout(() => { if (comboState.input === nameInput) closeCombo(); }, 150);
+                autoFillFromName(row, nameInput);
+            });
+            goldInput.addEventListener('input', () => { delete goldInput.dataset.auto; updateItemTaxSilent(row); triggerAutoCalc(); });
+            rmbInput.addEventListener('input', () => { updateItemTaxSilent(row); triggerAutoCalc(); });
+            qtyInput.addEventListener('input', () => { updateItemTaxSilent(row); triggerAutoCalc(); });
+            row.querySelector('.remove-item-btn').addEventListener('click', () => {
+                row.remove();
+                syncTaxHeaderCheckboxes();
+                triggerAutoCalc();
+            });
+        }
+
+        // ===== 通用模式：人员表 =====
+        function createGeneralPersonRow(data = {}) {
+            const tr = document.createElement('tr');
+            tr.className = 'g-person-row';
+            const jobValue = GENERAL_JOBS.includes(data.job) ? data.job : '主教';
+            tr.dataset.team = parseInt(data.team) || 1;
+            tr.dataset.leader = data.leader ? '1' : '0';
+            tr.innerHTML = `
+                <td class="g-team-cell">└</td>
+                <td class="td-job">
+                    <select class="g-job-select">${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
+                </td>
+                <td><input type="text" class="g-name-input" placeholder="姓名" value="${escapeHtml(data.name || '')}"></td>
+                <td><input type="number" class="g-weight-input" min="0" step="any" value="${data.weight || '1'}"></td>
+                <td class="g-gold-cell">0.00</td>
+                <td class="g-rmb-cell">0.00</td>
+                <td><button type="button" class="icon-btn remove-g-person" title="删除该人员">${iconSvg('trash', '#94a3b8', 15)}</button></td>`;
+            tr.querySelector('.g-job-select').addEventListener('change', calculateGeneral);
+            tr.querySelector('.g-name-input').addEventListener('input', calculateGeneral);
+            tr.querySelector('.g-weight-input').addEventListener('input', calculateGeneral);
+            tr.querySelector('.remove-g-person').addEventListener('click', () => {
+                tr.remove();
+                normalizeTeamData();
+                arrangeTeamRows();
+                calculateGeneral();
+            });
+            return tr;
+        }
+
+        function renderTeamCell() { /* 队伍信息直接显示在队长行 */ }
+
+        function normalizeTeamData() {
+            const rows = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row'));
+            const teams = {};
+            rows.forEach(tr => {
+                const t = parseInt(tr.dataset.team) || 1;
+                (teams[t] = teams[t] || []).push(tr);
+            });
+            Object.keys(teams).forEach(t => {
+                const members = teams[t];
+                if (!members.some(tr => tr.dataset.leader === '1')) members[0].dataset.leader = '1';
+            });
+        }
+
+        function arrangeTeamRows() {
+            const rows = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row'));
+            const groups = {};
+            const order = [];
+            rows.forEach(tr => {
+                const t = parseInt(tr.dataset.team) || 1;
+                if (!groups[t]) { groups[t] = []; order.push(t); }
+                groups[t].push(tr);
+            });
+            generalPeopleBody.innerHTML = '';
+            order.forEach(t => {
+                const members = groups[t];
+                const leader = members.find(tr => tr.dataset.leader === '1');
+                if (leader) generalPeopleBody.appendChild(leader);
+                members.forEach(tr => { if (tr !== leader) generalPeopleBody.appendChild(tr); });
+            });
+        }
+
+        function createFixedPersonRow(data = {}) {
+            const tr = document.createElement('tr');
+            const jobValue = GENERAL_JOBS.includes(data.job) ? data.job : '黑骑士';
+            tr.innerHTML = `
+                <td class="td-job">
+                    <select class="f-job-select">${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
+                </td>
+                <td><input type="text" class="f-name-input" placeholder="姓名" value="${escapeHtml(data.name || '')}"></td>
+                <td><input type="number" class="f-gold-input" step="any" min="0" placeholder="—" value="${data.gold || ''}"></td>
+                <td><input type="number" class="f-rmb-input" step="any" min="0" placeholder="—" value="${data.rmb || ''}"></td>
+                <td><input type="text" class="f-note-input" placeholder="备注" value="${escapeHtml(data.note || '')}"></td>
+                <td><button type="button" class="icon-btn remove-f-person" title="删除该人员">${iconSvg('trash', '#94a3b8', 15)}</button></td>`;
+            tr.querySelector('.f-job-select').addEventListener('change', calculateGeneral);
+            tr.querySelector('.f-name-input').addEventListener('input', calculateGeneral);
+            tr.querySelector('.f-gold-input').addEventListener('input', calculateGeneral);
+            tr.querySelector('.f-rmb-input').addEventListener('input', calculateGeneral);
+            tr.querySelector('.remove-f-person').addEventListener('click', () => { tr.remove(); calculateGeneral(); });
+            return tr;
+        }
+
+        function rebuildGeneralPeople() {
+            generalPeopleBody.innerHTML = '';
+            (generalPeopleCache || []).forEach(p => generalPeopleBody.appendChild(createGeneralPersonRow(p)));
+            fixedPeopleBody.innerHTML = '';
+            (fixedPeopleCache || []).forEach(p => fixedPeopleBody.appendChild(createFixedPersonRow(p)));
+            normalizeTeamData();
+            arrangeTeamRows();
+        }
+
+        // ===== 通用模式：计算 =====
+        function calculateGeneral() {
+            if (appMode !== 'general') return;
+            const mult = getStoreTaxMultiplier();
+            const rows = Array.from(itemsContainer.querySelectorAll('.item-row'));
+
+            let totalGold = 0, totalRmb = 0;
+            let goldTaxTotal = 0;
+            let generalGold = 0, generalRmb = 0, milkGold = 0, milkRmb = 0;
+
+            rows.forEach(row => {
+                const price = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const rmbPrice = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                const qty = parseInt(row.querySelector('.item-quantity-input').value) || 1;
+                const isPerUnit = isPerUnitTaxEnabled(row);
+                const storeOn = isStoreTaxEnabled(row);
+                const milk = row.querySelector('.milk-switch').dataset.milk === '1';
+
+                // 通用模式：只有金币扣摆摊税，人民币不扣任何税
+                let goldTax = 0;
+                if (storeOn) {
+                    if (isPerUnit) {
+                        goldTax = price * (getTaxRateByAmount(price) * mult) / 100 * qty;
+                    } else {
+                        const total = price * qty;
+                        goldTax = total * (getTaxRateByAmount(total) * mult) / 100;
+                    }
+                }
+
+                totalGold += price * qty;
+                totalRmb += rmbPrice * qty;
+                goldTaxTotal += goldTax;
+
+                const netG = price * qty - goldTax;
+                const netR = rmbPrice * qty;
+                if (milk) { milkGold += netG; milkRmb += netR; }
+                else { generalGold += netG; generalRmb += netR; }
+                updateItemTaxSilent(row);
+            });
+
+            let fixedGold = 0, fixedRmb = 0;
+            Array.from(fixedPeopleBody.querySelectorAll('tr')).forEach(tr => {
+                fixedGold += parseFloat(tr.querySelector('.f-gold-input').value) || 0;
+                fixedRmb += parseFloat(tr.querySelector('.f-rmb-input').value) || 0;
+            });
+
+            let generalPoolGold = generalGold - fixedGold;
+            let generalPoolRmb = generalRmb - fixedRmb;
+            let milkPoolGold = milkGold, milkPoolRmb = milkRmb;
+
+            const people = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row')).map(tr => {
+                const job = tr.querySelector('.g-job-select').value;
+                return {
+                    tr,
+                    job,
+                    isPriest: job === '主教',
+                    weight: parseFloat(tr.querySelector('.g-weight-input').value) || 0,
+                    team: parseInt(tr.dataset.team) || 1,
+                    leader: tr.dataset.leader === '1'
+                };
+            });
+            const totalWeight = people.reduce((s, p) => s + p.weight, 0);
+            const priestWeight = people.filter(p => p.isPriest).reduce((s, p) => s + p.weight, 0);
+
+            if (priestWeight <= 0) {
+                generalPoolGold += milkPoolGold;
+                generalPoolRmb += milkPoolRmb;
+                milkPoolGold = 0;
+                milkPoolRmb = 0;
+            }
+
+            const hasGeneralPool = (generalGold > 0 || generalRmb > 0);
+
+            // 每人应得 = 均分份额 + 奶补份额（仅主教）
+            people.forEach(p => {
+                p.baseGold = totalWeight > 0 ? generalPoolGold * p.weight / totalWeight : 0;
+                p.baseRmb = totalWeight > 0 ? generalPoolRmb * p.weight / totalWeight : 0;
+                p.milkGoldShare = (p.isPriest && priestWeight > 0) ? milkPoolGold * p.weight / priestWeight : 0;
+                p.milkRmbShare = (p.isPriest && priestWeight > 0) ? milkPoolRmb * p.weight / priestWeight : 0;
+                p.entitledGold = p.baseGold + p.milkGoldShare;
+                p.entitledRmb = p.baseRmb + p.milkRmbShare;
+            });
+
+            const teamMode = hasGeneralPool && payMode === 'team';
+            const hasRmb = totalRmb > 0;
+            const teamResults = [];
+            if (teamMode) {
+                // 团长付队长：队总额 = 均分 + 奶补，一起交给队长，队长再分给队员/奶妈
+                const teamMap = {};
+                people.forEach(p => { (teamMap[p.team] = teamMap[p.team] || []).push(p); });
+                Object.keys(teamMap).sort((a, b) => a - b).forEach(t => {
+                    const members = teamMap[t];
+                    const totalG = members.reduce((s, m) => s + m.entitledGold, 0);
+                    const totalR = members.reduce((s, m) => s + m.entitledRmb, 0);
+                    const goldTax = totalG * getTaxRateByAmount(Math.abs(totalG)) * mult / 100;
+                    const netG = totalG - goldTax;
+                    const netR = totalR; // 人民币不扣任何税
+                    members.forEach(m => {
+                        m.gold = totalG !== 0 ? netG * (m.entitledGold / totalG) : 0;
+                        m.rmb = totalR !== 0 ? netR * (m.entitledRmb / totalR) : 0;
+                        m.teamTotalG = totalG;
+                        m.teamTotalR = totalR;
+                        m.teamNetG = netG;
+                        m.teamNetR = netR;
+                    });
+                    const leader = members.find(m => m.leader) || members[0];
+                    teamResults.push({ team: t, members, totalG, netG, totalR, netR, leader });
+                });
+            } else if (hasGeneralPool) {
+                // 一人付所有：团长直接付给每个人（含奶补），不经过队长
+                people.forEach(p => {
+                    p.gold = p.entitledGold;
+                    p.rmb = p.entitledRmb;
+                });
+            } else {
+                // 只有奶补物品：团长直接给奶妈，不经过队长
+                people.forEach(p => {
+                    p.gold = p.milkGoldShare;
+                    p.rmb = p.milkRmbShare;
+                });
+            }
+
+            // 显示
+            const firstOfTeam = {};
+            if (hasGeneralPool) people.forEach(p => { if (firstOfTeam[p.team] === undefined) firstOfTeam[p.team] = p; });
+
+            people.forEach(p => {
+                p.tr.classList.toggle('leader-row', teamMode && p.leader);
+                const cell = p.tr.querySelector('.g-team-cell');
+                if (!hasGeneralPool) {
+                    // 纯奶补：只显示奶妈
+                    p.tr.style.display = p.isPriest ? '' : 'none';
+                    if (cell) cell.innerHTML = p.isPriest ? '<span class="leader-tag">奶妈</span>' : '';
+                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
+                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
+                    return;
+                }
+                p.tr.style.display = '';
+                if (!teamMode) {
+                    // 一人付所有：不需要队伍信息
+                    if (cell) cell.innerHTML = '';
+                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
+                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
+                    return;
+                }
+                if (cell) {
+                    const isHead = firstOfTeam[p.team] === p;
+                    let label = isHead ? `<span class="team-no">${p.team} 队</span>` : '└';
+                    if (p.leader) label += ' <span class="leader-tag">队长</span>';
+                    cell.innerHTML = label;
+                }
+                const payFrom = p.leader ? '找团长' : '找队长';
+                const payClass = p.leader ? 'pay-leader' : 'pay-member';
+                // 队长从团长领的是税前队总额（面对面交易时再扣税），队员领的是扣税后队总额按权重分的
+                const showG = p.leader ? (p.teamTotalG || 0) : p.gold;
+                const showR = p.leader ? (p.teamTotalR || 0) : p.rmb;
+                p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from ${payClass}">${payFrom}</span>${showG.toFixed(2)}`;
+                p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from ${payClass}">${payFrom}</span>¥${showR.toFixed(2)}` : '—';
+            });
+
+            if (typeof openTeamBtn !== 'undefined' && openTeamBtn) openTeamBtn.style.display = (hasGeneralPool && teamMode) ? '' : 'none';
+
+            const hintEl = document.getElementById('generalHint');
+            if (hintEl) {
+                hintEl.textContent = !hasGeneralPool
+                    ? (rows.length ? '只有奶补物品：团长直接给奶妈，不经过队长' : '团长直接付给每个人（含奶补）')
+                    : (teamMode ? '队长行 = 从团长领（税前队总额，含奶补）；队员行 = 从队长领（税后）' : '团长直接付给每个人（含奶补）');
+            }
+
+            const netGold = totalGold - goldTaxTotal;
+            const netRmb = totalRmb;
+
+            generalTaxChips.innerHTML = `
+                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>摆摊税</span><span class="chip-value">${goldTaxTotal.toFixed(2)} 万</span></div>
+                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${netGold.toFixed(2)} 万</span></div>
+                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${hasRmb ? '¥' + netRmb.toFixed(2) + ' 元' : '—'}</span></div>
+                <div class="tax-chip"><span>固定支出</span><span class="chip-value">${fixedGold.toFixed(2)} 万 / ${fixedRmb.toFixed(2)} 元</span></div>
+                <div class="tax-chip"><span>均分池</span><span class="chip-value">${(generalGold - fixedGold).toFixed(2)} 万</span></div>
+                <div class="tax-chip"><span>奶补池</span><span class="chip-value">${(milkGold).toFixed(2)} 万</span></div>`;
+
+            currentGeneralResult = {
+                people: people.map(p => ({
+                    job: p.job,
+                    name: p.tr.querySelector('.g-name-input').value.trim(),
+                    weight: p.weight,
+                    isPriest: p.isPriest,
+                    team: p.team,
+                    leader: p.leader,
+                    gold: p.gold,
+                    rmb: p.rmb,
+                    displayGold: (teamMode && p.leader) ? (p.teamTotalG || 0) : p.gold,
+                    displayRmb: (teamMode && p.leader) ? (p.teamTotalR || 0) : p.rmb,
+                    payFrom: (teamMode && !p.leader) ? '找队长' : '找团长'
+                })),
+                teams: teamResults.map(t => ({
+                    team: t.team,
+                    leaderName: t.leader ? (t.leader.tr.querySelector('.g-name-input').value.trim() || '—') : '—',
+                    count: t.members.length,
+                    totalG: t.totalG, netG: t.netG, totalR: t.totalR, netR: t.netR
+                })),
+                fixed: Array.from(fixedPeopleBody.querySelectorAll('tr')).map(tr => ({
+                    job: tr.querySelector('.f-job-select').value,
+                    name: tr.querySelector('.f-name-input').value.trim(),
+                    gold: parseFloat(tr.querySelector('.f-gold-input').value) || 0,
+                    rmb: parseFloat(tr.querySelector('.f-rmb-input').value) || 0,
+                    note: tr.querySelector('.f-note-input').value.trim()
+                })),
+                fixedGold, fixedRmb, totalGold, totalRmb, goldTaxTotal, rmbTaxTotal: 0, netGold, netRmb,
+                generalPoolGold: generalPoolGold, milkPoolGold: milkGold
+            };
+
+            actionButtons.style.display = (rows.length || people.length) ? 'flex' : 'none';
+        }
+
+        // ===== 模式切换 =====
+        function captureItems() {
+            const rows = Array.from(itemsContainer.querySelectorAll('.item-row'));
+            return rows.map((row, i) => {
+                const prev = itemsCache[i] || {};
+                const storeCb = row.querySelector('.item-store-tax');
+                const unionCb = row.querySelector('.item-union-tax');
+                const milkBtn = row.querySelector('.milk-switch');
+                return {
+                    name: row.querySelector('.item-name-input').value,
+                    qty: row.querySelector('.item-quantity-input').value,
+                    gold: row.querySelector('.item-gold-input').value,
+                    rmb: row.querySelector('.item-rmb-input').value,
+                    perUnit: row.querySelector('.item-perunit-tax').checked,
+                    storeTax: storeCb ? storeCb.checked : (prev.storeTax !== false),
+                    unionTax: unionCb ? unionCb.checked : (prev.unionTax || false),
+                    milk: milkBtn ? milkBtn.dataset.milk === '1' : (prev.milk || false),
+                    templateName: row.dataset.templateName || ''
+                };
+            });
+        }
+
+        function rebuildItems() {
+            itemsContainer.innerHTML = '';
+            itemIndex = 0;
+            itemsCache.forEach(item => {
+                let row;
+                if (appMode === 'general') {
+                    row = createGeneralItemRow(item);
+                } else {
+                    row = createItemRow(itemIndex++, item.templateName || '', item.name || '', item.gold || '', item.rmb || '', item.qty || '1', !!item.perUnit);
+                    row.querySelector('.item-store-tax').checked = item.storeTax !== false;
+                    row.querySelector('.item-union-tax').checked = !!item.unionTax;
+                    row.querySelector('.item-perunit-tax').checked = !!item.perUnit;
+                    updateItemTaxSilent(row);
+                }
+                itemsContainer.appendChild(row);
+            });
+            syncTaxHeaderCheckboxes();
+        }
+
+        function captureHousePeople() {
+            return Array.from(resultTableBody.querySelectorAll('tr')).map(tr => ({
+                name: tr.querySelector('.person-name-input').value,
+                weight: tr.querySelector('.weight-input').value
+            }));
+        }
+
+        function rebuildHousePeople() {
+            if (housePeopleCache && housePeopleCache.length) {
+                countInput.value = housePeopleCache.length;
+                syncResultTableRows();
+                Array.from(resultTableBody.querySelectorAll('tr')).forEach((tr, i) => {
+                    if (i >= housePeopleCache.length) return;
+                    tr.querySelector('.person-name-input').value = housePeopleCache[i].name || '';
+                    tr.querySelector('.weight-input').value = housePeopleCache[i].weight || '1';
+                });
+            } else {
+                countInput.value = 6;
+                syncResultTableRows();
+            }
+            calculateDistribution();
+        }
+
+        function captureGeneralPeople() {
+            return Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row')).map(tr => ({
+                job: tr.querySelector('.g-job-select').value,
+                name: tr.querySelector('.g-name-input').value,
+                weight: tr.querySelector('.g-weight-input').value,
+                team: parseInt(tr.dataset.team) || 1,
+                leader: tr.dataset.leader === '1'
+            }));
+        }
+
+        function captureFixedPeople() {
+            return Array.from(fixedPeopleBody.querySelectorAll('tr')).map(tr => ({
+                job: tr.querySelector('.f-job-select').value,
+                name: tr.querySelector('.f-name-input').value,
+                gold: tr.querySelector('.f-gold-input').value,
+                rmb: tr.querySelector('.f-rmb-input').value,
+                note: tr.querySelector('.f-note-input').value
+            }));
+        }
+
+        function applyMode(mode) {
+            appMode = mode;
+            document.body.classList.toggle('mode-general', mode === 'general');
+            document.body.classList.toggle('mode-house', mode === 'house');
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            document.querySelectorAll('.items-table thead .th-house').forEach(el => { el.style.display = mode === 'house' ? 'block' : 'none'; });
+            document.querySelectorAll('.items-table thead .th-general').forEach(el => { el.style.display = mode === 'general' ? 'block' : 'none'; });
+            const goldRateGroup = document.getElementById('goldRateGroup');
+            if (goldRateGroup) goldRateGroup.style.display = mode === 'house' ? '' : 'none';
+            const missionGroup = missionInput.closest('.form-group');
+            if (missionGroup) missionGroup.style.display = mode === 'house' ? 'none' : '';
+            houseArea.style.display = mode === 'house' ? '' : 'none';
+            generalArea.style.display = mode === 'general' ? '' : 'none';
+            updateModeUI();
+        }
+
+        function setMode(mode) {
+            if (mode === appMode) return;
+            itemsCache = captureItems();
+            if (appMode === 'house') {
+                housePeopleCache = captureHousePeople();
+            } else {
+                generalPeopleCache = captureGeneralPeople();
+                fixedPeopleCache = captureFixedPeople();
+            }
+            applyMode(mode);
+            rebuildItems();
+            if (mode === 'house') {
+                rebuildHousePeople();
+            } else {
+                rebuildGeneralPeople();
+                calculateGeneral();
+            }
+        }
+
+        function updateModeUI() {
+            const note = document.querySelector('.note');
+            if (!note) return;
+            note.textContent = appMode === 'house'
+                ? '点击表头复选框可一键全选 / 取消；每行物品也可单独关闭「摆摊税」「家族税」「单价计税」；R税需同时开启摆摊税与家族税，且需填写金价比例。'
+                : '「奶补」物品的收益只分给主教/奶妈；固定工资先从均分总价里扣除，剩余按权重分给全员；人民币不扣任何税。';
+        }
+
+        // ===== 通用模式：人员粘贴 =====
+        function parseGeneralPeopleText(text) {
+            const lines = String(text || '').replace(/\r/g, '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const out = [];
+            lines.forEach(line => {
+                if (/^(职业|姓名|人员|名字)/.test(line)) return;
+                const parts = line.split(/\t+|\s{2,}/).filter(Boolean);
+                let jobText = (parts[0] || '').trim();
+                let name = (parts.length > 1 ? parts.slice(1).join(' ') : '').trim();
+
+                if (!name) {
+                    const m = jobText.match(/^(\S+?)\s+(.+)$/);
+                    if (m && GENERAL_JOBS.some(j => m[1].includes(j) || j.includes(m[1]))) {
+                        jobText = m[1];
+                        name = m[2];
+                    }
+                }
+
+                // 团长 / 队长 标记一律忽略，只保留职业
+                jobText = jobText.replace(/[,，\s]*团长[,，\s]*/g, '').replace(/[（(]队长[)）]/g, '').trim();
+                name = name.replace(/[,，\s]*团长[,，\s]*/g, '').trim();
+
+                let job = GENERAL_JOBS.find(j => j === jobText);
+                if (!job) job = GENERAL_JOBS.find(j => jobText.includes(j) || j.includes(jobText));
+                if (!job) job = '黑骑士';
+
+                out.push({ job, name, weight: 1 });
+            });
+            return out;
+        }
+
+        function hasGeneralPoolItems() {
+            return Array.from(itemsContainer.querySelectorAll('.item-row')).some(row => {
+                const milkBtn = row.querySelector('.milk-switch');
+                if (milkBtn && milkBtn.dataset.milk === '1') return false;
+                const g = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const r = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                return g > 0 || r > 0;
+            });
+        }
+
+        function applyGeneralPeople(entries) {
+            if (!entries || !entries.length) return false;
+            generalPeopleBody.innerHTML = '';
+            entries.forEach((e, i) => generalPeopleBody.appendChild(createGeneralPersonRow({
+                job: e.job,
+                name: e.name,
+                weight: e.weight || 1,
+                team: Math.floor(i / 6) + 1,
+                leader: i % 6 === 0
+            })));
+            normalizeTeamData();
+            arrangeTeamRows();
+            calculateGeneral();
+            if (hasGeneralPoolItems() && payMode === 'team') openTeamWindow();
+            return true;
+        }
+
+        // ===== 通用模式：队伍分配 =====
+        let teamDraft = [];
+
+        function openTeamWindow() {
+            const rows = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row'));
+            if (!rows.length) return;
+            let prevTeam = null;
+            teamDraft = rows.map(tr => {
+                const team = parseInt(tr.dataset.team) || 1;
+                const isStart = prevTeam !== team;
+                prevTeam = team;
+                return {
+                    trEl: tr,
+                    job: tr.querySelector('.g-job-select').value,
+                    name: tr.querySelector('.g-name-input').value,
+                    weight: tr.querySelector('.g-weight-input').value,
+                    groupStart: isStart,
+                    leader: tr.dataset.leader === '1'
+                };
+            });
+            normalizeDraft();
+            renderTeamList();
+            teamWindow.classList.add('show');
+        }
+
+        function normalizeDraft() {
+            if (!teamDraft.length) return;
+            teamDraft[0].groupStart = true;
+            // 计算队伍号
+            let teamNo = 0;
+            teamDraft.forEach((d, i) => {
+                if (i === 0 || d.groupStart) teamNo++;
+                d.team = teamNo;
+            });
+            // 每队一个队长
+            const teams = {};
+            teamDraft.forEach(d => { (teams[d.team] = teams[d.team] || []).push(d); });
+            Object.keys(teams).forEach(t => {
+                const members = teams[t];
+                const leaders = members.filter(d => d.leader);
+                if (!leaders.length) members[0].leader = true;
+                else leaders.slice(1).forEach(d => { d.leader = false; });
+            });
+        }
+
+        function renderTeamList() {
+            teamList.innerHTML = `
+                <table>
+                    <thead><tr><th style="width:170px;">队伍 / 分界</th><th style="width:120px;">职业</th><th>姓名</th><th style="width:100px;">队长</th><th style="width:40px;"></th></tr></thead>
+                    <tbody>${teamDraft.map((d, i) => {
+                        let html = '';
+                        if (i > 0 && d.groupStart) {
+                            html += `<tr class="team-divider-row" data-idx="${i}" title="按住分界线上下拖动调整队伍">
+                                <td colspan="5">
+                                    <span class="divider-handle">⋮⋮</span>
+                                    <span class="divider-name">第 ${d.team} 队从这里开始</span>
+                                </td>
+                            </tr>`;
+                        }
+                        html += `<tr class="team-person-row" data-idx="${i}" title="双击在这一行前插入新队伍">
+                            <td>${i + 1}</td>
+                            <td>${escapeHtml(d.job)}</td>
+                            <td>${escapeHtml(d.name || '—')}</td>
+                            <td><button type="button" class="team-captain-btn${d.leader ? ' on' : ''}" data-idx="${i}">${d.leader ? '队长' : '设为队长'}</button></td>
+                            <td><button type="button" class="team-del-btn" data-idx="${i}" title="删除该成员">×</button></td>
+                        </tr>`;
+                        return html;
+                    }).join('')}</tbody>
+                </table>`;
+        }
+
+        teamList.addEventListener('click', (e) => {
+            const del = e.target.closest('.team-del-btn');
+            if (del) {
+                const i = parseInt(del.dataset.idx);
+                teamDraft.splice(i, 1);
+                normalizeDraft();
+                renderTeamList();
+                return;
+            }
+            const cap = e.target.closest('.team-captain-btn');
+            if (cap) {
+                const i = parseInt(cap.dataset.idx);
+                const t = teamDraft[i].team;
+                teamDraft.forEach(d => { if (d.team === t) d.leader = false; });
+                teamDraft[i].leader = true;
+                normalizeDraft();
+                renderTeamList();
+            }
+        });
+        teamList.addEventListener('dblclick', (e) => {
+            const row = e.target.closest('.team-person-row');
+            if (!row) return;
+            const i = parseInt(row.dataset.idx);
+            if (i <= 0) return;
+            teamDraft[i].groupStart = true;
+            normalizeDraft();
+            renderTeamList();
+        });
+
+        // 拖动分界线
+        let dividerDrag = null;
+
+        teamList.addEventListener('pointerdown', (e) => {
+            const divider = e.target.closest('.team-divider-row');
+            if (!divider) return;
+            e.preventDefault();
+            const idx = parseInt(divider.dataset.idx);
+            const ghost = document.createElement('div');
+            ghost.className = 'divider-ghost';
+            document.body.appendChild(ghost);
+            dividerDrag = { idx, ghost, target: idx };
+            divider.classList.add('dragging');
+            updateDividerGhost(e.clientY);
+            document.addEventListener('pointermove', onDividerMove);
+            document.addEventListener('pointerup', onDividerUp, { once: true });
+        });
+
+        function onDividerMove(e) {
+            if (!dividerDrag) return;
+            updateDividerGhost(e.clientY);
+        }
+
+        function updateDividerGhost(clientY) {
+            const rows = Array.from(teamList.querySelectorAll('tr.team-person-row'));
+            let target = rows.length;
+            let lineY = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i].getBoundingClientRect();
+                if (clientY < r.top + r.height / 2) { target = i; lineY = r.top; break; }
+                lineY = r.bottom;
+            }
+            dividerDrag.target = target;
+            const rect = teamList.getBoundingClientRect();
+            dividerDrag.ghost.style.top = (lineY - 2) + 'px';
+            dividerDrag.ghost.style.left = (rect.left + 6) + 'px';
+            dividerDrag.ghost.style.width = (rect.width - 12) + 'px';
+            dividerDrag.ghost.style.display = 'block';
+        }
+
+        function onDividerUp() {
+            document.removeEventListener('pointermove', onDividerMove);
+            if (!dividerDrag) return;
+            const { idx, target, ghost } = dividerDrag;
+            ghost.remove();
+            teamList.querySelectorAll('.team-divider-row.dragging').forEach(el => el.classList.remove('dragging'));
+            dividerDrag = null;
+            if (target > 0 && target < teamDraft.length && target !== idx) {
+                teamDraft[idx].groupStart = false;
+                teamDraft[target].groupStart = true;
+                normalizeDraft();
+                renderTeamList();
+            }
+        }
+
+        addDividerBtn.addEventListener('click', () => {
+            // 在列表末尾附近插一条新分界线，用户再拖到需要的位置
+            let idx = -1;
+            for (let i = teamDraft.length - 1; i > 0; i--) {
+                if (!teamDraft[i].groupStart) { idx = i; break; }
+            }
+            if (idx < 0) return;
+            teamDraft[idx].groupStart = true;
+            normalizeDraft();
+            renderTeamList();
+        });
+        autoTeamBtn.addEventListener('click', () => {
+            teamDraft.forEach((d, i) => {
+                d.groupStart = i % 6 === 0;
+                d.leader = i % 6 === 0;
+            });
+            normalizeDraft();
+            renderTeamList();
+        });
+        cancelTeamBtn.addEventListener('click', () => teamWindow.classList.remove('show'));
+        confirmTeamBtn.addEventListener('click', () => {
+            const isEmptyName = s => {
+                const v = String(s == null ? '' : s).trim();
+                return v === '' || v === '—' || v === '-' || v === '——';
+            };
+            const kept = teamDraft.filter(d => !isEmptyName(d.name));
+            if (!kept.length) { alert('没有有效的人员（名字为空的人会被自动删除）。'); return; }
+            const counts = {};
+            kept.forEach(d => { counts[d.team] = (counts[d.team] || 0) + 1; });
+            const overTeam = Object.keys(counts).find(t => counts[t] > 6);
+            if (overTeam) {
+                alert(`第 ${overTeam} 队有 ${counts[overTeam]} 人，每队最多 6 人，请再拖动分界线调整一下。`);
+                return;
+            }
+            const keptSet = new Set(kept.map(d => d.trEl));
+            // 窗口里删掉的成员 + 空名字（显示为 —）的人，直接从数据里删掉
+            Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row')).forEach(tr => {
+                if (!keptSet.has(tr)) tr.remove();
+            });
+            kept.forEach(d => {
+                if (!d.trEl) return;
+                d.trEl.dataset.team = d.team;
+                d.trEl.dataset.leader = d.leader ? '1' : '0';
+            });
+            teamWindow.classList.remove('show');
+            normalizeTeamData();
+            arrangeTeamRows();
+            calculateGeneral();
+        });
+        openTeamBtn.addEventListener('click', openTeamWindow);
+
+        // 复制、截图功能
+        const copyGoldBtn = document.getElementById('copyGoldBtn');
+        const copyRmbBtn = document.getElementById('copyRmbBtn');
+        const saveImageBtn = document.getElementById('saveImageBtn');
+
+        function flashCopied(btn, restoreIcon, restoreLabel) {
+            btn.innerHTML = iconSvg('check', '#16a34a', 16) + ' 已复制';
+            setTimeout(() => { btn.innerHTML = iconSvg(restoreIcon, '#636e72', 16) + ' ' + restoreLabel; }, 1400);
+        }
+
+        copyGoldBtn.addEventListener('click', () => {
+            if (appMode === 'general') {
+                if (!currentGeneralResult || !currentGeneralResult.people.length) return;
+                const lines = currentGeneralResult.people.map(p => p.gold.toFixed(2));
+                navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyGoldBtn, 'copy', '复制金币'))
+                    .catch(() => alert('复制失败，请手动复制'));
+                return;
+            }
+            if (hasTaxableRmbItems && !goldRateValid) { alert('请先填写金价比例'); return; }
+            if (!currentGoldEarnings.length) return;
+            const lines = [...currentGoldEarnings.map(a => a.toFixed(2)), currentStoreGoldTax.toFixed(2), currentUnionTax.toFixed(2)];
+            navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyGoldBtn, 'copy', '复制金币'))
+                .catch(() => alert('复制失败，请手动复制'));
+        });
+        copyRmbBtn.addEventListener('click', () => {
+            if (appMode === 'general') {
+                if (!currentGeneralResult || !currentGeneralResult.people.length) return;
+                const lines = currentGeneralResult.people.map(p => p.rmb.toFixed(2));
+                navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyRmbBtn, 'copy', '复制人民币'))
+                    .catch(() => alert('复制失败，请手动复制'));
+                return;
+            }
+            if (hasTaxableRmbItems && !goldRateValid) { alert('请先填写金价比例'); return; }
+            if (!currentRmbEarnings.length) return;
+            const lines = [...currentRmbEarnings.map(a => a.toFixed(2)), '0.00', currentTotalRmbTax.toFixed(2)];
+            navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyRmbBtn, 'copy', '复制人民币'))
+                .catch(() => alert('复制失败，请手动复制'));
+        });
+        // 截图：克隆实际页面卡片，把控件转成静态文本后渲染，排版与页面完全一致
+        function buildScreenshotClone() {
+            const card = document.getElementById('mainCard');
+            const clone = card.cloneNode(true);
+            clone.removeAttribute('id');
+            // 隐藏纯操作元素
+            clone.querySelectorAll('.mode-switch, .items-actions, .list-actions, .add-person-btn, .icon-btn, #actionButtons').forEach(el => {
+                el.style.display = 'none';
+            });
+            // 复选框 → 画出来
+            clone.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                const on = cb.checked;
+                const span = document.createElement('span');
+                span.textContent = on ? '✓' : '';
+                span.style.cssText = `display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1.5px solid ${on ? '#6c5ce7' : '#cbd5e1'};border-radius:4px;background:${on ? '#6c5ce7' : '#fff'};color:#fff;font-size:10px;line-height:1;`;
+                cb.replaceWith(span);
+            });
+            // 文本 / 数字输入 → 文本
+            clone.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(inp => {
+                const numeric = inp.classList.contains('g-weight-input') || inp.classList.contains('f-gold-input') || inp.classList.contains('f-rmb-input') || inp.classList.contains('item-gold-input') || inp.classList.contains('item-rmb-input') || inp.classList.contains('item-quantity-input');
+                const span = document.createElement('span');
+                span.textContent = inp.value || inp.placeholder || '';
+                span.style.cssText = `display:inline-block;padding:4px 7px;font-size:0.82rem;color:${inp.value ? '#334155' : '#94a3b8'};text-align:${numeric ? 'right' : 'left'};width:100%;box-sizing:border-box;`;
+                inp.replaceWith(span);
+            });
+            // 下拉 → 文本（按原页面的选中值，避免克隆后选择丢失）
+            const origSelects = Array.from(card.querySelectorAll('select'));
+            clone.querySelectorAll('select').forEach((sel, idx) => {
+                const orig = origSelects[idx];
+                const val = orig ? orig.value : sel.value;
+                const opt = Array.from(sel.options).find(o => o.value === val);
+                const span = document.createElement('span');
+                span.textContent = opt ? opt.text : (val || '');
+                span.style.cssText = 'display:inline-block;padding:4px 7px;font-size:0.82rem;color:#334155;';
+                sel.replaceWith(span);
+            });
+            // 奶补开关 → 静态两段（混合态两段都灰）
+            clone.querySelectorAll('.milk-switch').forEach(btn => {
+                const state = btn.dataset.milk;
+                const mk = (txt, on, color) => `<span style="display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;background:${on ? '#fff' : 'transparent'};color:${on ? color : '#94a3b8'};">${txt}</span>`;
+                const span = document.createElement('span');
+                span.style.cssText = 'display:inline-block;background:#f1f5f9;border-radius:7px;padding:2px;white-space:nowrap;';
+                span.innerHTML = mk('均分', state === '0', '#6c5ce7') + mk('奶补', state === '1', '#0f766e');
+                btn.replaceWith(span);
+            });
+            // 支付方式滑块 → 静态
+            clone.querySelectorAll('.pay-mode-switch').forEach(sw => {
+                const mode = sw.querySelector('.pay-opt.active') ? sw.querySelector('.pay-opt.active').dataset.pay : 'direct';
+                const mk = (txt, on) => `<span style="display:inline-block;padding:5px 12px;border-radius:7px;font-size:0.78rem;font-weight:600;background:${on ? '#fff' : 'transparent'};color:${on ? '#6c5ce7' : '#64748b'};">${txt}</span>`;
+                const span = document.createElement('span');
+                span.style.cssText = 'display:inline-block;background:#f1f5f9;border-radius:9px;padding:3px;white-space:nowrap;';
+                span.innerHTML = mk('一人付所有', mode === 'direct') + mk('团长付队长', mode === 'team');
+                sw.replaceWith(span);
+            });
+            clone.style.width = card.getBoundingClientRect().width + 'px';
+            clone.style.boxShadow = 'none';
+            clone.style.margin = '0';
+            return clone;
+        }
+
+        async function saveGeneralScreenshot() {
+            if (!currentGeneralResult) return;
+            const card = document.getElementById('mainCard');
+            if (!card) return;
+            const clone = buildScreenshotClone();
+            const holder = document.createElement('div');
+            holder.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;';
+            holder.appendChild(clone);
+            document.body.appendChild(holder);
+            try {
+                const canvas = await html2canvas(clone, { backgroundColor: '#ffffff', scale: 2, useCORS: true, logging: false });
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                saveImageBtn.innerHTML = iconSvg('check', '#16a34a', 16) + ' 已复制';
+                setTimeout(() => { saveImageBtn.innerHTML = iconSvg('camera', '#636e72', 16) + ' 截图并复制'; }, 1400);
+            } catch (e) { alert('截图失败'); }
+            finally { holder.remove(); }
+        }
+
+        document.getElementById('saveImageBtn').addEventListener('click', async () => {
+            if (appMode === 'general') { await saveGeneralScreenshot(); return; }
+            if (hasTaxableRmbItems && !goldRateValid) { alert('请先填写金价比例'); return; }
+            if (!currentGoldEarnings.length) return;
+            const goldRate = parseFloat(goldRateInput.value) || 0;
+            const details = currentItemDetails;
+            const screenshotDiv = document.createElement('div');
+            screenshotDiv.style.position = 'absolute'; screenshotDiv.style.left = '-9999px';
+            screenshotDiv.style.background = 'white'; screenshotDiv.style.padding = '28px';
+            screenshotDiv.style.borderRadius = '16px'; screenshotDiv.style.width = '1050px';
+            screenshotDiv.style.fontFamily = "'Inter', sans-serif";
+
+            const totalGoldSum = details.reduce((s, d) => s + d.totalGold, 0);
+            const totalRmbSum = details.reduce((s, d) => s + d.totalRmb, 0);
+            const totalGoldTax = details.reduce((s, d) => s + d.goldTax, 0);
+            const totalUnionTax = details.reduce((s, d) => s + d.unionTax, 0);
+            const totalRmbTax = details.reduce((s, d) => s + d.rmbTax, 0);
+
+            const netGoldTotal = totalGoldSum - totalGoldTax - totalUnionTax;
+            const netRmbTotal = totalRmbSum - totalRmbTax;
+            const thBase = 'padding:9px 8px; font-size:11.5px; font-weight:600; color:#475569; background:#f1f5f9; border-bottom:1px solid #e2e8f0; white-space:nowrap;';
+            const tdBase = 'padding:8px; font-size:12.5px; color:#334155; border-bottom:1px solid #eef2f7;';
+
+            const itemsHTML = details.length ? `
+                <div style="font-size:14px; font-weight:600; color:#334155; margin:0 0 10px;">
+                    ${iconSvg('package', '#475569', 16)} 物品清单
+                </div>
+                <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
+                    <colgroup><col style="width:18%"><col style="width:6%"><col style="width:7%"><col style="width:12%"><col style="width:11%"><col style="width:12%"><col style="width:12%"><col style="width:22%"></colgroup>
+                    <thead>
+                        <tr>
+                            <th style="${thBase} text-align:left;">物品</th>
+                            <th style="${thBase} text-align:right;">数量</th>
+                            <th style="${thBase} text-align:left;">计税</th>
+                            <th style="${thBase} text-align:right;">总金币(万)</th>
+                            <th style="${thBase} text-align:right;">总R(元)</th>
+                            <th style="${thBase} text-align:right;">摆摊税(万)</th>
+                            <th style="${thBase} text-align:right;">家族税(万)</th>
+                            <th style="${thBase} text-align:right;">R税(元)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${details.map((item, i) => `
+                            <tr style="background:${i%2?'#fff':'#f8fafc'};">
+                                <td style="${tdBase} color:#1e293b;">${escapeHtml(item.name)}</td>
+                                <td style="${tdBase} text-align:right;">${item.qty}</td>
+                                <td style="${tdBase} color:#64748b;">${item.isPerUnit ? '单价' : '总价'}</td>
+                                <td style="${tdBase} text-align:right;">${item.totalGold.toFixed(2)}</td>
+                                <td style="${tdBase} text-align:right;">${item.totalRmb.toFixed(2)}</td>
+                                <td style="${tdBase} text-align:right;">${item.goldTax.toFixed(2)} <span style="color:#94a3b8; font-size:11px;">(${item.goldTaxRate}%)</span></td>
+                                <td style="${tdBase} text-align:right;">${item.unionTax.toFixed(2)} <span style="color:#94a3b8; font-size:11px;">(${item.unionTaxRate}%)</span></td>
+                                <td style="${tdBase} text-align:right;">${item.rmbTax.toFixed(2)} <span style="color:#94a3b8; font-size:11px;">(${item.rmbTaxRate}%, ≈${formatGoldWan(item.rmbTaxInGold)}金)</span></td>
+                            </tr>
+                        `).join('')}
+                        <tr style="background:#f1f5f9;">
+                            <td colspan="3" style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:left;">合计</td>
+                            <td style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:right;">${totalGoldSum.toFixed(2)}</td>
+                            <td style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:right;">${totalRmbSum.toFixed(2)}</td>
+                            <td style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:right;">${totalGoldTax.toFixed(2)}</td>
+                            <td style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:right;">${totalUnionTax.toFixed(2)}</td>
+                            <td style="padding:9px 8px; font-size:12.5px; font-weight:700; color:#1e293b; text-align:right;">${totalRmbTax.toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>` : '<p style="color:#64748b; font-size:13px;">无物品</p>';
+
+            const distHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; margin:24px 0 10px;">
+                    <div style="font-size:14px; font-weight:600; color:#334155;">${iconSvg('briefcase', '#475569', 16)} 人员分配</div>
+                    <div style="font-size:11.5px; color:#94a3b8;">${currentPersonNames.length} 人</div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; table-layout:fixed;">
+                    <colgroup><col style="width:26%"><col style="width:14%"><col style="width:30%"><col style="width:30%"></colgroup>
+                    <thead><tr>
+                        <th style="${thBase} text-align:left;">人员</th>
+                        <th style="${thBase} text-align:right;">权重</th>
+                        <th style="${thBase} text-align:right;">金币（万）</th>
+                        <th style="${thBase} text-align:right;">人民币（元）</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr style="background:#fffbeb;">
+                            <td style="${tdBase} font-weight:600; color:#92400e;">摆摊税</td>
+                            <td style="${tdBase}"></td>
+                            <td style="${tdBase} text-align:right; font-weight:600; color:#92400e;">${totalGoldTax.toFixed(2)}</td>
+                            <td style="${tdBase}"></td>
+                        </tr>
+                        <tr style="background:#f5f3ff;">
+                            <td style="${tdBase} font-weight:600; color:#5b21b6;">家族税</td>
+                            <td style="${tdBase}"></td>
+                            <td style="${tdBase} text-align:right; font-weight:600; color:#5b21b6;">${totalUnionTax.toFixed(2)}</td>
+                            <td style="${tdBase}"></td>
+                        </tr>
+                        <tr style="background:#f0f9ff;">
+                            <td style="${tdBase} font-weight:600; color:#075985;">R税</td>
+                            <td style="${tdBase}"></td>
+                            <td style="${tdBase}"></td>
+                            <td style="${tdBase} text-align:right; font-weight:600; color:#075985;">${totalRmbTax.toFixed(2)}</td>
+                        </tr>
+                        ${currentGoldEarnings.map((amount, idx) => `
+                        <tr style="background:${idx%2?'#fff':'#f8fafc'};">
+                            <td style="${tdBase} color:#1e293b;">${escapeHtml(currentPersonNames[idx] || `第${idx+1}人`)}</td>
+                            <td style="${tdBase} text-align:right; color:#64748b;">${currentWeights[idx]}</td>
+                            <td style="${tdBase} text-align:right; font-weight:600; color:#0f172a;">${amount.toFixed(2)}</td>
+                            <td style="${tdBase} text-align:right; font-weight:600; color:#0f172a;">${currentRmbEarnings[idx].toFixed(2)}</td>
+                        </tr>`).join('')}
+                        <tr style="background:#f1f5f9;">
+                            <td style="${tdBase} font-weight:700; color:#0f172a; border-top:2px solid #cbd5e1;">净额</td>
+                            <td style="${tdBase} border-top:2px solid #cbd5e1;"></td>
+                            <td style="${tdBase} text-align:right; font-weight:700; color:#0f172a; font-size:13.5px; border-top:2px solid #cbd5e1;">${netGoldTotal.toFixed(2)}</td>
+                            <td style="${tdBase} text-align:right; font-weight:700; color:#0f172a; font-size:13.5px; border-top:2px solid #cbd5e1;">${netRmbTotal.toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>`;
+
+            const headerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:14px; border-bottom:2px solid #e2e8f0; margin-bottom:20px;">
+                    <div>
+                        <div style="font-size:22px; font-weight:700; color:#1e293b;">收益分配明细</div>
+                        ${goldRate > 0 ? `<div style="font-size:12px; color:#64748b; margin-top:6px;">${iconSvg('exchange', '#64748b', 14)} 金价比例 ${goldRate} 万金币/元</div>` : ''}
+                    </div>
+                    <div style="font-size:11.5px; color:#94a3b8; text-align:right;">共 ${details.length} 项物品 · ${currentPersonNames.length} 人</div>
+                </div>`;
+
+            screenshotDiv.innerHTML = headerHTML + itemsHTML + distHTML;
+            document.body.appendChild(screenshotDiv);
+            try {
+                const canvas = await html2canvas(screenshotDiv, { backgroundColor: '#fff', scale: 2 });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                saveImageBtn.innerHTML = iconSvg('check', '#16a34a', 16) + ' 已复制';
+                setTimeout(() => { saveImageBtn.innerHTML = iconSvg('camera', '#636e72', 16) + ' 截图并复制'; }, 1400);
+            } catch (err) { alert('截图失败'); }
+            finally { document.body.removeChild(screenshotDiv); }
+        });
+
+        // 模板/粘贴窗口事件
+        editTemplateBtn.addEventListener('click', () => {
+            const list = appMode === 'general' ? generalTemplates : itemTemplates;
+            editTemplateData.value = list.map(t => `${t.name}：${t.price > 0 ? t.price : '-'}`).join('\n');
+            editTemplateWindow.classList.add('show');
+        });
+        cancelEditTemplateBtn.addEventListener('click', () => editTemplateWindow.classList.remove('show'));
+        applyEditTemplateBtn.addEventListener('click', () => {
+            const raw = editTemplateData.value.trim();
+            const newTemplates = parseTemplates(raw);
+            if (newTemplates.length > 0) {
+                if (appMode === 'general') {
+                    generalTemplates = newTemplates;
+                    saveGeneralTemplates(newTemplates);
+                } else {
+                    itemTemplates = newTemplates;
+                    saveTemplatesToStorage(newTemplates); // ★ 保存到 localStorage
+                }
+            }
+            editTemplateWindow.classList.remove('show');
+            calculateGeneral();
+        });
+        pasteItemsBtn.addEventListener('click', () => { pasteItemsData.value = ''; pasteItemsWindow.classList.add('show'); });
+        cancelPasteItemsBtn.addEventListener('click', () => pasteItemsWindow.classList.remove('show'));
+        applyPasteItemsBtn.addEventListener('click', () => {
+            const raw = pasteItemsData.value.trim();
+            if (!raw) return;
+            const templateMap = buildTemplateMap();
+            const lines = raw.split('\n');
+            for (const line of lines) {
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 2) {
+                    const itemName = parts[0].trim();
+                    const qty = parseInt(parts[1]);
+                    if (itemName && !isNaN(qty) && qty > 0) {
+                        const template = templateMap[itemName];
+                        if (template) addItem(template.name, template.displayName, template.price > 0 ? template.price.toString() : '', '', qty.toString(), template.isPerUnit);
+                        else addItem('', itemName, '', '', qty.toString(), false);
+                    }
+                }
+            }
+            pasteItemsWindow.classList.remove('show');
+        });
+
+        // ===== 模式切换 & 通用模式事件 =====
+        document.querySelectorAll('.mode-btn').forEach(el => {
+            el.addEventListener('click', () => setMode(el.dataset.mode));
+        });
+        document.querySelectorAll('.pay-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                payMode = btn.dataset.pay;
+                document.querySelectorAll('.pay-opt').forEach(b => b.classList.toggle('active', b === btn));
+                calculateGeneral();
+            });
+        });
+        allMilkSwitch.addEventListener('click', () => {
+            const next = allMilkSwitch.dataset.milk === '1' ? '0' : '1';
+            itemsContainer.querySelectorAll('.milk-switch').forEach(b => { b.dataset.milk = next; });
+            itemsContainer.querySelectorAll('.item-row').forEach(row => updateItemTaxSilent(row));
+            syncTaxHeaderCheckboxes();
+            triggerAutoCalc();
+        });
+        addGeneralPersonBtn.addEventListener('click', () => {
+            const rows = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row'));
+            let team = 1;
+            if (rows.length) {
+                const lastTeam = parseInt(rows[rows.length - 1].dataset.team) || 1;
+                team = (rows.length % 6 === 0) ? lastTeam + 1 : lastTeam;
+            }
+            const tr = createGeneralPersonRow({ team, leader: rows.length % 6 === 0 });
+            generalPeopleBody.appendChild(tr);
+            normalizeTeamData();
+            arrangeTeamRows();
+            calculateGeneral();
+            tr.querySelector('.g-name-input').focus();
+        });
+        addFixedPersonBtn.addEventListener('click', () => {
+            fixedPeopleBody.appendChild(createFixedPersonRow());
+            calculateGeneral();
+            const rows = fixedPeopleBody.querySelectorAll('tr');
+            const last = rows[rows.length - 1];
+            if (last) last.querySelector('.f-name-input').focus();
+        });
+        clearGeneralPeopleBtn.addEventListener('click', () => {
+            if (!generalPeopleBody.querySelectorAll('tr').length) return;
+            if (!confirm('确定清空人员表吗？（固定金额表不受影响）')) return;
+            generalPeopleBody.innerHTML = '';
+            calculateGeneral();
+        });
+        clearFixedPeopleBtn.addEventListener('click', () => {
+            if (!fixedPeopleBody.querySelectorAll('tr').length) return;
+            if (!confirm('确定清空固定金额表吗？')) return;
+            fixedPeopleBody.innerHTML = '';
+            calculateGeneral();
+        });
+        pasteGeneralPeopleBtn.addEventListener('click', () => {
+            pasteGeneralPeopleData.value = '';
+            pasteGeneralPeopleWindow.classList.add('show');
+            setTimeout(() => pasteGeneralPeopleData.focus(), 60);
+        });
+        cancelPasteGeneralPeopleBtn.addEventListener('click', () => pasteGeneralPeopleWindow.classList.remove('show'));
+        applyPasteGeneralPeopleBtn.addEventListener('click', () => {
+            const entries = parseGeneralPeopleText(pasteGeneralPeopleData.value);
+            if (!entries.length) { alert('没有识别到人员数据，请检查格式：职业 + 姓名'); return; }
+            applyGeneralPeople(entries);
+            pasteGeneralPeopleWindow.classList.remove('show');
+        });
+        pasteGeneralPeopleData.addEventListener('paste', (ev) => {
+            const clipboard = ev.clipboardData || window.clipboardData;
+            const text = clipboard ? clipboard.getData('text') : '';
+            const entries = parseGeneralPeopleText(text);
+            if (!entries.length) return;
+            ev.preventDefault();
+            applyGeneralPeople(entries);
+            pasteGeneralPeopleWindow.classList.remove('show');
+        });
+        generalTaxInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            generalTaxInfoPopover.classList.toggle('show');
+        });
+        document.addEventListener('click', (e) => {
+            if (!generalTaxInfoPopover.classList.contains('show')) return;
+            if (generalTaxInfoPopover.contains(e.target) || generalTaxInfoBtn.contains(e.target)) return;
+            generalTaxInfoPopover.classList.remove('show');
+        });
+        payModeInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            payModeInfoPopover.classList.toggle('show');
+        });
+        document.addEventListener('click', (e) => {
+            if (!payModeInfoPopover.classList.contains('show')) return;
+            if (payModeInfoPopover.contains(e.target) || payModeInfoBtn.contains(e.target)) return;
+            payModeInfoPopover.classList.remove('show');
+        });
+
+        addItemBtn.addEventListener('click', () => addItem());
+        clearItemsBtn.addEventListener('click', clearAllItems);
+
+        // 人员表底部：添加一位新人
+        addPersonBtn.addEventListener('click', () => {
+            const current = parseInt(countInput.value, 10) || 0;
+            countInput.value = current + 1;
+            syncResultTableRows();
+            triggerAutoCalc();
+            const nameInputs = resultTableBody.querySelectorAll('.person-name-input');
+            const last = nameInputs[nameInputs.length - 1];
+            if (last) { last.focus(); last.select(); }
+        });
+
+        // ===== 远征类型下拉 =====
+        const MISSION_TYPES = ['闹钟（帕普拉图斯）', '猪（查乌）', '蝴蝶（艾菲尼娅）', '巴洛克', '进阶巴洛克', '大叔（克雷赛尔）', '扎昆', '泰扎（六手邪神拉瓦纳）', '狮熊（心疤狮和暴力熊', '武林妖僧', '黑龙（暗黑龙王）', '蛤蟆（天皇蟾蜍）', '狮子王', '绯红'];
+        let missionPanelOpen = false;
+
+        function openMissionPanel(query) {
+            const q = String(query || '').trim().toLowerCase();
+            const list = MISSION_TYPES.filter(t => !q || t.toLowerCase().includes(q));
+            missionList.innerHTML = list.length
+                ? list.map(t => `<div class="combo-item" data-value="${escapeHtml(t)}"><span class="combo-name">${escapeHtml(t)}</span></div>`).join('')
+                : '<div class="combo-empty">没有匹配项</div>';
+            const rect = missionInput.getBoundingClientRect();
+            missionPanel.style.width = Math.max(rect.width, 200) + 'px';
+            missionPanel.style.left = rect.left + 'px';
+            missionPanel.style.top = (rect.bottom + 4) + 'px';
+            missionPanel.classList.add('show');
+            missionPanelOpen = true;
+        }
+
+        function closeMissionPanel() {
+            missionPanel.classList.remove('show');
+            missionPanelOpen = false;
+        }
+
+        missionInput.addEventListener('focus', () => openMissionPanel(''));
+        missionInput.addEventListener('input', () => openMissionPanel(missionInput.value));
+        missionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { closeMissionPanel(); missionInput.blur(); }
+            if (e.key === 'Enter' && missionPanelOpen) {
+                const first = missionList.querySelector('.combo-item');
+                if (first) { missionInput.value = first.dataset.value; closeMissionPanel(); }
+            }
+        });
+        missionList.addEventListener('click', (e) => {
+            const item = e.target.closest('.combo-item');
+            if (!item) return;
+            missionInput.value = item.dataset.value;
+            closeMissionPanel();
+        });
+        document.addEventListener('click', (e) => {
+            if (!missionPanelOpen) return;
+            if (missionPanel.contains(e.target) || missionInput.contains(e.target)) return;
+            closeMissionPanel();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            hydrateIcons();
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            missionDate.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            syncResultTableRows();
+            applyMode('general');
+            rebuildItems();
+            rebuildGeneralPeople();
+            calculateGeneral();
+        });
+    </script>
+<script src="../assets/auth-state.js?v=2"></script>
+<script src="../assets/nav-auth.js?v=2"></script>
+</body>
+</html>
