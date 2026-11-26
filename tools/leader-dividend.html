@@ -2146,12 +2146,15 @@
 
             refreshAllItemTaxDisplay();
 
+            const noData = itemsContainer.querySelectorAll('.item-row').length === 0;
+            const goldText = v => noData ? '—' : v.toFixed(2) + ' 万';
+            const rmbText = v => noData ? '—' : v.toFixed(2) + ' 元';
             taxChips.innerHTML = `
-                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>金币摆摊税</span><span class="chip-value">${goldTaxTotal.toFixed(2)} 万</span></div>
-                <div class="tax-chip">${iconSvg('chart', '#b45309', 15)}<span>R税</span><span class="chip-value">${totalRmbTax.toFixed(2)} 元</span></div>
-                <div class="tax-chip">${iconSvg('building', '#b45309', 15)}<span>家族税合计</span><span class="chip-value">${unionTaxTotal.toFixed(2)} 万</span></div>
-                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${netGold.toFixed(2)} 万</span></div>
-                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${netRmb.toFixed(2)} 元</span></div>`;
+                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>金币摆摊税</span><span class="chip-value">${goldText(goldTaxTotal)}</span></div>
+                <div class="tax-chip">${iconSvg('chart', '#b45309', 15)}<span>R税</span><span class="chip-value">${rmbText(totalRmbTax)}</span></div>
+                <div class="tax-chip">${iconSvg('building', '#b45309', 15)}<span>家族税合计</span><span class="chip-value">${goldText(unionTaxTotal)}</span></div>
+                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${goldText(netGold)}</span></div>
+                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${rmbText(netRmb)}</span></div>`;
 
             const goldCells = resultTableBody.querySelectorAll('.gold-cell');
             const rmbCells = resultTableBody.querySelectorAll('.rmb-cell');
@@ -2559,13 +2562,17 @@
             const netGold = totalGold - goldTaxTotal;
             const netRmb = totalRmb;
 
+            const noData = rows.length === 0;
+            const goldText = v => noData ? '—' : v.toFixed(2) + ' 万';
+            const rmbText = v => (noData || !hasRmb) ? '—' : '¥' + v.toFixed(2) + ' 元';
+
             generalTaxChips.innerHTML = `
-                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>摆摊税</span><span class="chip-value">${goldTaxTotal.toFixed(2)} 万</span></div>
-                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${netGold.toFixed(2)} 万</span></div>
-                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${hasRmb ? '¥' + netRmb.toFixed(2) + ' 元' : '—'}</span></div>
-                <div class="tax-chip"><span>固定支出</span><span class="chip-value">${fixedGold.toFixed(2)} 万 / ${fixedRmb.toFixed(2)} 元</span></div>
-                <div class="tax-chip"><span>均分池</span><span class="chip-value">${(generalGold - fixedGold).toFixed(2)} 万</span></div>
-                <div class="tax-chip"><span>奶补池</span><span class="chip-value">${(milkGold).toFixed(2)} 万</span></div>`;
+                <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>摆摊税</span><span class="chip-value">${goldText(goldTaxTotal)}</span></div>
+                <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${goldText(netGold)}</span></div>
+                <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${rmbText(netRmb)}</span></div>
+                <div class="tax-chip"><span>固定支出</span><span class="chip-value">${noData ? '—' : fixedGold.toFixed(2) + ' 万 / ' + fixedRmb.toFixed(2) + ' 元'}</span></div>
+                <div class="tax-chip"><span>均分池</span><span class="chip-value">${goldText(generalGold - fixedGold)}</span></div>
+                <div class="tax-chip"><span>奶补池</span><span class="chip-value">${goldText(milkGold)}</span></div>`;
 
             currentGeneralResult = {
                 people: people.map(p => ({
@@ -3434,6 +3441,32 @@
             if (!missionPanelOpen) return;
             if (missionPanel.contains(e.target) || missionInput.contains(e.target)) return;
             closeMissionPanel();
+        });
+
+        // 有数据时，离开页面前提醒（关闭/刷新/跳转都会触发浏览器确认）
+        function hasEnteredData() {
+            const items = Array.from(itemsContainer.querySelectorAll('.item-row'));
+            const itemHasValue = items.some(row => {
+                const name = row.querySelector('.item-name-input').value.trim();
+                const gold = parseFloat(row.querySelector('.item-gold-input').value) || 0;
+                const rmb = parseFloat(row.querySelector('.item-rmb-input').value) || 0;
+                return !!name || gold > 0 || rmb > 0;
+            });
+            if (appMode === 'general') {
+                return itemHasValue
+                    || generalPeopleBody.querySelectorAll('tr.g-person-row').length > 0
+                    || fixedPeopleBody.querySelectorAll('tr').length > 0;
+            }
+            const names = Array.from(resultTableBody.querySelectorAll('.person-name-input')).map(i => i.value.trim());
+            const customNames = names.some(n => n && !/^第\d+人$/.test(n));
+            const count = parseInt(countInput.value, 10) || 0;
+            return itemHasValue || customNames || count !== 6;
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (!hasEnteredData()) return;
+            e.preventDefault();
+            e.returnValue = '';
         });
 
         window.addEventListener('DOMContentLoaded', () => {
