@@ -871,34 +871,9 @@
 })();
 </script>
 
-<!-- 已登录时把导航图标点亮（账号页自己会处理，这里只给其余页面用） -->
-<script>
-(function () {
-  try {
-    if (!localStorage.getItem('xsbhxh_email')) return;
-    // 光有邮箱不够：令牌过期了就不算登录，否则图标会一直亮着「已登录」
-    var tok = localStorage.getItem('xsbhxh_token') || '';
-    var alive = false;
-    try {
-      var part = tok.split('.')[1];
-      if (part) {
-        var b64 = part.replace(/-/g, '+').replace(/_/g, '/');
-        var pad = b64.length % 4 ? new Array(5 - (b64.length % 4)).join('=') : '';
-        var payload = JSON.parse(atob(b64 + pad));
-        var exp = (payload.exp || 0) * 1000;
-        alive = !exp || exp > Date.now();
-      }
-    } catch (e) { alive = false; }
-    if (!alive) return;
-
-    var a = document.querySelector('.xsb-auth, .nav-auth');
-    if (!a) return;
-    var t = a.querySelector('.xsb-auth-txt, .nav-auth-txt');
-    if (t) t.textContent = '已登录';
-    a.classList.add('is-on');
-  } catch (e) {}
-})();
-</script>
+<!-- 登录状态：判断逻辑全站只有一份（assets/auth-state.js），这里只负责点亮导航栏图标 -->
+<script src="../assets/auth-state.js"></script>
+<script src="../assets/nav-auth.js"></script>
 
 <!-- 让选中的胶囊滑动到当前项（移动端） -->
 <script>
