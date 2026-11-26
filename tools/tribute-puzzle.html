@@ -2894,6 +2894,7 @@
     // 登录/注册成功后，把当前设备上还没归属的旧成绩绑到这个账号
     async function claimRecords() {
       if (!authToken) return;
+      await ensureFreshToken();
       try {
         const res = await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
           method: 'POST',
@@ -3069,21 +3070,45 @@
       return h;
     }
 
-    // 读榜单。令牌过期时 PostgREST 会返回 401，而令牌可能已经在本地躺了很久
-    // （Safari 尤其容易留着），此时把令牌丢掉、用匿名身份重试一次——
-    // 榜单本来就是公开数据，不该因为一个过期令牌就整个看不了。
+    // 用 refresh_token 换一个新的 access_token。
+    // 令牌 1 小时就过期，不做续期的话玩家一小时后就会被静默踢下线。
+    async function tryRefreshAuth() {
+      if (!authRefresh) return false;
+      try {
+        const res = await fetch(LB_URL + '/auth/v1/token?grant_type=refresh_token', {
+          method: 'POST',
+          headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: authRefresh })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        if (!data || !data.access_token) return false;
+        saveAuth(data);
+        renderAuthBar();
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // 读榜单。令牌过期时 PostgREST 会返回 401：
+    // 先试着用 refresh_token 续期，续不上才丢掉令牌、改用匿名身份。
     async function lbRead(path) {
       let res = await fetch(LB_URL + path, { headers: lbHeaders() });
       if (res.status === 401 && authToken) {
-        try { console.warn('[榜单] 令牌已失效，改用匿名身份重试'); } catch (e) {}
-        try {
-          localStorage.removeItem(LB_TOKEN_KEY);
-          localStorage.removeItem(LB_REFRESH_KEY);
-        } catch (e) {}
-        authToken = '';
-        authRefresh = '';
-        renderAuthBar();
-        res = await fetch(LB_URL + path, { headers: lbHeaders() });
+        if (await tryRefreshAuth()) {
+          res = await fetch(LB_URL + path, { headers: lbHeaders() });
+        } else {
+          try { console.warn('[榜单] 令牌续期失败，改用匿名身份'); } catch (e) {}
+          try {
+            localStorage.removeItem(LB_TOKEN_KEY);
+            localStorage.removeItem(LB_REFRESH_KEY);
+          } catch (e) {}
+          authToken = '';
+          authRefresh = '';
+          renderAuthBar();
+          res = await fetch(LB_URL + path, { headers: lbHeaders() });
+        }
       }
       return res;
     }
@@ -3199,6 +3224,7 @@
     // 之后如果一直没有任何通关提交，这局就会被算作放弃（超时 10 分钟）。
     // 玩家看答案后刷新页面、或者直接关掉，都逃不掉——记录已经在服务器上了。
     async function registerRun(gid) {
+      await ensureFreshToken();
       let nick = currentNickname();
       const chars = Array.from(nick);
       if (chars.length > 12) nick = chars.slice(0, 12).join('');
@@ -3224,6 +3250,7 @@
     }
 
     async function postScore(nickname, pattern, rounds, durationMs, trace, gid) {
+      await ensureFreshToken();
       // 后面必须带 ?select=score：trace 列对匿名用户是「无权限」，而
       // Prefer: return=representation 默认要求 RETURNING *（所有列），
       // 一旦碰到 trace 整条插入就会被 42501 拒掉。限定只回传 score 就没问题。
@@ -3870,6 +3897,26 @@
     async function getMyActiveRecord() {
       const rows = await fetchMyScores();
       return rows.length ? { nickname: rows[0].nickname, score: rows[0].score } : null;
+    }
+
+    // 提交/认领这些写操作前先确认令牌还能用：快过期就先续期，
+    // 不然玩家会在「登录着」的状态下悄悄提交成匿名记录。
+    async function ensureFreshToken() {
+      if (!authToken) return;
+      let exp = 0;
+      try {
+        const part = String(authToken).split('.')[1];
+        if (part) {
+          const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+          const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+          const payload = JSON.parse(atob(b64 + pad));
+          exp = (payload.exp || 0) * 1000;
+        }
+      } catch (e) { exp = 0; }
+      // 已经过期，或 2 分钟内就要过期 → 续期
+      if (exp && exp < Date.now() + 120000) {
+        await tryRefreshAuth();
+      }
     }
 
     async function doSubmit(nick, auto) {
