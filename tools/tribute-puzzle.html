@@ -1676,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.18</div>
+  <div class="page-ver" id="pageVer">v1.6.19</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -2800,6 +2800,9 @@
     }
 
     function clearAuth() {
+      // 退出登录的时刻记下来：下次登录只认领「这之后」产生的游客记录，
+      // 不会把很久以前、甚至别人用这台设备打的游客局也收进来
+      try { localStorage.setItem('xsbhxh_logout_at', new Date().toISOString()); } catch (e) {}
       AUTH.clear();
       loadAuth();
     }
@@ -2863,15 +2866,21 @@
       return data;
     }
 
-    // 登录/注册成功后，把当前设备上还没归属的旧成绩绑到这个账号
+    // 登录/注册成功后，把当前设备上还没归属的旧成绩绑到这个账号。
+    // 只认「上次退出登录之后」产生的那批，避免把很久以前或别人打的游客局也收进来。
     async function claimRecords() {
       if (!authToken) return;
       await ensureFreshToken();
+      let since = null;
+      try {
+        const raw = localStorage.getItem('xsbhxh_logout_at') || '';
+        if (raw) since = raw;
+      } catch (e) {}
       try {
         const res = await fetch(LB_URL + '/rest/v1/rpc/claim_my_records', {
           method: 'POST',
           headers: Object.assign({}, lbHeaders(), { 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ p_player: getPlayerId() })
+          body: JSON.stringify({ p_player: getPlayerId(), p_since: since })
         });
         // 以前失败是静默吞掉的，导致「登录了却没合并」很难发现
         if (!res.ok) {

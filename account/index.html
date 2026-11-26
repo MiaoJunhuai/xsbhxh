@@ -380,6 +380,8 @@
   }
 
   function clearAuth() {
+    // 记下退出时刻：下次登录只认领这之后产生的游客记录
+    lsSet('xsbhxh_logout_at', new Date().toISOString());
     AUTH.clear();
     loadAuth();
   }
@@ -441,7 +443,9 @@
 
   function claimRecords() {
     if (!authToken) return Promise.resolve(0);
-    return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId() })
+    var since = '';
+    try { since = lsGet('xsbhxh_logout_at') || ''; } catch (e) {}
+    return postJson('/rest/v1/rpc/claim_my_records', { p_player: getPlayerId(), p_since: since || null })
       .then(function (res) {
         if (!res.ok) {
           // 以前失败静默吞掉，导致「登录了却没合并」很难发现
