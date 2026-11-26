@@ -552,8 +552,42 @@
       .catch(function () {});
   }
 
+  // 令牌是否还有效。邮箱是登录时写进本地的，令牌过期了它还在，
+  // 光看邮箱会把「登录已过期」错显示成「已登录」。
+  function tokenAlive() {
+    if (!authToken) return false;
+    var exp = 0;
+    try {
+      var part = String(authToken).split('.')[1];
+      if (!part) return false;
+      var b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      var pad = b64.length % 4 ? new Array(5 - (b64.length % 4)).join('=') : '';
+      var payload = JSON.parse(atob(b64 + pad));
+      exp = (payload.exp || 0) * 1000;
+    } catch (e) { return false; }
+    return !exp || exp > Date.now();
+  }
+
+  // 令牌 1 小时就过期，用 refresh_token 换一个新的，免得玩家一小时后被静默登出
+  function tryRefreshAuth() {
+    if (!authRefresh) return Promise.resolve(false);
+    return fetch(LB_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': LB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: authRefresh })
+    }).then(function (res) {
+      if (!res.ok) return false;
+      return res.json().then(function (data) {
+        if (!data || !data.access_token) return false;
+        saveAuth(data);
+        return true;
+      });
+    }).catch(function () { return false; });
+  }
+
   function render() {
-    if (authEmail) {
+    var state = !authEmail ? 'off' : (tokenAlive() ? 'on' : 'expired');
+    if (state === 'on') {
       guestView.hidden = true;
       userView.hidden = false;
       whoEl.textContent = authEmail;
@@ -563,6 +597,9 @@
     } else {
       guestView.hidden = false;
       userView.hidden = true;
+      if (state === 'expired') {
+        setMsg('登录已过期，请重新登录（账号里的东西都还在）', 'is-err');
+      }
     }
   }
 
@@ -689,8 +726,15 @@
   });
 
   loadAuth();
-  render();
   getPlayerId();
+  // 先按现有状态渲染一次，令牌过期就先悄悄续期再刷新界面
+  render();
+  if (authEmail && !tokenAlive()) {
+    tryRefreshAuth().then(function (ok) {
+      if (ok) render();
+      else setMsg('登录已过期，请重新登录（账号里的东西都还在）', 'is-err');
+    });
+  }
 })();
 </script>
 
