@@ -1054,6 +1054,18 @@
       color: #4e3b21;
       margin-bottom: .3rem;
     }
+    /* 两栏：上半「怎么玩」，下半「排行榜与积分」 */
+    .help-sec + .help-sec {
+      margin-top: .45rem;
+      padding-top: .4rem;
+      border-top: 1px dashed rgba(139, 110, 60, .38);
+    }
+    .help-sec-title {
+      font-size: .76rem;
+      font-weight: 700;
+      color: #8a6a1e;
+      margin-bottom: .16rem;
+    }
     .help-pop-list {
       margin: 0;
       padding-left: 1.1rem;
@@ -1062,7 +1074,10 @@
       color: #5b4a30;
     }
     .help-pop-list li { margin-bottom: .22rem; }
-    .help-pop-list b { color: #8a2a17; }
+    .help-pop-list li:last-child { margin-bottom: 0; }
+    .help-pop-list b { color: #8a2a17; white-space: nowrap; }
+    /* 三类反馈各占一行，扫一眼就能对上 */
+    .help-kv { display: block; padding-left: .1rem; }
     /* 页面版本号：方便一眼确认手机跑的是不是最新版 */
     .page-ver {
       margin-top: .35rem;
@@ -1661,7 +1676,7 @@
 <div class="game-container">
   <h1><span class="h1-emoji">🗿</span> 贤者贡品 · 四象祭坛 <span class="h1-emoji">🗿</span></h1>
   <div class="producer">✦ WingsMS 新手保护协会出品 ✦</div>
-  <div class="page-ver" id="pageVer">v1.6.7</div>
+  <div class="page-ver" id="pageVer">v1.6.8</div>
 
   <div class="mode-switch" role="tablist" aria-label="模式切换">
     <button type="button" class="mode-btn active" data-mode="play" role="tab" aria-selected="true">手动练习</button>
@@ -1682,14 +1697,26 @@
         <button type="button" class="help-btn" id="helpBtn" aria-expanded="false" aria-label="玩法说明" title="玩法说明">?</button>
         <div class="help-pop" id="helpPop" hidden role="dialog" aria-label="玩法说明">
           <div class="help-pop-title">玩法说明</div>
-          <ol class="help-pop-list">
-            <li>四件贡品要按<b>正确顺序</b>摆给四位贤者。点图标<span class="kb-only">，或按键盘 Q / W / E / R</span>。</li>
-            <li>摆好后点「询问贤者」。反馈里 <b>满意</b> 表示材料对且位置也对，<b>不满意</b> 表示材料对但位置错了。</li>
-            <li>最多 <b>7 次</b>机会。全部猜中即胜利。</li>
-            <li>分数看<b>题型复杂度、轮数、用时</b>：越难、越少轮、越快，分越高。</li>
-            <li>累计总分里，每<b>失败一局扣 1000 分</b>（中途关页面也算失败）。</li>
-            <li>游客也能上榜，但名字是系统给的。想自己取名、换设备不丢分，得注册。</li>
-          </ol>
+          <div class="help-sec">
+            <div class="help-sec-title">🎮 怎么玩</div>
+            <ol class="help-pop-list">
+              <li>四件贡品要按<b>正确顺序</b>摆给四位贤者。点图标<span class="kb-only">，或按键盘 Q / W / E / R</span>。</li>
+              <li>点「询问贤者」，贤者会按三类分别报数：
+                <span class="help-kv"><b>满意</b>：材料对、位置也对</span>
+                <span class="help-kv"><b>不满意</b>：材料对、位置错</span>
+                <span class="help-kv"><b>认不出</b>：材料不对（答案里没有，或已用光）</span>
+              </li>
+              <li>一共 <b>7 次</b>机会。第 <b>7 次</b>还没全部猜对，本局就<b>失败</b>（会公布正确答案）。</li>
+            </ol>
+          </div>
+          <div class="help-sec">
+            <div class="help-sec-title">🏆 排行榜与积分</div>
+            <ol class="help-pop-list" start="4">
+              <li>分数看<b>题型复杂度、轮数、用时</b>：越难、越少轮、越快，分越高。</li>
+              <li>累计总分里，每<b>失败一局扣 1000 分</b>（中途关页面也算失败）。</li>
+              <li>游客也能上榜，但名字是系统给的。想自己取名、换设备不丢分，得注册。</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
