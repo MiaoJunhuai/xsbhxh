@@ -35,13 +35,22 @@
 
   * { box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; overflow-x: hidden; }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    overflow-x: clip;              /* 新浏览器用 clip：不创建滚动容器，sticky 导航不受影响 */
+    overscroll-behavior-x: none;   /* 禁止横向弹性回弹 */
+  }
 
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     color: var(--ink);
+    /* 纵向滑动为主：手指带一点横向分量时不要触发横向拖动 / 回弹 */
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-x: none;
+    max-width: 100%;
     background:
       radial-gradient(circle at 12% 8%, rgba(216, 178, 90, .18) 0%, transparent 34%),
       radial-gradient(circle at 88% 4%, rgba(120, 176, 120, .16) 0%, transparent 30%),
