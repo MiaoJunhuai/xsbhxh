@@ -392,6 +392,14 @@
         .view-switch { background: #eef2f7; }
         .view-switch-label { display: inline-flex; align-items: center; color: #94a3b8; margin-right: -6px; }
         .view-switch-label svg { width: 15px; height: 15px; }
+        .app-toast {
+            position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(12px);
+            background: #1f2937; color: #fff; padding: 11px 18px; border-radius: 12px;
+            font-size: 0.82rem; line-height: 1.5; max-width: min(80vw, 560px); text-align: center;
+            box-shadow: 0 16px 34px rgba(15,23,42,0.28); opacity: 0; pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease; z-index: 4000;
+        }
+        .app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .view-switch .pay-opt { font-size: 0.72rem; padding: 4px 10px; color: #64748b; }
         .view-switch .pay-opt.active { background: #0f766e; color: #fff; box-shadow: none; }
         .pay-from { font-size: 0.62rem; margin-right: 4px; font-weight: 500; }
@@ -431,7 +439,10 @@
         .team-divider-row.dragging td { background: #e0e7ff; cursor: grabbing; }
         .divider-handle { color: var(--primary); font-weight: 700; margin-right: 6px; letter-spacing: 1px; }
         .divider-name { font-size: 0.72rem; color: var(--text-secondary); }
-        .divider-remove { border: 1px solid #c7d2fe; background: #fff; color: #b91c1c; border-radius: 6px; font-size: 0.72rem; padding: 0 7px; cursor: pointer; margin-left: 8px; line-height: 1.6; }
+        .divider-remove { border: 1px solid #fecaca; background: #fff; color: #b91c1c; border-radius: 6px; font-size: 0.72rem; padding: 0 8px; cursor: pointer; margin-left: 8px; line-height: 1.7; }
+        .team-list tr td { transition: background-color 0.35s ease; }
+tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease; }
+        
         .divider-ghost { position: fixed; height: 3px; background: var(--primary); border-radius: 2px; z-index: 3000; pointer-events: none; display: none; box-shadow: 0 0 0 2px rgba(108,92,231,0.2); }
         .general-table tr.leader-row td { background: #fffbeb; border-top: 2px solid #fcd34d; }
         .general-table tr.leader-row .g-team-cell { font-weight: 600; color: #b45309; }
@@ -978,7 +989,7 @@
     <div class="paste-window" id="teamWindow">
         <div class="paste-content team-window-content">
             <h4 style="margin:0 0 8px;"><span data-icon="users" data-color="#2d3436"></span> 队伍分配</h4>
-            <p class="fixed-hint" style="margin-bottom:12px;">默认每 6 人一队、每队第一位为队长。用鼠标拖动分界线即可在成员之间调整队伍（拖动时可以先超过 6 人，点确定时会检查）；双击某位成员可在其前面插入新队伍。确定后按队伍结算：团长先把队总额面对面交易给队长（扣摆摊税），队长再按权重分给队员。</p>
+            <p class="fixed-hint" style="margin-bottom:12px;">默认每 6 人一队、每队第一位为队长。拖动分界线可在成员之间调整队伍（拖动时可以先超过 6 人，点确定时会检查）；双击某位成员可在其前面插入新队伍；分界线右侧的「删除」可把两队合并。<b>名字为空（显示「—」）的人，点确定后会被自动删除。</b>确定后按队伍结算：团长先把队总额面对面交易给队长（扣摆摊税），队长再按权重分给队员。</p>
             <div class="team-list" id="teamList"></div>
             <div style="display:flex; justify-content:space-between; margin-top:14px; gap:10px; flex-wrap:wrap;">
                 <div style="display:flex; gap:8px;">
@@ -1064,6 +1075,20 @@
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[c]));
+        }
+
+        function showToast(msg) {
+            let el = document.getElementById('appToast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'appToast';
+                el.className = 'app-toast';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(el._hideTimer);
+            el._hideTimer = setTimeout(() => el.classList.remove('show'), 4200);
         }
 
         const defaultTemplateText = `[单价计税]暗杀30：10000
@@ -2527,6 +2552,7 @@
             }
 
             // 显示
+            const pureMilkMode = !hasGeneralPool && rows.length > 0;
             const firstOfTeam = {};
             if (hasGeneralPool) people.forEach(p => { if (firstOfTeam[p.team] === undefined) firstOfTeam[p.team] = p; });
 
@@ -2535,7 +2561,7 @@
                 const cell = p.tr.querySelector('.g-team-cell');
                 let showG = 0;
                 let showR = 0;
-                if (!hasGeneralPool) {
+                if (pureMilkMode) {
                     // 纯奶补：只有奶妈有金额
                     if (cell) cell.innerHTML = p.isPriest ? '<span class="leader-tag">奶妈</span>' : '';
                     if (p.isPriest) {
@@ -2548,12 +2574,13 @@
                         p.tr.querySelector('.g-rmb-cell').innerHTML = '—';
                     }
                 } else if (!teamMode) {
-                    // 一人付所有：不需要队伍信息
+                    // 一人付所有：不需要队伍信息（没物品/没价格时显示 —）
                     if (cell) cell.innerHTML = '';
                     showG = p.gold;
                     showR = hasRmb ? p.rmb : 0;
-                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}`;
-                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
+                    const hasMoney = showG > 0.005 || showR > 0.005;
+                    p.tr.querySelector('.g-gold-cell').innerHTML = hasMoney ? `<span class="pay-from pay-leader">找团长</span>${p.gold.toFixed(2)}` : '—';
+                    p.tr.querySelector('.g-rmb-cell').innerHTML = (hasRmb && showR > 0.005) ? `<span class="pay-from pay-leader">找团长</span>¥${p.rmb.toFixed(2)}` : '—';
                 } else {
                     if (cell) {
                         const isHead = firstOfTeam[p.team] === p;
@@ -2795,6 +2822,16 @@
             });
         }
 
+        // 所有物品都是奶补（没有均分物品）
+        function allItemsAreMilk() {
+            const rows = Array.from(itemsContainer.querySelectorAll('.item-row'));
+            if (!rows.length) return false;
+            return rows.every(row => {
+                const btn = row.querySelector('.milk-switch');
+                return btn && btn.dataset.milk === '1';
+            });
+        }
+
         function applyGeneralPeople(entries) {
             if (!entries || !entries.length) return false;
             generalPeopleBody.innerHTML = '';
@@ -2808,7 +2845,20 @@
             normalizeTeamData();
             arrangeTeamRows();
             calculateGeneral();
-            if (hasGeneralPoolItems() && payMode === 'team') openTeamWindow();
+            // 人数超过一队（6 人）时，自动切到「团长付队长」并打开队伍分配（纯奶补除外）
+            if (entries.length > 6 && !allItemsAreMilk()) {
+                if (payMode !== 'team') {
+                    payMode = 'team';
+                    document.querySelectorAll('#payModeSwitch .pay-opt').forEach(b => b.classList.toggle('active', b.dataset.pay === 'team'));
+                    calculateGeneral();
+                    showToast('人数超过一队（6 人），已自动切换到「团长付队长」并打开队伍分配：人多时要先分给队长，再由队长发给队员。');
+                } else {
+                    showToast('人数超过一队（6 人），已打开队伍分配，确认队长和每队成员后再确定。');
+                }
+                openTeamWindow();
+            } else if (hasGeneralPoolItems() && payMode === 'team') {
+                openTeamWindow();
+            }
             return true;
         }
 
@@ -2868,6 +2918,7 @@
                                 <td colspan="5">
                                     <span class="divider-handle">⋮⋮</span>
                                     <span class="divider-name">第 ${d.team} 队从这里开始</span>
+                                    <button type="button" class="divider-remove" data-idx="${i}" title="删除这条分界线（和上一队合并）">删除</button>
                                 </td>
                             </tr>`;
                         }
@@ -2884,6 +2935,17 @@
         }
 
         teamList.addEventListener('click', (e) => {
+            const delDivider = e.target.closest('.divider-remove');
+            if (delDivider) {
+                e.stopPropagation();
+                const idx = parseInt(delDivider.dataset.idx);
+                if (idx > 0) {
+                    teamDraft[idx].groupStart = false;
+                    normalizeDraft();
+                    renderTeamList();
+                }
+                return;
+            }
             const del = e.target.closest('.team-del-btn');
             if (del) {
                 const i = parseInt(del.dataset.idx);
@@ -2916,6 +2978,7 @@
         let dividerDrag = null;
 
         teamList.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('.divider-remove')) return;
             const divider = e.target.closest('.team-divider-row');
             if (!divider) return;
             e.preventDefault();
@@ -2987,6 +3050,29 @@
             renderTeamList();
         });
         cancelTeamBtn.addEventListener('click', () => teamWindow.classList.remove('show'));
+        // 超员队伍闪红定位
+        function highlightOverTeam(teamNo) {
+            teamList.querySelectorAll('tr.over-limit').forEach(el => el.classList.remove('over-limit'));
+            const rows = Array.from(teamList.querySelectorAll('tr.team-person-row'));
+            let firstRow = null;
+            let headIdx = -1;
+            rows.forEach((tr, i) => {
+                if (teamDraft[i] && teamDraft[i].team === teamNo) {
+                    tr.classList.add('over-limit');
+                    if (!firstRow) firstRow = tr;
+                    if (headIdx < 0) headIdx = i;
+                }
+            });
+            if (headIdx > 0) {
+                const divider = teamList.querySelector(`.team-divider-row[data-idx="${headIdx}"]`);
+                if (divider) divider.classList.add('over-limit');
+            }
+            if (firstRow) firstRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            setTimeout(() => {
+                teamList.querySelectorAll('.over-limit').forEach(el => el.classList.remove('over-limit'));
+            }, 850);
+        }
+
         confirmTeamBtn.addEventListener('click', () => {
             const isEmptyName = s => {
                 const v = String(s == null ? '' : s).trim();
@@ -2998,7 +3084,8 @@
             kept.forEach(d => { counts[d.team] = (counts[d.team] || 0) + 1; });
             const overTeam = Object.keys(counts).find(t => counts[t] > 6);
             if (overTeam) {
-                alert(`第 ${overTeam} 队有 ${counts[overTeam]} 人，每队最多 6 人，请再拖动分界线调整一下。`);
+                highlightOverTeam(parseInt(overTeam, 10));
+                showToast(`第 ${overTeam} 队有 ${counts[overTeam]} 人，超过 6 人上限，已用红色标出，请拖动分界线或删除分界线调整。`);
                 return;
             }
             const keptSet = new Set(kept.map(d => d.trEl));
