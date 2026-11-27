@@ -2342,13 +2342,14 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         function createGeneralPersonRow(data = {}) {
             const tr = document.createElement('tr');
             tr.className = 'g-person-row';
-            const jobValue = GENERAL_JOBS.includes(data.job) ? data.job : '主教';
+            const isPlaceholder = !!data.placeholder;
+            const jobValue = isPlaceholder ? '' : (GENERAL_JOBS.includes(data.job) ? data.job : '主教');
             tr.dataset.team = parseInt(data.team) || 1;
             tr.dataset.leader = data.leader ? '1' : '0';
             tr.innerHTML = `
                 <td class="g-team-cell">└</td>
                 <td class="td-job">
-                    <select class="g-job-select">${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
+                    <select class="g-job-select">${isPlaceholder ? '<option value="" selected>—</option>' : ''}${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
                 </td>
                 <td><input type="text" class="g-name-input" placeholder="姓名" value="${escapeHtml(data.name || '')}"></td>
                 <td><input type="number" class="g-weight-input" min="0" step="any" value="${data.weight || '1'}"></td>
@@ -2553,11 +2554,12 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
             // 显示
             const pureMilkMode = !hasGeneralPool && rows.length > 0;
+            const showTeams = payMode === 'team' && people.length > 0;
             const firstOfTeam = {};
-            if (hasGeneralPool) people.forEach(p => { if (firstOfTeam[p.team] === undefined) firstOfTeam[p.team] = p; });
+            people.forEach(p => { if (firstOfTeam[p.team] === undefined) firstOfTeam[p.team] = p; });
 
             people.forEach(p => {
-                p.tr.classList.toggle('leader-row', teamMode && p.leader);
+                p.tr.classList.toggle('leader-row', showTeams && p.leader);
                 const cell = p.tr.querySelector('.g-team-cell');
                 let showG = 0;
                 let showR = 0;
@@ -2573,7 +2575,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                         p.tr.querySelector('.g-gold-cell').innerHTML = '—';
                         p.tr.querySelector('.g-rmb-cell').innerHTML = '—';
                     }
-                } else if (!teamMode) {
+                } else if (!showTeams) {
                     // 一人付所有：不需要队伍信息（没物品/没价格时显示 —）
                     if (cell) cell.innerHTML = '';
                     showG = p.gold;
@@ -2593,15 +2595,16 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                     // 队长从团长领的是税前队总额（面对面交易时再扣税），队员领的是扣税后队总额按权重分的
                     showG = p.leader ? (p.teamTotalG || 0) : p.gold;
                     showR = hasRmb ? (p.leader ? (p.teamTotalR || 0) : p.rmb) : 0;
-                    p.tr.querySelector('.g-gold-cell').innerHTML = `<span class="pay-from ${payClass}">${payFrom}</span>${showG.toFixed(2)}`;
-                    p.tr.querySelector('.g-rmb-cell').innerHTML = hasRmb ? `<span class="pay-from ${payClass}">${payFrom}</span>¥${showR.toFixed(2)}` : '—';
+                    const teamHasMoney = showG > 0.005 || showR > 0.005;
+                    p.tr.querySelector('.g-gold-cell').innerHTML = teamHasMoney ? `<span class="pay-from ${payClass}">${payFrom}</span>${showG.toFixed(2)}` : '—';
+                    p.tr.querySelector('.g-rmb-cell').innerHTML = (hasRmb && showR > 0.005) ? `<span class="pay-from ${payClass}">${payFrom}</span>¥${showR.toFixed(2)}` : '—';
                 }
                 // 只看有金额 / 显示所有
                 const visible = showAllPeople || showG > 0.005 || showR > 0.005;
                 p.tr.style.display = visible ? '' : 'none';
             });
 
-            if (typeof openTeamBtn !== 'undefined' && openTeamBtn) openTeamBtn.style.display = (hasGeneralPool && teamMode) ? '' : 'none';
+            if (typeof openTeamBtn !== 'undefined' && openTeamBtn) openTeamBtn.style.display = showTeams ? '' : 'none';
             const viewSwitch = document.getElementById('peopleViewSwitch');
             if (viewSwitch) viewSwitch.style.display = '';
 
@@ -2719,13 +2722,17 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         }
 
         function captureGeneralPeople() {
-            return Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row')).map(tr => ({
-                job: tr.querySelector('.g-job-select').value,
-                name: tr.querySelector('.g-name-input').value,
-                weight: tr.querySelector('.g-weight-input').value,
-                team: parseInt(tr.dataset.team) || 1,
-                leader: tr.dataset.leader === '1'
-            }));
+            return Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row')).map(tr => {
+                const job = tr.querySelector('.g-job-select').value;
+                return {
+                    job,
+                    name: tr.querySelector('.g-name-input').value,
+                    weight: tr.querySelector('.g-weight-input').value,
+                    team: parseInt(tr.dataset.team) || 1,
+                    leader: tr.dataset.leader === '1',
+                    placeholder: job === ''
+                };
+            });
         }
 
         function captureFixedPeople() {
@@ -2783,9 +2790,15 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
         // ===== 通用模式：人员粘贴 =====
         function parseGeneralPeopleText(text) {
-            const lines = String(text || '').replace(/\r/g, '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            const rawLines = String(text || '').replace(/\r/g, '').split('\n');
             const out = [];
-            lines.forEach(line => {
+            rawLines.forEach(rawLine => {
+                // 表格里的空占位行（带制表符、没有文字）也要保留，避免后面队伍人数错位
+                if (rawLine.trim() === '') {
+                    if (rawLine.includes('\t')) out.push({ job: '', name: '', weight: 1, placeholder: true });
+                    return;
+                }
+                const line = rawLine.trim();
                 if (/^(职业|姓名|人员|名字)/.test(line)) return;
                 const parts = line.split(/\t+|\s{2,}/).filter(Boolean);
                 let jobText = (parts[0] || '').trim();
@@ -2840,7 +2853,8 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 name: e.name,
                 weight: e.weight || 1,
                 team: Math.floor(i / 6) + 1,
-                leader: i % 6 === 0
+                leader: i % 6 === 0,
+                placeholder: !!e.placeholder
             })));
             normalizeTeamData();
             arrangeTeamRows();
