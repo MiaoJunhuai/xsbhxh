@@ -820,7 +820,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 </div>
             </div>
             <table class="unified-table" id="resultTable">
-                <thead><tr><th>人员</th><th style="width:110px;">权重</th><th style="width:26%;"><span data-icon="coins" data-color="#636e72" data-size="15"></span> 金币（万）</th><th style="width:24%;">¥ 人民币（元）</th><th style="width:40px;"></th></tr></thead>
+                <thead><tr><th>人员</th><th style="width:110px;" class="num-th">权重</th><th style="width:26%;"><span data-icon="coins" data-color="#636e72" data-size="15"></span> 金币（万）</th><th style="width:24%;">¥ 人民币（元）</th><th style="width:40px;"></th></tr></thead>
                 <tbody id="resultTableBody"></tbody>
             </table>
             <div class="add-person-wrap">
@@ -891,7 +891,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 </div>
             </div>
             <table class="unified-table general-table" id="generalTable">
-                <thead><tr><th style="width:80px;">成员</th><th style="width:160px;">职业</th><th>姓名</th><th style="width:90px;">权重</th><th style="width:20%;" class="num-th">金币（万）</th><th style="width:18%;" class="num-th">人民币（元）</th><th style="width:40px;"></th></tr></thead>
+                <thead><tr><th style="width:80px;">成员</th><th style="width:160px;">职业</th><th>姓名</th><th style="width:90px;" class="num-th">权重</th><th style="width:20%;" class="num-th">金币（万）</th><th style="width:18%;" class="num-th">人民币（元）</th><th style="width:40px;"></th></tr></thead>
                 <tbody id="generalPeopleBody"></tbody>
             </table>
             <div class="list-actions">
@@ -3203,14 +3203,25 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 btn.replaceWith(span);
             });
             // 支付方式滑块 → 静态
-            clone.querySelectorAll('.pay-mode-switch').forEach(sw => {
-                const mode = sw.querySelector('.pay-opt.active') ? sw.querySelector('.pay-opt.active').dataset.pay : 'direct';
+            const paySwitch = clone.querySelector('#payModeSwitch');
+            if (paySwitch) {
+                const mode = paySwitch.querySelector('.pay-opt.active') ? paySwitch.querySelector('.pay-opt.active').dataset.pay : 'direct';
                 const mk = (txt, on) => `<span style="display:inline-block;padding:5px 12px;border-radius:7px;font-size:0.78rem;font-weight:600;background:${on ? '#fff' : 'transparent'};color:${on ? '#6c5ce7' : '#64748b'};">${txt}</span>`;
                 const span = document.createElement('span');
                 span.style.cssText = 'display:inline-block;background:#f1f5f9;border-radius:9px;padding:3px;white-space:nowrap;';
                 span.innerHTML = mk('一人付所有', mode === 'direct') + mk('团长付队长', mode === 'team');
-                sw.replaceWith(span);
-            });
+                paySwitch.replaceWith(span);
+            }
+            // 显示过滤滑块 → 静态
+            const viewSwitch = clone.querySelector('#peopleViewSwitch');
+            if (viewSwitch) {
+                const vmode = viewSwitch.querySelector('.pay-opt.active') ? viewSwitch.querySelector('.pay-opt.active').dataset.view : 'all';
+                const mk = (txt, on) => `<span style="display:inline-block;padding:4px 10px;border-radius:7px;font-size:0.72rem;font-weight:600;background:${on ? '#0f766e' : 'transparent'};color:${on ? '#fff' : '#64748b'};">${txt}</span>`;
+                const span = document.createElement('span');
+                span.style.cssText = 'display:inline-block;background:#eef2f7;border-radius:9px;padding:3px;white-space:nowrap;';
+                span.innerHTML = mk('所有人', vmode === 'all') + mk('有金额', vmode === 'paid');
+                viewSwitch.replaceWith(span);
+            }
             clone.style.width = card.getBoundingClientRect().width + 'px';
             clone.style.boxShadow = 'none';
             clone.style.margin = '0';
