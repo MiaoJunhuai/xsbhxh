@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -249,7 +249,7 @@
         .paste-content { background: white; border-radius: 16px; padding: 24px; width: 450px; max-width: 90%; }
         .paste-content textarea { height: 200px; margin-bottom: 16px; }
         .result-card { background: #f9fbfd; border-radius: 14px; padding: 20px; margin-top: 20px; border: 1px solid var(--border); }
-        .add-person-wrap { margin-top: 12px; }
+        .add-person-wrap { margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .add-person-btn {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 14px; border: 1px dashed var(--border); border-radius: 9px;
@@ -264,7 +264,7 @@
         .unified-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 0.9rem; text-align: left; }
         .unified-table tbody tr:nth-child(even) { background-color: #ffffff; }
         .unified-table tbody tr:nth-child(odd) { background-color: #f9fbfd; }
-        .unified-table input.weight-input { width: 80px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); text-align: center; font-weight: 500; }
+        .unified-table input.weight-input { width: 100%; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); text-align: right; font-weight: 500; }
         .unified-table input.person-name-input {
             width: 100%;
             min-width: 90px;
@@ -375,7 +375,7 @@
         .general-table .td-job, .fixed-table .td-job { display: flex; align-items: center; gap: 6px; }
         .general-table .g-job-select, .fixed-table .f-job-select { flex: 1; width: auto; min-width: 0; }
         .general-table .g-name-input { width: 100%; }
-        .general-table .g-weight-input { width: 84px; text-align: right; }
+        .general-table .g-weight-input { width: 100%; text-align: right; padding-right: 12px; }
         .general-table .g-gold-cell, .general-table .g-rmb-cell { text-align: right; font-weight: 600; }
         .num-th { text-align: right !important; }
         .beta-badge {
@@ -392,6 +392,25 @@
         .view-switch { background: #eef2f7; }
         .view-switch-label { display: inline-flex; align-items: center; color: #94a3b8; margin-right: -6px; }
         .view-switch-label svg { width: 15px; height: 15px; }
+        .del-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+        .del-toggle-text { font-size: 0.74rem; color: #64748b; }
+        .del-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .del-toggle-track { width: 36px; height: 20px; border-radius: 999px; background: #cbd5e1; position: relative; transition: background 0.18s; flex: none; }
+        .del-toggle-track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left 0.18s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .del-toggle input:checked + .del-toggle-track { background: #ef4444; }
+        .del-toggle input:checked + .del-toggle-track::after { left: 18px; }
+        .del-switch { display: inline-flex; cursor: pointer; vertical-align: middle; }
+        th .del-switch { display: flex; align-items: center; justify-content: center; width: fit-content; margin: 0 auto; }
+        .del-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .del-switch-track { width: 40px; height: 22px; border-radius: 999px; background: #cbd5e1; position: relative; display: inline-block; transition: background 0.18s; }
+        .del-switch-knob { position: absolute; top: 1px; left: 1px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); display: inline-flex; align-items: center; justify-content: center; color: #475569; transition: left 0.18s, color 0.18s; }
+        .del-switch-knob svg { width: 14px; height: 14px; }
+        .del-switch input:checked + .del-switch-track { background: #ef4444; }
+        .del-switch input:checked + .del-switch-track .del-switch-knob { left: 19px; color: #ef4444; }
+        .unified-table td:last-child { text-align: center; }
+        .unified-table.hide-delete .remove-person-btn,
+        .unified-table.hide-delete .remove-g-person,
+        .unified-table.hide-delete .remove-f-person { display: none; }
         .app-toast {
             position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(12px);
             background: #1f2937; color: #fff; padding: 11px 18px; border-radius: 12px;
@@ -469,6 +488,9 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         .general-table .g-job-select, .general-table .g-name-input, .general-table .g-weight-input {
             padding: 4px 7px; font-size: 0.82rem;
         }
+        .general-table .g-weight-input { padding-right: 12px; }
+        #generalTable th:nth-child(4) { padding-right: 20px; }
+        #resultTable th:nth-child(2) { padding-right: 24px; }
         .fixed-table .f-gold-input, .fixed-table .f-rmb-input { width: 100%; text-align: right; }
         .fixed-table .f-note-input { width: 100%; }
         .general-summary { margin-bottom: 16px; }
@@ -782,10 +804,9 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <label><span data-icon="users" data-color="#636e72"></span>分配人数</label>
                 <div class="count-controls">
                     <input type="number" id="peopleCount" placeholder="例如 6" min="1" step="1" value="6">
-                    <button type="button" class="btn btn-secondary people-paste-btn" id="pastePeopleBtn"><span data-icon="userPlus" data-color="#636e72"></span>一键粘贴人员</button>
                 </div>
             </div>
-            <span class="paste-hint" id="pasteHint"><span data-icon="zap" data-color="#636e72"></span>粘贴人员：点击空白处按 <kbd>Ctrl+V</kbd>，或点「一键粘贴人员」</span>
+            <span class="paste-hint" id="pasteHint"><span data-icon="zap" data-color="#636e72"></span>粘贴人员：点击空白处按 <kbd>Ctrl+V</kbd>，或点「批量导入名单」</span>
         </div>
 
         <div class="result-card" id="resultCard" style="display: none;">
@@ -819,12 +840,13 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                     </div>
                 </div>
             </div>
-            <table class="unified-table" id="resultTable">
-                <thead><tr><th>人员</th><th style="width:110px;" class="num-th">权重</th><th style="width:26%;"><span data-icon="coins" data-color="#636e72" data-size="15"></span> 金币（万）</th><th style="width:24%;">¥ 人民币（元）</th><th style="width:40px;"></th></tr></thead>
+            <table class="unified-table hide-delete" id="resultTable">
+                <thead><tr><th>人员</th><th style="width:110px;" class="num-th">权重</th><th style="width:26%;"><span data-icon="coins" data-color="#636e72" data-size="15"></span> 金币（万）</th><th style="width:24%;">¥ 人民币（元）</th><th style="width:56px; text-align:center; vertical-align:middle;"><label class="del-switch" title="显示 / 隐藏删除按钮"><input type="checkbox" id="deleteToggleH"><span class="del-switch-track"><span class="del-switch-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M9.8 9.5 10.3 15.5"/><path d="M14.2 9.5 13.7 15.5"/></svg></span></span></label></th></tr></thead>
                 <tbody id="resultTableBody"></tbody>
             </table>
             <div class="add-person-wrap">
                 <button type="button" class="add-person-btn" id="addPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加人员</button>
+                <button type="button" class="btn btn-secondary" id="pastePeopleBtn" style="padding:6px 14px;"><span data-icon="userPlus" data-color="#636e72"></span>批量导入名单</button>
             </div>
         </div>
         </div>
@@ -883,19 +905,21 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <span class="view-switch-label" title="过滤" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z"/></svg></span><div class="pay-mode-switch view-switch" id="peopleViewSwitch" title="显示所有人 / 只显示有金额的人">
+                    <span class="view-switch-label" title="过滤" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z"/></svg></span><div class="pay-mode-switch view-switch" id="peopleViewSwitch" title="只显示有金额的人 / 显示所有人">
                         <button type="button" class="pay-opt active" data-view="all">所有人</button>
                         <button type="button" class="pay-opt" data-view="paid">有金额</button>
                     </div>
-                    <button type="button" class="btn btn-secondary" id="pasteGeneralPeopleBtn" style="padding:6px 14px;"><span data-icon="userPlus" data-color="#636e72"></span>一键粘贴人员</button>
                 </div>
             </div>
-            <table class="unified-table general-table" id="generalTable">
-                <thead><tr><th style="width:80px;">成员</th><th style="width:160px;">职业</th><th>姓名</th><th style="width:90px;" class="num-th">权重</th><th style="width:20%;" class="num-th">金币（万）</th><th style="width:18%;" class="num-th">人民币（元）</th><th style="width:40px;"></th></tr></thead>
+            <table class="unified-table general-table hide-delete" id="generalTable">
+                <thead><tr><th style="width:80px;">成员</th><th style="width:160px;">职业</th><th>游戏角色名</th><th style="width:90px;" class="num-th">权重</th><th style="width:20%;" class="num-th">金币（万）</th><th style="width:18%;" class="num-th">人民币（元）</th><th style="width:56px; text-align:center; vertical-align:middle;"><label class="del-switch" title="显示 / 隐藏删除按钮"><input type="checkbox" id="deleteToggleG"><span class="del-switch-track"><span class="del-switch-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M9.8 9.5 10.3 15.5"/><path d="M14.2 9.5 13.7 15.5"/></svg></span></span></label></th></tr></thead>
                 <tbody id="generalPeopleBody"></tbody>
             </table>
             <div class="list-actions">
-                <button type="button" class="add-person-btn" id="addGeneralPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加人员</button>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="add-person-btn" id="addGeneralPersonBtn"><span data-icon="plus" data-color="#636e72"></span>添加人员</button>
+                    <button type="button" class="btn btn-secondary" id="pasteGeneralPeopleBtn" style="padding:6px 14px;"><span data-icon="userPlus" data-color="#636e72"></span>批量导入名单</button>
+                </div>
                 <div class="list-actions-right">
                     <button type="button" class="btn btn-secondary small" id="openTeamBtn">调整队伍</button>
                     <button type="button" class="btn btn-danger small" id="clearGeneralPeopleBtn">清空人员</button>
@@ -906,8 +930,8 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <h4><span data-icon="coins" data-color="#2d3436"></span>固定工资人员（不参与权重）</h4>
             </div>
             <p class="fixed-hint">这里的固定金额会先从「均分」物品的总价里扣除，剩下的部分再按权重分给全员；「奶补」物品的收益只分给主教。</p>
-            <table class="unified-table fixed-table" id="fixedTable">
-                <thead><tr><th style="width:180px;">职业</th><th>姓名</th><th style="width:18%;" class="num-th">固定金币（万）</th><th style="width:16%;" class="num-th">固定人民币（元）</th><th>备注</th><th style="width:40px;"></th></tr></thead>
+            <table class="unified-table fixed-table hide-delete" id="fixedTable">
+                <thead><tr><th style="width:180px;">职业</th><th>游戏角色名</th><th style="width:18%;" class="num-th">固定金币（万）</th><th style="width:16%;" class="num-th">固定人民币（元）</th><th>备注</th><th style="width:56px; text-align:center; vertical-align:middle;"><label class="del-switch" title="显示 / 隐藏删除按钮"><input type="checkbox" id="deleteToggleF"><span class="del-switch-track"><span class="del-switch-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M9.8 9.5 10.3 15.5"/><path d="M14.2 9.5 13.7 15.5"/></svg></span></span></label></th></tr></thead>
                 <tbody id="fixedPeopleBody"></tbody>
             </table>
             <div class="list-actions">
@@ -1608,7 +1632,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
         // ===== 人员粘贴解析（支持「姓名」「姓名 权重」「纯权重」三种写法） =====
         const WEIGHT_ONLY_RE = /^-?\d+(?:\.\d+)?$/;
-        const PEOPLE_HEADER_RE = /^(姓名|人员|名字|昵称|权重|分配人数|分配|name|weight)/i;
+        const PEOPLE_HEADER_RE = /^(姓名|人员|名字|游戏角色名|权重|分配人数|分配|name|weight)/i;
 
         function parsePeopleText(raw) {
             const text = String(raw == null ? '' : raw).replace(/\r/g, '');
@@ -2351,7 +2375,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <td class="td-job">
                     <select class="g-job-select">${isPlaceholder ? '<option value="" selected>—</option>' : ''}${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
                 </td>
-                <td><input type="text" class="g-name-input" placeholder="姓名" value="${escapeHtml(data.name || '')}"></td>
+                <td><input type="text" class="g-name-input" placeholder="游戏角色名" value="${escapeHtml(data.name || '')}"></td>
                 <td><input type="number" class="g-weight-input" min="0" step="any" value="${data.weight || '1'}"></td>
                 <td class="g-gold-cell">0.00</td>
                 <td class="g-rmb-cell">0.00</td>
@@ -2408,7 +2432,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <td class="td-job">
                     <select class="f-job-select">${GENERAL_JOBS.map(j => `<option value="${j}"${j === jobValue ? ' selected' : ''}>${j}</option>`).join('')}</select>
                 </td>
-                <td><input type="text" class="f-name-input" placeholder="姓名" value="${escapeHtml(data.name || '')}"></td>
+                <td><input type="text" class="f-name-input" placeholder="游戏角色名" value="${escapeHtml(data.name || '')}"></td>
                 <td><input type="number" class="f-gold-input" step="any" min="0" placeholder="—" value="${data.gold || ''}"></td>
                 <td><input type="number" class="f-rmb-input" step="any" min="0" placeholder="—" value="${data.rmb || ''}"></td>
                 <td><input type="text" class="f-note-input" placeholder="备注" value="${escapeHtml(data.note || '')}"></td>
@@ -2619,7 +2643,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <div class="tax-chip">${iconSvg('cart', '#b45309', 15)}<span>摆摊税</span><span class="chip-value">${goldText(goldTaxTotal)}</span></div>
                 <div class="tax-chip net">${iconSvg('coins', '#15803d', 15)}<span>净金币</span><span class="chip-value">${goldText(netGold)}</span></div>
                 <div class="tax-chip net">${iconSvg('yen', '#15803d', 15)}<span>净人民币</span><span class="chip-value">${rmbText(netRmb)}</span></div>
-                <div class="tax-chip"><span>固定支出</span><span class="chip-value">${noData ? '—' : fixedGold.toFixed(2) + ' 万 / ' + fixedRmb.toFixed(2) + ' 元'}</span></div>
+                <div class="tax-chip"><span>固定支出</span><span class="chip-value">${(noData || (fixedGold <= 0 && fixedRmb <= 0)) ? '—' : fixedGold.toFixed(2) + ' 万 / ' + fixedRmb.toFixed(2) + ' 元'}</span></div>
                 <div class="tax-chip"><span>均分池</span><span class="chip-value">${goldText(generalGold - fixedGold)}</span></div>
                 <div class="tax-chip"><span>奶补池</span><span class="chip-value">${goldText(milkGold)}</span></div>`;
 
@@ -2924,7 +2948,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         function renderTeamList() {
             teamList.innerHTML = `
                 <table>
-                    <thead><tr><th style="width:170px;">队伍 / 分界</th><th style="width:120px;">职业</th><th>姓名</th><th style="width:100px;">队长</th><th style="width:40px;"></th></tr></thead>
+                    <thead><tr><th style="width:170px;">队伍 / 分界</th><th style="width:120px;">职业</th><th>游戏角色名</th><th style="width:100px;">队长</th><th style="width:40px;"></th></tr></thead>
                     <tbody>${teamDraft.map((d, i) => {
                         let html = '';
                         if (i > 0 && d.groupStart) {
@@ -3163,11 +3187,19 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             const clone = card.cloneNode(true);
             clone.removeAttribute('id');
             // 隐藏纯操作元素
-            clone.querySelectorAll('.mode-switch, .items-actions, .list-actions, .add-person-btn, .icon-btn, #actionButtons').forEach(el => {
+            clone.querySelectorAll('.mode-switch, .items-actions, .list-actions, .add-person-btn, .icon-btn, #actionButtons, .tax-info-wrap').forEach(el => {
                 el.style.display = 'none';
             });
-            // 复选框 → 画出来
+            // 截图底部补充支付方式说明（页面上的感叹号浮窗在截图里点不了）
+            const noteEl = clone.querySelector('.note');
+            if (noteEl) {
+                const extra = document.createElement('span');
+                extra.textContent = '　支付方式：一人付所有 = 团长直接付给每个人（含奶补），不经过队长；团长付队长 = 团长按队把税前队总额面对面交给队长（扣一次摆摊税），队长再按权重分给队员；人民币全程不扣税。';
+                noteEl.appendChild(extra);
+            }
+            // 复选框 → 画出来（删除开关保持原样，避免出现多余空框）
             clone.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                if (cb.closest('.del-switch')) return;
                 const on = cb.checked;
                 const span = document.createElement('span');
                 span.textContent = on ? '✓' : '';
@@ -3176,10 +3208,11 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             });
             // 文本 / 数字输入 → 文本
             clone.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(inp => {
+                const isWeightInput = inp.classList.contains('g-weight-input') || inp.classList.contains('weight-input') || inp.classList.contains('f-gold-input') || inp.classList.contains('f-rmb-input') || inp.classList.contains('item-gold-input') || inp.classList.contains('item-rmb-input');
                 const numeric = inp.classList.contains('g-weight-input') || inp.classList.contains('f-gold-input') || inp.classList.contains('f-rmb-input') || inp.classList.contains('item-gold-input') || inp.classList.contains('item-rmb-input') || inp.classList.contains('item-quantity-input');
                 const span = document.createElement('span');
                 span.textContent = inp.value || inp.placeholder || '';
-                span.style.cssText = `display:inline-block;padding:4px 7px;font-size:0.82rem;color:${inp.value ? '#334155' : '#94a3b8'};text-align:${numeric ? 'right' : 'left'};width:100%;box-sizing:border-box;`;
+                span.style.cssText = `display:inline-block;padding:4px ${isWeightInput ? 12 : 7}px 4px 7px;font-size:0.82rem;color:${inp.value ? '#334155' : '#94a3b8'};text-align:${numeric ? 'right' : 'left'};width:100%;box-sizing:border-box;`;
                 inp.replaceWith(span);
             });
             // 下拉 → 文本（按原页面的选中值，避免克隆后选择丢失）
@@ -3444,6 +3477,16 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 calculateGeneral();
             });
         });
+        function bindDeleteSwitch(cbId, tableId) {
+            const cb = document.getElementById(cbId);
+            const table = document.getElementById(tableId);
+            if (!cb || !table) return;
+            table.classList.toggle('hide-delete', !cb.checked);
+            cb.addEventListener('change', () => table.classList.toggle('hide-delete', !cb.checked));
+        }
+        bindDeleteSwitch('deleteToggleG', 'generalTable');
+        bindDeleteSwitch('deleteToggleF', 'fixedTable');
+        bindDeleteSwitch('deleteToggleH', 'resultTable');
         allMilkSwitch.addEventListener('click', () => {
             const next = allMilkSwitch.dataset.milk === '1' ? '0' : '1';
             itemsContainer.querySelectorAll('.milk-switch').forEach(b => { b.dataset.milk = next; });
@@ -3492,7 +3535,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         cancelPasteGeneralPeopleBtn.addEventListener('click', () => pasteGeneralPeopleWindow.classList.remove('show'));
         applyPasteGeneralPeopleBtn.addEventListener('click', () => {
             const entries = parseGeneralPeopleText(pasteGeneralPeopleData.value);
-            if (!entries.length) { alert('没有识别到人员数据，请检查格式：职业 + 姓名'); return; }
+            if (!entries.length) { alert('没有识别到人员数据，请检查格式：职业 + 游戏角色名'); return; }
             applyGeneralPeople(entries);
             pasteGeneralPeopleWindow.classList.remove('show');
         });
