@@ -609,6 +609,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         }
         .team-chief-btn.on { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; font-weight: 600; }
         .general-table td { padding: 5px 8px; }
+
         .general-table th { white-space: nowrap; }
         .general-table th { padding: 7px 8px; }
         .general-table .g-job-select, .general-table .g-name-input, .general-table .g-weight-input {
@@ -1041,6 +1042,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 </div>
                 <div class="list-actions-right">
                     <button type="button" class="btn btn-secondary small" id="openTeamBtn">调整队伍</button>
+                    <button type="button" class="btn btn-secondary small" id="openChiefBtn" style="display:none;">设置团长</button>
                     <button type="button" class="btn btn-danger small" id="clearGeneralPeopleBtn">清空人员</button>
                 </div>
             </div>
@@ -2862,11 +2864,11 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 if (tcell) {
                     let main = '';
                     if (pureMilkMode) main = p.isPriest ? '<span class="team-no">奶妈</span>' : '';
-                    else if (p.team && firstOfTeam[p.team] === p) main = `<span class="team-no">${p.team} 队</span>`;
-                    else if (p.team) main = '<span class="team-no team-dash">└</span>';
+                    else if (payMode === 'team' && p.team && firstOfTeam[p.team] === p) main = `<span class="team-no">${p.team} 队</span>`;
+                    else if (payMode === 'team' && p.team) main = '<span class="team-no team-dash">└</span>';
                     const tags = [];
                     if (p.chief) tags.push('<span class="chief-tag">团长</span>');
-                    if (p.leader) tags.push('<span class="leader-tag">队长</span>');
+                    if (p.leader && payMode === 'team') tags.push('<span class="leader-tag">队长</span>');
                     tcell.innerHTML = `<span class="team-cell-inner"><span class="team-cell-main">${main}</span><span class="team-tags">${tags.join('')}</span></span>`;
                 }
                 // 只看有金额 / 显示所有
@@ -2875,6 +2877,8 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             });
 
             if (typeof openTeamBtn !== 'undefined' && openTeamBtn) openTeamBtn.style.display = showTeams ? '' : 'none';
+            const openChiefBtn = document.getElementById('openChiefBtn');
+            if (openChiefBtn) openChiefBtn.style.display = (payMode === 'direct' && people.length > 0) ? '' : 'none';
             const viewSwitch = document.getElementById('peopleViewSwitch');
             if (viewSwitch) viewSwitch.style.display = '';
 
@@ -3157,8 +3161,10 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
         // ===== 通用模式：队伍分配 =====
         let teamDraft = [];
+        let teamChiefOnly = false;
 
-        function openTeamWindow() {
+        function openTeamWindow(chiefOnly = false) {
+            teamChiefOnly = !!chiefOnly;
             const rows = Array.from(generalPeopleBody.querySelectorAll('tr.g-person-row'));
             if (!rows.length) return;
             let prevTeam = null;
@@ -3202,6 +3208,20 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         }
 
         function renderTeamList() {
+            if (teamChiefOnly) {
+                teamList.innerHTML = `
+                    <table>
+                        <thead><tr><th style="width:170px;">成员</th><th style="width:120px;">职业</th><th>游戏角色名</th><th style="width:120px;">团长</th></tr></thead>
+                        <tbody>${teamDraft.map((d, i) => `
+                            <tr class="team-person-row" data-idx="${i}">
+                                <td>${i + 1}</td>
+                                <td>${escapeHtml(d.job)}</td>
+                                <td>${escapeHtml(d.name || '—')}</td>
+                                <td class="team-op-cell"><button type="button" class="team-chief-btn${d.chief ? ' on' : ''}" data-idx="${i}">${d.chief ? '团长' : '设为团长'}</button></td>
+                            </tr>`).join('')}</tbody>
+                    </table>`;
+                return;
+            }
             teamList.innerHTML = `
                 <table>
                     <thead><tr><th style="width:170px;">队伍 / 分界</th><th style="width:120px;">职业</th><th>游戏角色名</th><th style="width:86px;">团长</th><th style="width:86px;">队长</th><th style="width:40px;"></th></tr></thead>
@@ -3378,6 +3398,14 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         }
 
         confirmTeamBtn.addEventListener('click', () => {
+            if (teamChiefOnly) {
+                teamDraft.forEach(d => { if (d.trEl) d.trEl.dataset.chief = d.chief ? '1' : '0'; });
+                teamDraft = [];
+                teamChiefOnly = false;
+                teamWindow.classList.remove('show');
+                calculateGeneral();
+                return;
+            }
             const isEmptyName = s => {
                 const v = String(s == null ? '' : s).trim();
                 return v === '' || v === '—' || v === '-' || v === '——';
@@ -3408,7 +3436,8 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             arrangeTeamRows();
             calculateGeneral();
         });
-        openTeamBtn.addEventListener('click', openTeamWindow);
+        openTeamBtn.addEventListener('click', () => openTeamWindow(false));
+        document.getElementById('openChiefBtn').addEventListener('click', () => openTeamWindow(true));
 
         // 复制、截图功能
         const copyGoldBtn = document.getElementById('copyGoldBtn');
