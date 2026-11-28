@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
     <link rel="manifest" href="../site.webmanifest">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="../assets/html2canvas.min.js"></script>
     <style>
         :root {
             --bg: #f5f7fb;
@@ -623,6 +623,660 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         .fixed-table .f-note-input { width: 100%; }
         .general-summary { margin-bottom: 16px; }
     </style>
+<style>
+/* ============================================================
+   云账单模块样式（新增，不覆盖原有规则）
+   ============================================================ */
+
+/* ---------- 页面级标签：编辑账单 / 查询账单 ---------- */
+.page-tabs { display: flex; gap: 6px; background: #eef1f7; padding: 5px; border-radius: 14px; margin: 14px 0 14px; }
+.page-tab {
+    flex: 1; border: 0; background: transparent; padding: 11px 14px; border-radius: 10px;
+    font: inherit; font-size: .93rem; font-weight: 600; color: #64748b; cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.page-tab:hover { color: #475569; }
+.page-tab.is-active { background: #fff; color: #4f46e5; box-shadow: 0 2px 8px rgba(79, 70, 229, .16); }
+
+/* ---------- 登录状态条 ---------- */
+.auth-bar {
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e6eaf2; border-radius: 12px;
+    padding: 9px 12px; margin: 0 0 16px; font-size: .84rem; color: #64748b;
+}
+.auth-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; flex: none; }
+.auth-dot.is-on { background: #16a34a; }
+.auth-dot.is-off { background: #cbd5e1; }
+.auth-bar b { color: #334155; font-weight: 600; }
+.auth-bar .spacer { flex: 1 1 auto; }
+.auth-mini {
+    font: inherit; font-size: .8rem; padding: 6px 12px; border-radius: 9px;
+    border: 1px solid #d8dee9; background: #fff; color: #475569; cursor: pointer; font-weight: 600;
+    white-space: nowrap;
+}
+.auth-mini:hover { border-color: #c7d0de; background: #f1f5f9; }
+.auth-mini.primary { background: #6c5ce7; border-color: #6c5ce7; color: #fff; }
+.auth-mini.primary:hover { background: #5a4bd1; }
+
+/* ---------- 上传按钮 ---------- */
+#saveAndUploadBtn.is-primary { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+#saveAndUploadBtn.is-primary:hover { background: #5a4bd1; color: #fff; }
+#saveAndUploadBtn.is-offline { background: #fff; color: #6c5ce7; border-color: #c7bffa; }
+#saveAndUploadBtn.is-offline:hover { background: #f5f3ff; border-color: #6c5ce7; color: #5a4bd1; }
+#saveAndUploadBtn.is-offline:active { background: #ede9fe; transform: translateY(1px); }
+#saveAndUploadBtn.is-dirty::after {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; margin-left: 2px;
+}
+
+/* ---------- 账单状态条（编辑页） ---------- */
+.bill-state {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: .8rem; color: #64748b; margin: -6px 0 14px;
+}
+.bill-state .chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+    background: #f1f5f9; color: #475569; font-weight: 500; border: 1px solid #e8edf4;
+}
+.bill-state .chip.ok { background: #ecfdf5; color: #15803d; border-color: #bbf7d0; }
+.bill-state .chip.warn { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+
+/* ---------- 查询页 ---------- */
+.q-head { margin: 0 0 14px; }
+.q-head h3 { margin: 0 0 6px; font-size: 1.06rem; color: #2d3436; display: flex; align-items: center; gap: 8px; }
+.q-sub { margin: 0; font-size: .82rem; color: #7a8697; line-height: 1.6; }
+
+.q-filters {
+    background: #f8fafc; border: 1px solid #e8edf4; border-radius: 14px;
+    padding: 14px; display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin-bottom: 14px;
+}
+.q-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.q-field > label { font-size: .74rem; font-weight: 600; color: #8792a2; letter-spacing: .02em; }
+.q-field input[type="text"], .q-field input[type="date"] {
+    font: inherit; font-size: .85rem; padding: 8px 10px; border-radius: 9px;
+    border: 1px solid #dde4ee; background: #fff; color: #2d3436; width: 100%; box-sizing: border-box;
+}
+.q-field input:focus { outline: none; border-color: #a99cf5; box-shadow: 0 0 0 3px rgba(108, 92, 231, .12); }
+.q-checks { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; grid-column: 1 / -1; }
+.q-check { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; color: #475569; cursor: pointer; user-select: none; }
+.q-check input { width: 15px; height: 15px; accent-color: #6c5ce7; cursor: pointer; }
+.q-actions { display: flex; gap: 8px; align-items: flex-end; grid-column: 1 / -1; }
+.q-actions .btn { padding: 9px 20px; font-size: .85rem; }
+
+.q-viewswitch { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; flex-wrap: wrap; }
+.q-view {
+    font: inherit; font-size: .82rem; font-weight: 600; padding: 7px 14px; border-radius: 9px;
+    border: 1px solid #e2e8f0; background: #fff; color: #64748b; cursor: pointer;
+}
+.q-view.is-active { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+.q-count { margin-left: auto; font-size: .78rem; color: #8792a2; }
+
+.q-result { display: flex; flex-direction: column; gap: 9px; }
+.q-empty { text-align: center; padding: 44px 16px; color: #9aa5b4; font-size: .86rem; }
+
+/* 账单卡 */
+.q-bill {
+    border: 1px solid #e8edf4; border-radius: 13px; background: #fff; padding: 12px 14px;
+    display: flex; gap: 12px; align-items: center; transition: border-color .15s, box-shadow .15s;
+}
+.q-bill:hover { border-color: #c7d2fe; box-shadow: 0 3px 12px rgba(79, 70, 229, .07); }
+.q-bill-main { flex: 1 1 auto; min-width: 0; }
+.q-bill-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.q-bill-date { font-size: .92rem; font-weight: 700; color: #2d3436; }
+.q-bill-raid { font-size: .8rem; color: #4f46e5; background: #eef2ff; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+.q-bill-meta { font-size: .78rem; color: #8792a2; display: flex; gap: 12px; flex-wrap: wrap; }
+.q-bill-meta b { color: #475569; font-weight: 600; }
+.q-bill-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.q-bill-open {
+    font: inherit; font-size: .78rem; font-weight: 600; padding: 6px 13px; border-radius: 9px;
+    border: 1px solid #d8dee9; background: #f8fafc; color: #475569; cursor: pointer; white-space: nowrap;
+}
+.q-bill-open:hover { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+
+/* 状态胶囊 */
+.bst-pill { font-size: .72rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.bst-claim { background: #d9f2ea; color: #0f766e; }
+.bst-sell { background: #ffe9d1; color: #c2410c; }
+.bst-done { background: #e8eef8; color: #475569; }
+.bst-part { background: #fef3c7; color: #b45309; }
+
+/* 明细行 */
+.q-line {
+    border: 1px solid #e8edf4; border-radius: 12px; background: #fff; padding: 10px 13px;
+    display: flex; gap: 12px; align-items: center;
+}
+.q-line:hover { border-color: #c7d2fe; }
+.q-line-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.q-line-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-line-name { font-size: .9rem; font-weight: 700; color: #2d3436; }
+.q-line-sub { font-size: .76rem; color: #8792a2; display: flex; gap: 10px; flex-wrap: wrap; }
+.q-line-amt { flex: none; text-align: right; display: flex; flex-direction: column; gap: 3px; }
+.q-line-amt .g { font-size: .86rem; font-weight: 700; color: #b45309; }
+.q-line-amt .r { font-size: .8rem; font-weight: 600; color: #0f766e; }
+.q-line-amt .none { font-size: .8rem; color: #b0b8c4; }
+
+.q-share {
+    margin-top: 22px; padding-top: 16px; border-top: 1px dashed #e2e8f0;
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: .82rem; color: #64748b;
+}
+.q-share input {
+    font: inherit; font-size: .85rem; padding: 7px 11px; border-radius: 9px; border: 1px solid #dde4ee;
+    width: 130px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600;
+}
+.q-share input:focus { outline: none; border-color: #a99cf5; }
+
+/* ---------- 详情弹层 ---------- */
+.bill-modal {
+    position: fixed; inset: 0; background: rgba(24, 30, 46, .45); backdrop-filter: blur(3px);
+    display: none; align-items: flex-start; justify-content: center; z-index: 9000;
+    padding: 24px 14px; overflow-y: auto;
+}
+.bill-modal.is-open { display: flex; }
+.bill-modal-box {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 1020px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .28); overflow: hidden;
+    display: flex; flex-direction: column; max-height: calc(100vh - 48px);
+}
+.bill-modal-head {
+    display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px 12px;
+    border-bottom: 1px solid #eef2f7; flex: none;
+}
+.bill-modal-head h3 { margin: 0 0 4px; font-size: 1.05rem; color: #2d3436; }
+.bm-sub { margin: 0; font-size: .79rem; color: #8792a2; line-height: 1.6; }
+.bm-close {
+    margin-left: auto; flex: none; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b;
+    width: 32px; height: 32px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+}
+.bm-close:hover { background: #eef2f7; color: #334155; }
+.bm-bar { padding: 10px 18px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; border-bottom: 1px solid #f1f5f9; flex: none; }
+.bill-modal-body { padding: 16px 18px 22px; overflow-y: auto; }
+
+.bm-sec { margin-bottom: 20px; }
+.bm-sec:last-child { margin-bottom: 0; }
+.bm-sec h4 {
+    margin: 0 0 9px; font-size: .84rem; color: #64748b; font-weight: 700;
+    letter-spacing: .03em; display: flex; align-items: center; gap: 7px;
+}
+.bm-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.bm-table th {
+    text-align: left; padding: 7px 9px; background: #f8fafc; color: #8792a2;
+    font-weight: 600; font-size: .74rem; border-bottom: 1px solid #eef2f7; white-space: nowrap;
+}
+.bm-table td { padding: 7px 9px; border-bottom: 1px solid #f4f7fa; color: #3f4a58; vertical-align: middle; }
+.bm-table tr:last-child td { border-bottom: 0; }
+.bm-table tr.team-start td { border-top: 1px solid #e8edf4; }
+.bm-table tr.team-start:first-child td { border-top: 0; }
+.bm-table .bm-team { color: #64748b; font-weight: 600; white-space: nowrap; }
+.bm-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.bm-table .who { font-weight: 600; color: #2d3436; }
+.bm-tag { font-size: .7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 6px; }
+.bm-tag.chief { background: #fee2e2; color: #b91c1c; }
+.bm-tag.leader { background: #fffbeb; color: #b45309; }
+.bm-check { width: 17px; height: 17px; accent-color: #16a34a; cursor: pointer; }
+.bm-check:disabled { accent-color: #cbd5e1; cursor: not-allowed; }
+.bm-code-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 8px; }
+.bm-code-row .tname { font-size: .82rem; color: #475569; font-weight: 600; min-width: 56px; }
+.bm-code {
+    font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: .95rem; font-weight: 700;
+    letter-spacing: .16em; background: #eef2ff; color: #4f46e5; padding: 6px 12px; border-radius: 9px;
+}
+.bm-hint { font-size: .75rem; color: #94a3b8; line-height: 1.6; }
+.bm-remark { font-size: .82rem; color: #475569; background: #f8fafc; border-radius: 10px; padding: 10px 12px; line-height: 1.7; }
+
+/* 删除强提示条 */
+.bm-danger {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 0 18px 12px; padding: 11px 14px; border-radius: 12px;
+    background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+    font-size: .82rem; line-height: 1.6; flex: none;
+}
+.bm-danger b { font-weight: 700; }
+.bm-danger .grow { flex: 1 1 auto; }
+.bm-danger .bm-danger-ico { font-size: 1.1rem; line-height: 1; }
+.bm-danger .bm-danger-text { flex: 1 1 300px; min-width: 0; }
+.bm-danger .bm-danger-btns { display: flex; gap: 8px; flex: none; }
+.bm-danger .auth-mini { background: #fff; border-color: #fecaca; color: #b91c1c; font-weight: 600; }
+.bm-danger .auth-mini:hover { background: #fef2f2; border-color: #fca5a5; }
+.bm-danger .auth-mini.danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+.bm-danger .auth-mini.danger:hover { background: #b91c1c; border-color: #b91c1c; }
+.bm-danger .auth-mini.danger:disabled { background: #fca5a5; border-color: #fca5a5; color: #fff; cursor: not-allowed; }
+
+/* ---------- 登录 / 注册弹层 ---------- */
+.auth-modal {
+    position: fixed; inset: 0; background: rgba(24, 30, 46, .45); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center; z-index: 9500; padding: 20px;
+}
+.auth-modal.is-open { display: flex; }
+.auth-box {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 380px; padding: 22px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+}
+.auth-box h3 { margin: 0 0 4px; font-size: 1.06rem; color: #2d3436; }
+.auth-box .sub { margin: 0 0 16px; font-size: .78rem; color: #8792a2; line-height: 1.6; }
+.auth-modes { display: flex; gap: 6px; background: #eef1f7; padding: 4px; border-radius: 11px; margin-bottom: 14px; }
+.auth-mode {
+    flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 8px; font: inherit;
+    font-size: .85rem; font-weight: 600; color: #64748b; cursor: pointer;
+}
+.auth-mode.is-active { background: #fff; color: #4f46e5; box-shadow: 0 1px 5px rgba(79, 70, 229, .15); }
+.auth-input {
+    width: 100%; box-sizing: border-box; font: inherit; font-size: .87rem; padding: 10px 12px;
+    border-radius: 10px; border: 1px solid #dde4ee; margin-bottom: 9px; color: #2d3436;
+}
+.auth-input:focus { outline: none; border-color: #a99cf5; box-shadow: 0 0 0 3px rgba(108, 92, 231, .12); }
+.auth-pw-hint { font-size: .74rem; color: #94a3b8; line-height: 1.7; margin: -3px 0 10px; }
+.auth-pw-bars { display: flex; gap: 4px; margin: -3px 0 10px; }
+.auth-pw-bars i { flex: 1; height: 3px; border-radius: 999px; background: #e8edf4; transition: background .2s; }
+.auth-pw-bars i.ok { background: #16a34a; }
+.auth-msg { font-size: .8rem; min-height: 18px; margin: 2px 0 10px; }
+.auth-msg.is-err { color: #b91c1c; }
+.auth-msg.is-ok { color: #15803d; }
+.auth-submit {
+    width: 100%; font: inherit; font-size: .9rem; font-weight: 600; padding: 11px; border-radius: 11px;
+    border: 0; background: #6c5ce7; color: #fff; cursor: pointer;
+}
+.auth-submit:hover { background: #5a4bd1; }
+.auth-submit:disabled { background: #b9b0f0; cursor: default; }
+.auth-cancel {
+    width: 100%; font: inherit; font-size: .85rem; padding: 9px; border-radius: 11px; margin-top: 8px;
+    border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; cursor: pointer;
+}
+.auth-foot { margin: 12px 0 0; font-size: .73rem; color: #a0aab8; line-height: 1.7; text-align: center; }
+
+/* ---------- 轻提示 ---------- */
+#billToast {
+    position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(14px);
+    background: #2d3436; color: #fff; font-size: .84rem; padding: 10px 18px; border-radius: 11px;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, .22); opacity: 0; pointer-events: none;
+    transition: opacity .22s, transform .22s; z-index: 9800; max-width: 82vw; text-align: center;
+}
+#billToast.is-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#billToast.is-err { background: #b91c1c; }
+
+@media (max-width: 620px) {
+    .q-bill { flex-direction: column; align-items: stretch; }
+    .q-bill-right { flex-direction: row; align-items: center; justify-content: space-between; }
+    .q-line { flex-wrap: wrap; }
+    .q-line-amt { text-align: left; }
+    .bill-modal { padding: 10px 8px; }
+    .bill-modal-box { max-height: calc(100vh - 20px); }
+    .q-filters { grid-template-columns: 1fr 1fr; }
+}
+
+    
+/* ---------- 查询页工具条 ---------- */
+.q-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+.q-src { display: inline-flex; background: #eef1f7; border-radius: 11px; padding: 4px; gap: 3px; }
+.q-src-btn {
+    font: inherit; font-size: .83rem; font-weight: 600; padding: 7px 15px; border-radius: 8px;
+    border: 0; background: transparent; color: #64748b; cursor: pointer;
+    transition: background .16s, color .16s, box-shadow .16s;
+}
+.q-src-btn:hover { color: #475569; }
+.q-src-btn.is-active { background: #fff; color: #4f46e5; box-shadow: 0 1px 5px rgba(79, 70, 229, .15); }
+.q-tool-spacer { flex: 1 1 auto; }
+.q-tool {
+    font: inherit; font-size: .8rem; font-weight: 600; padding: 7px 13px; border-radius: 9px;
+    border: 1px solid #dde4ee; background: #fff; color: #475569; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.q-tool:hover { border-color: #c7d2fe; background: #f8fafc; color: #4f46e5; }
+.q-tool.is-active { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+.q-tool:disabled { opacity: .55; cursor: default; }
+
+/* ---------- 分页 ---------- */
+.q-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 16px 0 4px; }
+.q-page {
+    font: inherit; font-size: .82rem; font-weight: 600; padding: 7px 16px; border-radius: 9px;
+    border: 1px solid #dde4ee; background: #fff; color: #475569; cursor: pointer;
+}
+.q-page:hover:not(:disabled) { border-color: #c7d2fe; background: #eef2ff; color: #4f46e5; }
+.q-page:disabled { opacity: .45; cursor: default; }
+.q-page-info { font-size: .79rem; color: #8792a2; font-variant-numeric: tabular-nums; }
+
+/* ---------- 本地文件夹 ---------- */
+.q-local-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: #f8fafc; border: 1px solid #e8edf4; border-radius: 12px;
+    padding: 10px 13px; margin-bottom: 10px; font-size: .82rem; color: #64748b;
+}
+.q-folder b { color: #334155; font-weight: 600; }
+.q-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .75rem; color: #8792a2; margin: 0 0 12px; padding-left: 2px; }
+.q-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.q-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
+.q-dot.dot-cloud { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, .16); }
+.q-dot.dot-green { background: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, .16); }
+.q-dot.dot-gray { background: #cbd5e1; }
+.q-state { font-size: .71rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.q-state-cloud { background: #fef3c7; color: #b45309; }
+.q-state-green { background: #dcfce7; color: #15803d; }
+.q-state-gray { background: #f1f5f9; color: #64748b; }
+.q-bill--local { border-left: 3px solid #e2e8f0; }
+.q-bill--local:has(.q-state-cloud) { border-left-color: #f59e0b; }
+.q-bill--local:has(.q-state-green) { border-left-color: #16a34a; }
+.q-file { font-family: ui-monospace, Consolas, monospace; font-size: .72rem; color: #94a3b8; word-break: break-all; }
+
+/* ---------- 文件夹按钮组（切换 + 另存） ---------- */
+.folder-group { display: inline-flex; align-items: stretch; }
+.folder-group .action-btn { border-radius: 0; }
+.folder-group .folder-switch {
+    border-radius: 8px 0 0 8px; border-right: 0; padding: 8px 9px;
+    color: #6c5ce7; background: #f5f3ff; border-color: #ddd6fe;
+}
+.folder-group .folder-switch:hover { background: #ede9fe; border-color: #c4b5fd; color: #5a4bd1; }
+.folder-group .folder-save { border-radius: 0 8px 8px 0; }
+
+/* ---------- 过滤面板分行 ---------- */
+.q-filters { display: flex; flex-direction: column; gap: 12px; }
+.q-row { display: grid; gap: 12px; }
+.q-row-date { grid-template-columns: repeat(2, minmax(140px, 210px)); }
+.q-row-main { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.q-row-checks { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.q-actions { display: flex; gap: 8px; }
+.q-actions .btn { padding: 9px 20px; font-size: .85rem; }
+@media (max-width: 760px) {
+    .q-row-date, .q-row-main { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- 分享码提示条（仿口令） ---------- */
+.code-banner {
+    position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: #1e293b; color: #f8fafc; border-radius: 14px;
+    padding: 12px 16px; box-shadow: 0 14px 40px rgba(15, 23, 42, .35);
+    z-index: 9900; max-width: 92vw; font-size: .84rem;
+}
+.code-banner b { color: #fbbf24; letter-spacing: .1em; font-family: ui-monospace, Consolas, monospace; }
+.code-banner button {
+    font: inherit; font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 9px;
+    border: 0; cursor: pointer; background: #6c5ce7; color: #fff;
+}
+.code-banner button.ghost { background: transparent; color: #cbd5e1; border: 1px solid #475569; }
+.code-banner button:hover { opacity: .9; }
+
+/* ---------- 各队小计里的分享码单元格 ---------- */
+.bm-team-code { display: inline-flex; align-items: center; gap: 6px; }
+.bm-mini {
+    font: inherit; font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 7px;
+    border: 1px solid #ddd6fe; background: #f5f3ff; color: #5b21b6; cursor: pointer; white-space: nowrap;
+}
+.bm-mini:hover { background: #ede9fe; }
+.bm-mini.ghost { border-color: #e2e8f0; background: #fff; color: #64748b; }
+.bm-mini.ghost:hover { background: #f8fafc; }
+
+/* 保存按钮三态：可上传 / 有改动 / 已同步 */
+#saveAndUploadBtn.is-dirty {
+    background: #f59e0b; color: #fff; border-color: #f59e0b;
+}
+#saveAndUploadBtn.is-dirty:hover { background: #d97706; border-color: #d97706; color: #fff; }
+#saveAndUploadBtn.is-synced {
+    background: #f8fafc; color: #16a34a; border-color: #bbf7d0;
+}
+#saveAndUploadBtn.is-synced:hover { background: #ecfdf5; border-color: #86efac; color: #15803d; }
+
+/* ---------- 标题行 + 认证按钮 ---------- */
+.page-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.page-title-row h2 { margin: 0; }
+.cert-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font: inherit; font-size: .8rem; font-weight: 600; padding: 7px 14px; border-radius: 10px;
+    border: 1px solid #fcd34d; background: #fffbeb; color: #b45309; cursor: pointer; white-space: nowrap;
+    transition: background .16s, border-color .16s;
+}
+.cert-btn:hover { background: #fef3c7; border-color: #fbbf24; }
+.cert-btn.is-certified { background: #ecfdf5; border-color: #86efac; color: #15803d; }
+.cert-btn.is-certified:hover { background: #d1fae5; }
+.cert-btn.is-admin { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.cert-btn.is-admin:hover { background: #dbeafe; }
+
+/* 认证团长小徽章 */
+.vtag {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: .66rem; font-weight: 700; padding: 1px 7px; border-radius: 999px;
+    background: #fffbeb; color: #b45309; border: 1px solid #fde68a;
+    vertical-align: middle; margin-left: 5px; white-space: nowrap;
+}
+
+/* 查询页里的团长/队长行背景 */
+.q-line.is-chief, .q-bill.is-chief { background: #fef2f2; border-color: #fecaca; }
+.q-line.is-leader { background: #fffbeb; border-color: #fde68a; }
+.q-bill.is-leader { background: #fffdf5; }
+
+/* ---------- 认证 / 粘贴弹层 ---------- */
+.cert-modal {
+    position: fixed; inset: 0; background: rgba(24, 30, 46, .45); backdrop-filter: blur(3px);
+    display: none; align-items: flex-start; justify-content: center; z-index: 9600;
+    padding: 28px 14px; overflow-y: auto;
+}
+.cert-modal.is-open { display: flex; }
+.cert-box {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 560px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3); overflow: hidden;
+    display: flex; flex-direction: column; max-height: calc(100vh - 56px);
+}
+.cert-box-sm { max-width: 440px; }
+.cert-head {
+    display: flex; align-items: center; gap: 12px; padding: 16px 18px 12px;
+    border-bottom: 1px solid #eef2f7; flex: none;
+}
+.cert-head h3 { margin: 0; font-size: 1.02rem; color: #2d3436; }
+.cert-head .bm-close { margin-left: auto; }
+.cert-body { padding: 16px 18px 20px; overflow-y: auto; }
+.cert-tip { margin: 0 0 12px; font-size: .8rem; color: #7a8697; line-height: 1.7; }
+.cert-textarea {
+    width: 100%; box-sizing: border-box; font: inherit; font-size: .84rem; line-height: 1.6;
+    padding: 10px 12px; border-radius: 11px; border: 1px solid #dde4ee; resize: vertical; color: #2d3436;
+}
+.cert-textarea:focus { outline: none; border-color: #a99cf5; box-shadow: 0 0 0 3px rgba(108, 92, 231, .12); }
+.cert-actions { display: flex; gap: 8px; margin-top: 14px; }
+.cert-actions .btn { padding: 9px 22px; font-size: .85rem; }
+
+.cert-card {
+    background: #f8fafc; border: 1px solid #e8edf4; border-radius: 13px; padding: 14px; margin-bottom: 12px;
+}
+.cert-card h4 { margin: 0 0 8px; font-size: .88rem; color: #2d3436; }
+.cert-card ul { margin: 0; padding-left: 18px; font-size: .8rem; color: #64748b; line-height: 1.9; }
+.cert-card li b { color: #b45309; }
+.cert-badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.cert-apply-row { display: flex; flex-direction: column; gap: 9px; }
+.cert-list { display: flex; flex-direction: column; gap: 9px; }
+.cert-item {
+    border: 1px solid #e8edf4; border-radius: 12px; padding: 11px 13px; background: #fff;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.cert-item .who { flex: 1 1 200px; min-width: 0; }
+.cert-item .who b { font-size: .88rem; color: #2d3436; }
+.cert-item .who > span:not(.vtag) { display: block; font-size: .75rem; color: #94a3b8; margin-top: 2px; word-break: break-all; }
+.cert-item .who .vtag { display: inline-flex !important; margin-left: 6px; font-size: .66rem; margin-top: 0; }
+.cert-item .note { text-align: left; }
+.cert-item .note { font-size: .78rem; color: #64748b; background: #f8fafc; border-radius: 8px; padding: 6px 9px; margin-top: 6px; }
+.cert-item .ops { display: flex; gap: 6px; flex-wrap: wrap; }
+.cert-mini {
+    font: inherit; font-size: .75rem; font-weight: 600; padding: 5px 11px; border-radius: 8px;
+    border: 1px solid #dde4ee; background: #fff; color: #475569; cursor: pointer; white-space: nowrap;
+}
+.cert-mini:hover { background: #f1f5f9; border-color: #c7d2fe; color: #4f46e5; }
+.cert-mini.primary { background: #6c5ce7; border-color: #6c5ce7; color: #fff; }
+.cert-mini.primary:hover { background: #5a4bd1; }
+.cert-mini.danger { border-color: #fecaca; color: #b91c1c; }
+.cert-mini.danger:hover { background: #fef2f2; }
+.cert-empty { text-align: center; padding: 30px 10px; color: #9aa5b4; font-size: .84rem; }
+
+/* 查询页顶部查找框 */
+.q-search-wrap {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid #dde4ee; border-radius: 10px; background: #fff;
+    padding: 0 11px; height: 34px; min-width: 220px; color: #94a3b8;
+}
+.q-search-wrap:focus-within { border-color: #a99cf5; box-shadow: 0 0 0 3px rgba(108, 92, 231, .1); }
+.q-search-wrap input {
+    border: 0; outline: none; background: transparent; font: inherit;
+    font-size: .84rem; color: #2d3436; width: 100%; min-width: 0;
+}
+.q-paste-btn { padding: 9px 16px; }
+
+/* 认证徽章：整颗胶囊和当前行垂直居中 */
+.vtag {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 18px; line-height: 1; vertical-align: middle; position: relative; top: -1px;
+    padding: 0 7px;
+}
+
+/* 修改目录小字 */
+.folder-group .folder-switch {
+    font-size: .74rem; font-weight: 600; padding: 0 11px; letter-spacing: .01em;
+    border-radius: 8px 0 0 8px; border-right: 0;
+    background: #f8fafc; border-color: #e2e8f0; color: #64748b;
+}
+.folder-group .folder-switch:hover { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+
+/* 详情页分配表：团长/队长行底色 */
+.bm-table tr.bm-chief-row td { background: #fef2f2; }
+.bm-table tr.bm-leader-row td { background: #fffbeb; }
+.bm-table tr.bm-chief-row td.bm-team { color: #b91c1c; }
+.bm-table tr.bm-leader-row td.bm-team { color: #b45309; }
+
+/* 认证申请表单：联系方式 */
+.cert-field { margin-bottom: 12px; }
+.cert-field > label { display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+.cert-field > label em { font-style: normal; font-weight: 400; color: #b45309; font-size: .74rem; }
+.cert-contact-row { display: flex; gap: 8px; }
+.cert-select {
+    font: inherit; font-size: .84rem; padding: 9px 10px; border-radius: 10px;
+    border: 1px solid #dde4ee; background: #fff; color: #2d3436; flex: none; width: 130px;
+}
+.cert-select:focus { outline: none; border-color: #a99cf5; }
+.cert-input { flex: 1 1 auto; min-width: 0; resize: none; padding: 9px 12px; }
+
+/* 联系方式展示 */
+.bm-contact { color: #4f46e5; font-weight: 600; }
+.q-contact { color: #8792a2; font-size: .74rem; margin-left: 2px; }
+
+/* 标题行两个认证按钮 */
+.cert-btns { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* 详情页金额：上门标签 + 金额两行 */
+.bm-amt { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.bm-amt-top { display: inline-flex; gap: 4px; align-items: center; }
+.bm-amt-val { font-weight: 600; color: #0f172a; }
+
+/* 查找命中：闪一下并保持圈中 */
+@keyframes bmFlash { 0%, 100% { background-color: #fff7ed; } 50% { background-color: #fde68a; } }
+.bm-table tr.bm-flash td { animation: bmFlash .55s ease-in-out 3; }
+.bm-table tr.bm-found td { box-shadow: inset 0 0 0 2px #f59e0b; }
+.bm-table tr.bm-found td:first-child { border-radius: 6px 0 0 6px; }
+.bm-table tr.bm-found td:last-child { border-radius: 0 6px 6px 0; }
+
+/* 联系方式按钮 */
+.bm-contact-btn {
+    font: inherit; font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 8px;
+    border: 1px solid #ddd6fe; background: #f5f3ff; color: #4f46e5; cursor: pointer; margin-left: 6px;
+}
+.bm-contact-btn:hover { background: #ede9fe; border-color: #c4b5fd; }
+
+/* 认证团长列表条目 */
+.cert-item .ops { flex: none; }
+.cert-foot { display: flex; justify-content: flex-start; padding: 10px 18px 14px; border-top: 1px solid #f1f5f9; flex: none; }
+.cert-danger-btn {
+    font: inherit; font-size: .75rem; font-weight: 600; padding: 5px 11px; border-radius: 8px;
+    border: 1px solid #fecaca; background: #fff; color: #b91c1c; cursor: pointer;
+}
+.cert-danger-btn:hover { background: #fef2f2; }
+.cert-danger-btn.armed { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+/* 过滤面板内容右对齐 */
+.q-filters .q-field { align-items: flex-end; }
+.q-filters .q-field > label { text-align: right; width: 100%; }
+.q-filters .q-field input[type="text"], .q-filters .q-field input[type="date"] { text-align: right; }
+.q-filters .q-row-checks { justify-content: flex-end; }
+.q-filters .q-actions { justify-content: flex-end; }
+
+/* 认证按钮红点 */
+.cert-btn { position: relative; }
+.cert-btn.has-dot::after {
+    content: ''; position: absolute; top: -3px; right: -3px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ef4444; box-shadow: 0 0 0 2px #fff;
+}
+
+/* 详情页税费 chips */
+.bm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bm-chips .tax-chip { font-size: .76rem; }
+
+/* 详情页队员的 └ */
+.bm-dash { color: #94a3b8; }
+
+/* 物品表税额明细列 */
+.bm-taxtxt { color: #b45309; font-size: .76rem; white-space: nowrap; }
+
+/* 查询列表底色（和灰白背景拉开） */
+.q-bill { background: #fbfcff; }
+.q-bill--local { background: #fbfcff; }
+.q-line { background: #fbfcff; }
+
+/* 复制反馈 */
+.bm-contact-btn.is-copied {
+    background: #dcfce7; border-color: #86efac; color: #15803d;
+}
+
+/* 查找命中：整行橙色外框，不要中间的竖线 */
+.bm-table tr.bm-found { outline: 2px solid #f59e0b; outline-offset: -2px; }
+.bm-table tr.bm-found td { box-shadow: none !important; }
+.bm-table tr.bm-found td:first-child,
+.bm-table tr.bm-found td:last-child { border-radius: 0; }
+
+/* 详情页物品表：复用编辑页 items-table 的骨架，只补静态元素 */
+.bm-items-wrap .items-table-wrap { background: #fff; border-radius: 12px; overflow: hidden; }
+.bm-items-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.bm-items-table.mitems-table th, .bm-items-table th {
+    font-size: .72rem; color: #8792a2; font-weight: 600; text-align: left;
+    padding: 8px 10px; background: #f8fafc; border-bottom: 1px solid #eef2f7; white-space: nowrap;
+}
+.bm-items-table td { padding: 10px 10px; border-bottom: 1px solid #f4f7fa; font-size: .8rem; color: #3f4a58; vertical-align: middle; }
+.bm-items-table tr:last-child td { border-bottom: 0; }
+.bm-items-table .num, .bm-items-table th.num { text-align: right; }
+.bm-items-table .th-check { text-align: center; }
+.bm-item-name { font-weight: 600; color: #2d3436; }
+.bm-item-row:hover td { background: #fafbff; }
+
+.bm-pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 44px; height: 22px; padding: 0 10px; border-radius: 999px;
+    font-size: .72rem; font-weight: 600; line-height: 1; white-space: nowrap;
+}
+.bm-pill-claim { background: #c6f0e4; color: #065f46; }
+.bm-pill-sell { background: #ffe1bd; color: #b45309; }
+.bm-pill-general { background: #e9e3ff; color: #5b21b6; }
+.bm-pill-milk { background: #dbeafe; color: #1d4ed8; }
+.bm-pill-free { background: #dbeafe; color: #1e40af; }
+.bm-pill-face { background: #ede9fe; color: #6d28d9; }
+.bm-pill-none { background: #f1f5f9; color: #64748b; }
+.bm-box { display: inline-block; width: 15px; height: 15px; border: 1.6px solid #cbd5e1; border-radius: 4px; }
+.bm-taxline { color: #b45309; font-weight: 600; font-size: .73rem; white-space: nowrap; }
+.bm-caret { color: #94a3b8; font-size: .7rem; margin-left: 6px; }
+
+/* 过滤窗：彻底右对齐 */
+.q-filters .q-row { justify-content: end; }
+.q-filters .q-row-date { grid-template-columns: repeat(2, 160px); justify-content: end; margin-left: auto; }
+.q-filters .q-row-main { grid-template-columns: repeat(3, 170px); justify-content: end; margin-left: auto; }
+.q-filters .q-field { align-items: flex-end; }
+.q-filters .q-field > label { text-align: right !important; width: 100%; }
+.q-filters .q-field input[type="text"],
+.q-filters .q-field input[type="date"] { text-align: right !important; }
+.q-filters .q-row-checks { justify-content: flex-end; }
+.q-filters .q-actions { justify-content: flex-end; }
+
+/* 详情页分享按钮 */
+.bm-bar-push { flex: 1 1 auto; }
+.bm-share-btn {
+    background: #6c5ce7; border-color: #6c5ce7; color: #fff;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.bm-share-btn:hover { background: #5a4bd1; border-color: #5a4bd1; color: #fff; }
+</style>
 </head>
 <body>
 <!-- ===== 官网导航（子页面统一） ===== -->
@@ -843,7 +1497,27 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
   })();
 </script>
     <div class="card" id="mainCard">
-        <h2><span data-icon="handCoins" data-color="#2d3436" data-size="26"></span>团长结账工具 <span class="beta-badge">Beta · 测试中</span></h2>
+        <div class="page-title-row">
+            <h2><span data-icon="handCoins" data-color="#2d3436" data-size="26"></span>团长结账工具 <span class="beta-badge">Beta · 测试中</span></h2>
+            <span class="cert-btns">
+                <button type="button" class="cert-btn" id="certAdminBtn" style="display:none;">管理认证团长</button>
+                <button type="button" class="cert-btn" id="certOpenBtn">申请认证团长</button>
+            </span>
+        </div>
+        <!-- ===== 页面级标签：编辑账单 / 查询账单 ===== -->
+        <div class="page-tabs">
+            <button type="button" class="page-tab is-active" data-pane="query"><span data-icon="search" data-color="currentColor" data-size="17"></span>查询账单</button>
+            <button type="button" class="page-tab" data-pane="edit"><span data-icon="edit" data-color="currentColor" data-size="17"></span>编辑账单</button>
+        </div>
+        <div class="auth-bar" id="authBar">
+            <span class="auth-dot is-off" id="authDot"></span>
+            <span id="authText">游客模式 · 编辑的内容只存在这台设备上</span>
+            <span class="spacer"></span>
+            <button type="button" class="auth-mini primary" id="authOpenBtn">登录 / 注册</button>
+            <button type="button" class="auth-mini" id="authOutBtn" style="display:none">退出登录</button>
+        </div>
+        <div id="paneEdit" style="display:none">
+        <div class="bill-state" id="billState" style="display:none;"></div>
         <div class="mode-switch">
             <button type="button" class="mode-btn active" data-mode="general">通用模式</button>
             <button type="button" class="mode-btn" data-mode="house">家务模式</button>
@@ -1063,8 +1737,13 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
         <div class="action-buttons" id="actionButtons" style="display: none;">
             <button class="action-btn" id="saveImageBtn"><span data-icon="camera" data-color="#636e72"></span>截图并复制</button>
-            <button class="action-btn" id="copyGoldBtn"><span data-icon="copy" data-color="#636e72"></span>复制金币</button>
-            <button class="action-btn" id="copyRmbBtn"><span data-icon="copy" data-color="#636e72"></span>复制人民币</button>
+            <span class="folder-group" id="folderGroup" style="display:none;">
+                <button class="action-btn folder-switch" id="switchFolderBtn" type="button" title="修改保存目录">修改目录</button>
+                <button class="action-btn folder-save" id="exportFolderBtn" type="button">
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>另存到文件夹
+                </button>
+            </span>
+            <button class="action-btn" id="saveAndUploadBtn"><span data-icon="cloudUp" data-color="#636e72"></span>保存并上传</button>
         </div>
 
         <div class="note">
@@ -1073,7 +1752,100 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <p>· 每行物品可单独设置「交易税」「家族税」「单价计税」；R税需同时开启交易税与家族税，且需填写金价比例。</p>
                 <p>· 人民币不扣任何税。</p>
             </div>
-    </div>
+        </div><!-- /#paneEdit -->
+
+        <!-- ===== 查询账单 ===== -->
+        <div id="paneQuery">
+            <div class="q-head">
+                <h3><span data-icon="search" data-color="#4f46e5" data-size="19"></span>账单查询</h3>
+                <p class="q-sub">所有人（不用登录）都能查云端账单。点任意一张可以看完整分配表和打勾状态；团长还能在这里勾「已领」。</p>
+            </div>
+
+            <div class="q-toolbar">
+                <div class="q-src">
+                    <button type="button" class="q-src-btn is-active" data-src="cloud">云端账单</button>
+                    <button type="button" class="q-src-btn" data-src="local">本地文件夹</button>
+                </div>
+                <span class="q-count" id="qCount"></span>
+                <span class="q-tool-spacer"></span>
+                <span class="q-search-wrap">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" id="qName" placeholder="查找角色名" autocomplete="off" spellcheck="false">
+                </span>
+                <button type="button" class="q-tool" id="qFilterBtn" title="展开 / 收起筛选条件">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z"/></svg>过滤
+                </button>
+                <button type="button" class="q-tool" id="qRefreshBtn" title="重新拉一次">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>刷新
+                </button>
+            </div>
+
+            <div class="q-filters" id="qFilters" style="display:none">
+                <div class="q-row q-row-date">
+                    <div class="q-field">
+                        <label>日期从</label>
+                        <input type="date" id="qFrom">
+                    </div>
+                    <div class="q-field">
+                        <label>日期到</label>
+                        <input type="date" id="qTo">
+                    </div>
+                </div>
+                <div class="q-row q-row-main">
+                    <div class="q-field">
+                        <label>远征类型</label>
+                        <input type="text" id="qRaid" placeholder="全部" autocomplete="off">
+                    </div>
+                    <div class="q-field">
+                        <label>物品名</label>
+                        <input type="text" id="qItem" placeholder="例如 暗杀30" autocomplete="off">
+                    </div>
+                    <div class="q-field">
+                        <label>账单创建人</label>
+                        <input type="text" id="qOwner" placeholder="全部" autocomplete="off">
+                    </div>
+                </div>
+                <div class="q-row q-row-checks">
+                    <label class="q-check"><input type="checkbox" id="qOnlyClaim">只显示可领</label>
+                    <label class="q-check"><input type="checkbox" id="qHideSettled">隐藏已结</label>
+                    <label class="q-check"><input type="checkbox" id="qUnpaidOnly">只看没结的</label>
+                    <label class="q-check"><input type="checkbox" id="qCertified">只看认证团长</label>
+                </div>
+                <div class="q-actions">
+                    <button type="button" class="btn" id="qSearchBtn">查询</button>
+                    <button type="button" class="btn btn-secondary" id="qResetBtn">重置</button>
+                </div>
+            </div>
+
+            <!-- 云端 -->
+            <div id="qCloudView">
+                <div class="q-result" id="qResult"></div>
+                <div class="q-pager" id="qPager"></div>
+            </div>
+
+            <!-- 本地 -->
+            <div id="qLocalView" style="display:none">
+                <div class="q-local-bar">
+                    <span class="q-folder">文件夹：<b id="qFolderName">还没选</b></span>
+                    <button type="button" class="q-tool" id="qPickFolderBtn">选择文件夹</button>
+                    <button type="button" class="q-tool" id="qLocalRefreshBtn">重新读取</button>
+                </div>
+                <div class="q-legend">
+                    <span class="q-legend-item"><span class="q-dot dot-cloud"></span>云端有更新版本（本地这份是旧的）</span>
+                    <span class="q-legend-item"><span class="q-dot dot-green"></span>云端还没有（可以上传）</span>
+                    <span class="q-legend-item"><span class="q-dot dot-gray"></span>两边一样 / 本地更新</span>
+                </div>
+                <div class="q-result" id="qLocalResult"></div>
+            </div>
+
+            <div class="q-share">
+                <button type="button" class="q-tool q-paste-btn" id="qPasteBtn">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+                    粘贴队长分享码
+                </button>
+                <span class="bm-hint">团长发来的那一整段话，粘进来就能打开并只解锁那一队。</span>
+            </div>
+        </div>
 
     <!-- 模板/粘贴窗口 -->
     <div class="paste-window" id="editTemplateWindow">
@@ -1189,7 +1961,13 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             chevronDown: '<path d="m6 9 6 6 6-6"/>',
             plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
             info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-            yen: '<path d="M12 3v18"/><path d="m7 8 5 5 5-5"/><path d="M7 13h10"/><path d="M7 17h10"/>'
+            yen: '<path d="M12 3v18"/><path d="m7 8 5 5 5-5"/><path d="M7 13h10"/><path d="M7 17h10"/>',
+            edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>',
+            search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+            cloudUp: '<path d="M12 13v8"/><path d="m8 17 4-4 4 4"/><path d="M20.4 15.6A5 5 0 0 0 18 6.3h-1.3A7 7 0 1 0 3 11.5"/>',
+            folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+            login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/>',
+            refresh: '<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>'
         };
 
         function iconSvg(name, color, size) {
@@ -3439,9 +4217,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
         openTeamBtn.addEventListener('click', () => openTeamWindow(false));
         document.getElementById('openChiefBtn').addEventListener('click', () => openTeamWindow(true));
 
-        // 复制、截图功能
-        const copyGoldBtn = document.getElementById('copyGoldBtn');
-        const copyRmbBtn = document.getElementById('copyRmbBtn');
+        // 截图功能（复制金币 / 复制人民币已移除，改为「保存并上传」）
         const saveImageBtn = document.getElementById('saveImageBtn');
 
         function flashCopied(btn, restoreIcon, restoreLabel) {
@@ -3449,34 +4225,6 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
             setTimeout(() => { btn.innerHTML = iconSvg(restoreIcon, '#636e72', 16) + ' ' + restoreLabel; }, 1400);
         }
 
-        copyGoldBtn.addEventListener('click', () => {
-            if (appMode === 'general') {
-                if (!currentGeneralResult || !currentGeneralResult.people.length) return;
-                const lines = currentGeneralResult.people.map(p => p.gold.toFixed(2));
-                navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyGoldBtn, 'copy', '复制金币'))
-                    .catch(() => alert('复制失败，请手动复制'));
-                return;
-            }
-            if (hasTaxableRmbItems && !goldRateValid) { alert('请先填写金价比例'); return; }
-            if (!currentGoldEarnings.length) return;
-            const lines = [...currentGoldEarnings.map(a => a.toFixed(2)), currentStoreGoldTax.toFixed(2), currentUnionTax.toFixed(2)];
-            navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyGoldBtn, 'copy', '复制金币'))
-                .catch(() => alert('复制失败，请手动复制'));
-        });
-        copyRmbBtn.addEventListener('click', () => {
-            if (appMode === 'general') {
-                if (!currentGeneralResult || !currentGeneralResult.people.length) return;
-                const lines = currentGeneralResult.people.map(p => p.rmb.toFixed(2));
-                navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyRmbBtn, 'copy', '复制人民币'))
-                    .catch(() => alert('复制失败，请手动复制'));
-                return;
-            }
-            if (hasTaxableRmbItems && !goldRateValid) { alert('请先填写金价比例'); return; }
-            if (!currentRmbEarnings.length) return;
-            const lines = [...currentRmbEarnings.map(a => a.toFixed(2)), '0.00', currentTotalRmbTax.toFixed(2)];
-            navigator.clipboard.writeText(lines.join('\n')).then(() => flashCopied(copyRmbBtn, 'copy', '复制人民币'))
-                .catch(() => alert('复制失败，请手动复制'));
-        });
         // 截图：克隆实际页面卡片，把控件转成静态文本后渲染，排版与页面完全一致
         function buildScreenshotClone() {
             const card = document.getElementById('mainCard');
@@ -4065,6 +4813,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
 
         window.addEventListener('beforeunload', (e) => {
             if (!hasEnteredData()) return;
+            if (location.search.indexOf('noblock') >= 0) return; // 自动化测试用
             e.preventDefault();
             e.returnValue = '';
         });
@@ -4083,5 +4832,76 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
     </script>
 <script src="../assets/auth-state.js?v=2"></script>
 <script src="../assets/nav-auth.js?v=2"></script>
+    <!-- ===== 账单详情弹层 ===== -->
+    <div class="bill-modal" id="billModal">
+        <div class="bill-modal-box">
+            <div class="bill-modal-head">
+                <div style="min-width:0;">
+                    <h3 id="bmTitle">账单</h3>
+                    <p class="bm-sub" id="bmSub"></p>
+                </div>
+                <button type="button" class="bm-close" id="bmClose" title="关闭">✕</button>
+            </div>
+            <div class="bm-bar" id="bmBar"></div>
+            <div class="bill-modal-body" id="bmBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== 登录 / 注册弹层 ===== -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-box">
+            <h3 id="authTitle">登录</h3>
+            <p class="sub">不发验证邮件，邮箱只当用户名用。上传账单、生成队长分享码需要登录。</p>
+            <div class="auth-modes">
+                <button type="button" class="auth-mode is-active" data-amode="login">登录</button>
+                <button type="button" class="auth-mode" data-amode="signup">注册</button>
+            </div>
+            <input type="text" class="auth-input" id="auNick" placeholder="昵称（1~12 个字，账单上会显示这个名字）" maxlength="12" spellcheck="false" hidden>
+            <input type="email" class="auth-input" id="auEmail" placeholder="邮箱（当账户名用）" autocomplete="email" spellcheck="false">
+            <input type="email" class="auth-input" id="auEmail2" placeholder="再输一次邮箱" autocomplete="email" spellcheck="false" hidden>
+            <input type="password" class="auth-input" id="auPass" placeholder="密码" autocomplete="current-password">
+            <div class="auth-pw-bars" id="auBars" style="display:none;"><i></i><i></i><i></i><i></i></div>
+            <p class="auth-pw-hint" id="auHint" style="display:none;">
+                密码至少 <b>10 位</b>，且必须同时包含<b>大写字母</b>、<b>数字</b>和<b>符号</b>。例如：<code>Xsb@2026ok</code>
+            </p>
+            <div class="auth-msg" id="auMsg"></div>
+            <button type="button" class="auth-submit" id="auSubmit">登录</button>
+            <button type="button" class="auth-cancel" id="auCancel">取消</button>
+            <p class="auth-foot">忘记密码找群主重置。已登录的账号会自动记为账单创建人。</p>
+        </div>
+    </div>
+
+
+    <!-- ===== 认证团长弹层 ===== -->
+    <div class="cert-modal" id="certModal">
+        <div class="cert-box">
+            <div class="cert-head">
+                <h3 id="certTitle">申请认证团长</h3>
+                <button type="button" class="bm-close" id="certClose">✕</button>
+            </div>
+            <div class="cert-body" id="certBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== 粘贴分享码窗口 ===== -->
+    <div class="cert-modal" id="pasteModal">
+        <div class="cert-box cert-box-sm">
+            <div class="cert-head">
+                <h3>粘贴分享码</h3>
+                <button type="button" class="bm-close" id="pasteClose">✕</button>
+            </div>
+            <div class="cert-body">
+                <p class="cert-tip">把团长发的那一整段话粘进来就行，会自动认出里面的 8 位码。只粘 8 位码也可以。</p>
+                <textarea id="pasteArea" rows="5" class="cert-textarea" placeholder="【账单码】http://… 这是你的队伍分享码 XXXXXXXX …"></textarea>
+                <div class="cert-actions">
+                    <button type="button" class="btn" id="pasteOk">打开</button>
+                    <button type="button" class="btn btn-secondary" id="pasteCancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="billToast"></div>
+    <script src="../assets/bill-app.js"></script>
 </body>
 </html>
