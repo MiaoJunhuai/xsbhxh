@@ -1772,7 +1772,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <span class="q-tool-spacer"></span>
                 <span class="q-search-wrap">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    <input type="text" id="qName" placeholder="查找角色名" autocomplete="off" spellcheck="false">
+                    <input type="text" id="qName" name="q-role-lookup" placeholder="查找角色名" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other">
                 </span>
                 <button type="button" class="q-tool" id="qFilterBtn" title="展开 / 收起筛选条件">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6.5 8v6l-3 2v-8L4 4z"/></svg>过滤
@@ -4859,7 +4859,7 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
                 <button type="button" class="auth-mode" data-amode="signup">注册</button>
             </div>
             <input type="text" class="auth-input" id="auNick" placeholder="昵称（1~12 个字，账单上会显示这个名字）" maxlength="12" spellcheck="false" hidden>
-            <input type="email" class="auth-input" id="auEmail" placeholder="邮箱（当账户名用）" autocomplete="email" spellcheck="false">
+            <input type="email" class="auth-input" id="auEmail" name="xsb-account" placeholder="邮箱（当账户名用）" autocomplete="username" spellcheck="false">
             <input type="email" class="auth-input" id="auEmail2" placeholder="再输一次邮箱" autocomplete="email" spellcheck="false" hidden>
             <input type="password" class="auth-input" id="auPass" placeholder="密码" autocomplete="current-password">
             <div class="auth-pw-bars" id="auBars" style="display:none;"><i></i><i></i><i></i><i></i></div>
