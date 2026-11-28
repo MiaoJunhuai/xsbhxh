@@ -1111,7 +1111,9 @@ tr.over-limit td { background: #fecaca; transition: background-color 0.12s ease;
     border: 1px solid #dde4ee; border-radius: 10px; background: #fff;
     padding: 0 11px; height: 34px; min-width: 220px; color: #94a3b8;
 }
-.q-search-wrap:focus-within { border-color: #a99cf5; box-shadow: 0 0 0 3px rgba(108, 92, 231, .1); }
+.q-search-wrap:focus-within { border-color: #a99cf5; }
+.q-search-wrap input:focus,
+.q-search-wrap input:focus-visible { outline: none !important; box-shadow: none !important; }
 .q-search-wrap input {
     border: 0; outline: none; background: transparent; font: inherit;
     font-size: .84rem; color: #2d3436; width: 100%; min-width: 0;
