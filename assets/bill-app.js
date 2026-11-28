@@ -894,9 +894,9 @@ function renderBillDetail(d) {
   if (shotBtn) shotBtn.addEventListener('click', () => copyBillImage(shotBtn));
   const linkBtn = $('bmLinkBtn');
   if (linkBtn) linkBtn.addEventListener('click', () => {
-    const url = billLink(d.id);
-    copyText(url).then(() => toast('账单链接已复制'))
-      .catch(() => prompt('复制这个链接：', url));
+    const text = '【' + (d.bill_date || '') + ' ' + (d.raid_type || '') + '】' + billLink(d.id);
+    copyText(text).then(() => toast('账单链接已复制'))
+      .catch(() => prompt('复制这个链接：', text));
   });
 
   const cbtn = $('bmContactBtn');
